@@ -1,11 +1,16 @@
 /**
- * Template Code Google Apps Script (GAS) untuk GudangPresisi
- * Dapat disalin ke Apps Script editor di Google Spreadsheet pengguna.
+ * Template Referensi Kontrak Google Apps Script (GAS) untuk GudangPresisi
+ * Sesuai dengan spesifikasi kontrak API GAS Backend Version 1.2.2.
+ * Backend deployment aktif di Google Apps Script adalah Single Source of Truth.
  */
 export const GAS_CODE_TEMPLATE = `/**
  * GUDANGPRESISI - BACKEND GOOGLE APPS SCRIPT (GAS)
- * Version: 1.0 LOCKED
+ * Version: 1.2.2 (Reference Contract Specification)
  * Database: Google Spreadsheet
+ *
+ * PENTING:
+ * File ini merupakan referensi struktur dan kontrak API v1.2.2.
+ * Backend production aktif dikelola langsung melalui Google Apps Script Deployment.
  */
 
 const SHEETS = {
@@ -14,9 +19,7 @@ const SHEETS = {
   MEMBER_LIMIT: 'MEMBER_LIMIT',
   TRANSAKSI: 'TRANSAKSI',
   PENGAJUAN_PENGAMBILAN: 'PENGAJUAN_PENGAMBILAN',
-  PENGATURAN: 'PENGATURAN',
-  MASTER_MESIN: 'MASTER_MESIN',
-  PEMAKAIAN_MESIN: 'PEMAKAIAN_MESIN'
+  PENGATURAN: 'PENGATURAN'
 };
 
 function doGet(e) {
@@ -49,16 +52,8 @@ function doGet(e) {
         var eligJumlah = Number((e && e.parameter && (e.parameter.jumlah || e.parameter.qty)) || 1);
         return jsonResponse(handleCheckEligibility(eligMemberId, eligItemId, eligJumlah));
       }
-      case 'requests':
-        return jsonResponse(handleGetRequests());
-      case 'machines':
-        return jsonResponse(handleGetMachines());
-      case 'machine_usages':
-        return jsonResponse(handleGetMachineUsages());
       case 'debug_transactions':
         return jsonResponse(handleGetTransactions({ limit: 50 }));
-      case 'debug_source':
-        return jsonResponse(handleDebugSource());
       default:
         return jsonResponse({ success: false, error: 'Unknown action: ' + action });
     }
@@ -86,20 +81,6 @@ function doPost(e) {
         return jsonResponse(handleApproveRequest(body));
       case 'reject_request':
         return jsonResponse(handleRejectRequest(body));
-      case 'create_item':
-        return jsonResponse(handleCreateItem(body));
-      case 'update_item':
-        return jsonResponse(handleUpdateItem(body));
-      case 'create_member':
-        return jsonResponse(handleCreateMember(body));
-      case 'update_member':
-        return jsonResponse(handleUpdateMember(body));
-      case 'create_limit':
-        return jsonResponse(handleCreateLimit(body));
-      case 'create_machine':
-        return jsonResponse(handleCreateMachine(body));
-      case 'create_machine_usage':
-        return jsonResponse(handleCreateMachineUsage(body));
       case 'init_sheets':
         return jsonResponse(initSheets());
       default:
@@ -124,26 +105,26 @@ function handleHealth() {
   var sheets = ss.getSheets().map(function(s) { return s.getName(); });
   return {
     success: true,
-    status: 'ONLINE',
-    spreadsheetId: ss.getId(),
-    sheetsFound: sheets,
-    version: '1.0.0-locked',
-    timestamp: new Date().toISOString()
+    data: {
+      status: 'ONLINE',
+      spreadsheetId: ss.getId(),
+      sheetsFound: sheets,
+      version: '1.2.2',
+      timestamp: new Date().toISOString()
+    }
   };
 }
 
-// Inisialisasi struktur sheet jika baru
+// Inisialisasi struktur sheet standar GudangPresisi v1.2.2
 function initSheets() {
   var ss = getSS();
   var schemas = {
     MASTER_ITEM: ['ID_ITEM', 'NAMA_ITEM', 'KATEGORI', 'SATUAN', 'MASA_PAKAI_BULAN', 'STOK_AWAL', 'MIN_STOK', 'LOKASI', 'STATUS', 'CREATED_AT', 'UPDATED_AT'],
     MASTER_MEMBER: ['ID_MEMBER', 'NAMA_MEMBER', 'JENIS_MEMBER', 'NO_HP', 'STATUS', 'TANGGAL_MULAI', 'CREATED_AT', 'UPDATED_AT'],
     MEMBER_LIMIT: ['ID_LIMIT', 'ID_MEMBER', 'ID_ITEM', 'MAX_QTY', 'SATUAN', 'STATUS', 'CREATED_AT', 'UPDATED_AT'],
-    TRANSAKSI: ['ID_TRANSAKSI', 'TIMESTAMP', 'TANGGAL', 'ID_ITEM', 'JENIS_TRANSAKSI', 'NO_DOKUMEN', 'JUMLAH', 'ID_MEMBER', 'NAMA_MEMBER', 'KETERANGAN', 'CREATED_AT'],
+    TRANSAKSI: ['ID_TRANSAKSI', 'TIMESTAMP', 'TANGGAL', 'ID_ITEM', 'JENIS_TRANSAKSI', 'NO_DOKUMEN', 'JUMLAH', 'SATUAN', 'ID_MEMBER', 'NAMA_MEMBER', 'KETERANGAN', 'CREATED_AT'],
     PENGAJUAN_PENGAMBILAN: ['ID_PENGAJUAN', 'ID_MEMBER', 'NAMA_MEMBER', 'ID_ITEM', 'NAMA_ITEM', 'JUMLAH', 'ALASAN', 'STATUS', 'APPROVER', 'CATATAN', 'CREATED_AT', 'UPDATED_AT'],
-    PENGATURAN: ['KUNCI', 'NILAI', 'DESKRIPSI', 'UPDATED_AT'],
-    MASTER_MESIN: ['ID_MESIN', 'NAMA_MESIN', 'KATEGORI', 'MERK', 'MODEL', 'NO_SERI', 'LOKASI', 'KONDISI', 'STATUS', 'TANGGAL_MASUK', 'CREATED_AT', 'UPDATED_AT'],
-    PEMAKAIAN_MESIN: ['ID_PEMAKAIAN', 'ID_MESIN', 'ID_MEMBER', 'TANGGAL', 'JAM_MULAI', 'JAM_SELESAI', 'DURASI', 'TUJUAN_PEMAKAIAN', 'LOKASI_PEMAKAIAN', 'KONDISI_SEBELUM', 'KONDISI_SESUDAH', 'KETERANGAN', 'STATUS', 'CREATED_AT', 'UPDATED_AT']
+    PENGATURAN: ['KUNCI', 'NILAI', 'DESKRIPSI', 'UPDATED_AT']
   };
 
   for (var name in schemas) {

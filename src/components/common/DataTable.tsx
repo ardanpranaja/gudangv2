@@ -57,7 +57,8 @@ export function DataTable<T extends Record<string, any>>({
     return data.filter((item) => {
       for (const col of columns) {
         if (col.searchValue) {
-          if (col.searchValue(item).toLowerCase().includes(q)) return true;
+          const sv = col.searchValue(item);
+          if (sv !== undefined && sv !== null && String(sv).toLowerCase().includes(q)) return true;
         } else {
           const val = item[col.key];
           if (val !== undefined && val !== null && String(val).toLowerCase().includes(q)) {

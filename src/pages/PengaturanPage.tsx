@@ -229,48 +229,49 @@ export const PengaturanPage: React.FC = () => {
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2 text-slate-900">
             <Code2 className="w-4 h-4 text-slate-700" />
-            <h3 className="text-sm font-semibold">Panduan Kode Google Apps Script (Code.gs)</h3>
+            <h3 className="text-sm font-semibold">Referensi Kontrak Google Apps Script (GAS v1.2.2)</h3>
           </div>
           <button
             onClick={handleCopyCode}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors"
           >
             <Copy className="w-3.5 h-3.5" />
-            <span>{copiedCode ? 'Tersalin!' : 'Salin Seluruh Kode GAS'}</span>
+            <span>{copiedCode ? 'Tersalin!' : 'Salin Kode Referensi Kontrak'}</span>
           </button>
+        </div>
+
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
+          <p className="font-semibold mb-0.5">Catatan Backend Source of Truth:</p>
+          <p className="text-[11px] text-amber-800 leading-relaxed">
+            Backend production GudangPresisi aktif menggunakan Google Apps Script Version 1.2.2. Kode template di bawah disediakan sebagai referensi struktur skema sheet dan kontrak API v1.2.2.
+          </p>
         </div>
 
         <ol className="list-decimal list-inside space-y-2 text-xs text-slate-600 leading-relaxed">
           <li>
-            Buka Google Spreadsheet baru Anda di Google Drive.
+            Buka Google Spreadsheet backend Anda di Google Drive.
           </li>
           <li>
             Klik menu <span className="font-semibold text-slate-800">Extensions &gt; Apps Script</span>.
           </li>
           <li>
-            Hapus kode default di <span className="font-mono text-slate-800">Code.gs</span>, lalu tempelkan
-            kode yang telah disalin dari tombol di atas.
+            Pastikan skema header sheet dan endpoint sesuai dengan kontrak v1.2.2.
           </li>
           <li>
-            Jalankan fungsi <span className="font-mono text-slate-800">initSheets()</span> satu kali untuk
-            membuat seluruh sheet database secara otomatis.
+            Jika menginisialisasi spreadsheet baru, fungsi <span className="font-mono text-slate-800">initSheets()</span> dapat dijalankan untuk membuat sheet database otomatis.
           </li>
           <li>
-            Klik tombol biru <span className="font-semibold text-slate-800">Deploy &gt; New deployment</span>.
-            Pilih type: <span className="font-semibold text-slate-800">Web app</span>.
+            Deploy script melalui <span className="font-semibold text-slate-800">Deploy &gt; New deployment &gt; Web app</span> (Execute as: <em>Me</em>, Access: <em>Anyone</em>).
           </li>
           <li>
-            Setel <strong>Execute as: Me</strong> dan <strong>Who has access: Anyone</strong>.
-          </li>
-          <li>
-            Salin <strong>Web App URL</strong> yang dihasilkan dan simpan di kolom URL di atas.
+            Salin <strong>Web App URL</strong> yang dihasilkan dan simpan di kolom konfigurasi URL di atas.
           </li>
         </ol>
 
         <div className="relative">
           <pre className="p-3 bg-slate-900 text-slate-300 rounded font-mono text-[11px] overflow-x-auto max-h-48">
             {GAS_CODE_TEMPLATE.slice(0, 800)}
-            {'\n... (klik tombol Salin untuk mengambil seluruh kode GAS v1.2.2)'}
+            {'\n... (klik tombol Salin untuk mengambil seluruh kode referensi kontrak GAS v1.2.2)'}
           </pre>
         </div>
       </div>

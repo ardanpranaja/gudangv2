@@ -7,7 +7,8 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' }) => {
-  const displayStatus = typeof status === 'string' && status.trim() ? status.trim() : '-';
+  const rawStatus = status !== null && status !== undefined ? String(status).trim() : '';
+  const displayStatus = rawStatus.length > 0 ? rawStatus : '-';
   const normalized = displayStatus.toUpperCase();
 
   let colorClasses = 'text-slate-600 bg-slate-100 border-slate-200';
