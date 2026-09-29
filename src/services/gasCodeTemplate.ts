@@ -35,12 +35,20 @@ function doGet(e) {
         return jsonResponse(handleGetTransactions(e.parameter));
       case 'stock':
         return jsonResponse(handleGetStock());
-      case 'bincard':
-        return jsonResponse(handleGetBinCard(e.parameter.itemId));
-      case 'memberhistory':
-        return jsonResponse(handleGetMemberHistory(e.parameter.memberId));
-      case 'pickupeligibility':
-        return jsonResponse(handleCheckEligibility(e.parameter.memberId, e.parameter.itemId, Number(e.parameter.qty || 1)));
+      case 'bincard': {
+        var bincardItemId = (e && e.parameter && (e.parameter.id_item || e.parameter.itemId)) || '';
+        return jsonResponse(handleGetBinCard(bincardItemId));
+      }
+      case 'memberhistory': {
+        var histMemberId = (e && e.parameter && (e.parameter.id_member || e.parameter.memberId)) || '';
+        return jsonResponse(handleGetMemberHistory(histMemberId));
+      }
+      case 'pickupeligibility': {
+        var eligMemberId = (e && e.parameter && (e.parameter.id_member || e.parameter.memberId)) || '';
+        var eligItemId = (e && e.parameter && (e.parameter.id_item || e.parameter.itemId)) || '';
+        var eligJumlah = Number((e && e.parameter && (e.parameter.jumlah || e.parameter.qty)) || 1);
+        return jsonResponse(handleCheckEligibility(eligMemberId, eligItemId, eligJumlah));
+      }
       case 'requests':
         return jsonResponse(handleGetRequests());
       case 'machines':

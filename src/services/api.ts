@@ -231,12 +231,19 @@ class ApiService {
 
   /**
    * Transactions: GET action=transactions -> normalized data.transactions
+   * Query params: limit, id_item, id_member
    */
   public async getTransactions(params?: { limit?: string; itemId?: string; memberId?: string }): Promise<Transaksi[]> {
     const queryParams: Record<string, string> = {};
-    if (params?.limit) queryParams.limit = params.limit;
-    if (params?.itemId) queryParams.itemId = params.itemId;
-    if (params?.memberId) queryParams.memberId = params.memberId;
+    if (params?.limit) {
+      queryParams.limit = params.limit;
+    }
+    if (params?.itemId) {
+      queryParams.id_item = params.itemId;
+    }
+    if (params?.memberId) {
+      queryParams.id_member = params.memberId;
+    }
 
     const data: any = await this.get('transactions', queryParams);
     if (!data) return [];
@@ -277,7 +284,7 @@ class ApiService {
   }
 
   /**
-   * Bin Card: GET action=bincard&itemId=...
+   * Bin Card: GET action=bincard&id_item=...
    * GAS response: data.item, data.saldoAwal, data.saldoAkhir, data.count, data.rows
    */
   public async getBinCard(itemId: string): Promise<BinCardResult> {
@@ -285,7 +292,7 @@ class ApiService {
       throw new GasApiError('ID barang wajib disertakan untuk memuat Bin Card.', 'INVALID_PARAM');
     }
 
-    const data: any = await this.get('bincard', { itemId });
+    const data: any = await this.get('bincard', { id_item: itemId });
     if (!data) {
       return {
         item: itemId,
@@ -321,7 +328,7 @@ class ApiService {
   }
 
   /**
-   * Member History: GET action=memberhistory&memberId=...
+   * Member History: GET action=memberhistory&id_member=...
    * GAS response: data.member, data.count, data.history
    */
   public async getMemberHistory(memberId: string): Promise<MemberHistorySummary> {
@@ -329,7 +336,7 @@ class ApiService {
       throw new GasApiError('ID member wajib disertakan untuk memuat riwayat.', 'INVALID_PARAM');
     }
 
-    const data: any = await this.get('memberhistory', { memberId });
+    const data: any = await this.get('memberhistory', { id_member: memberId });
     if (!data) {
       return {
         member: { ID_MEMBER: memberId, NAMA_MEMBER: memberId, JENIS_MEMBER: 'CREW' },
@@ -415,7 +422,7 @@ class ApiService {
   }
 
   /**
-   * Pickup Eligibility: GET action=pickupeligibility&memberId=...&itemId=...&qty=...
+   * Pickup Eligibility: GET action=pickupeligibility&id_member=...&id_item=...&jumlah=...
    * GAS response: data.allowed, data.early, data.reason, data.masaPakaiBulan, data.maxQty, data.lastPickupDate, data.dueDate
    */
   public async getPickupEligibility(memberId: string, itemId: string, qty: number): Promise<PickupEligibilityResult> {
@@ -424,9 +431,9 @@ class ApiService {
     }
 
     const data: any = await this.get('pickupeligibility', {
-      memberId,
-      itemId,
-      qty: String(qty || 1),
+      id_member: memberId,
+      id_item: itemId,
+      jumlah: String(qty || 1),
     });
 
     if (!data) {
