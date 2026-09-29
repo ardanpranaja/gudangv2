@@ -9,7 +9,6 @@ import {
   AlertCircle,
   Copy,
   RefreshCw,
-  ExternalLink,
   ShieldCheck,
   Terminal,
   Code2,
@@ -56,7 +55,7 @@ export const PengaturanPage: React.FC = () => {
     try {
       const txs = await api.getDebugTransactions();
       setDebugLogs(txs.slice(0, 10));
-      addToast('success', 'Debug Log Dimuat', '10 transaksi mentah terakhir berhasil diambil.');
+      addToast('success', 'Debug Log Dimuat', `${Math.min(txs.length, 10)} transaksi mentah berhasil diambil.`);
     } catch (err: any) {
       addToast('error', 'Gagal Mengambil Log Debug', err.message);
     } finally {
@@ -190,8 +189,7 @@ export const PengaturanPage: React.FC = () => {
           >
             <div className="font-semibold text-slate-900">ADMIN</div>
             <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">
-              Akses penuh ke semua halaman, pendaftaran master barang & member, penetapan limit, mutasi
-              transaksi, dan approval pengajuan.
+              Akses penuh ke seluruh modul, monitoring stok, riwayat member, kartu stok, dan approval pengajuan.
             </p>
           </div>
 
@@ -206,7 +204,7 @@ export const PengaturanPage: React.FC = () => {
             <div className="font-semibold text-slate-900">OPERATOR</div>
             <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">
               Operasional gudang harian: mencatat Barang Masuk, Barang Keluar, Pinjam, Kembali, dan
-              membuat pengajuan. Tidak dapat memodifikasi master atau approval.
+              membuat pengajuan.
             </p>
           </div>
 
@@ -220,8 +218,7 @@ export const PengaturanPage: React.FC = () => {
           >
             <div className="font-semibold text-slate-900">VIEWER</div>
             <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">
-              Hanya melihat posisi stok, ringkasan dashboard, dan laporan. Dilarang melakukan transaksi
-              atau perubahan data apa pun.
+              Hanya melihat posisi stok, ringkasan dashboard, dan laporan. Tidak dapat melakukan transaksi.
             </p>
           </div>
         </div>
@@ -273,12 +270,12 @@ export const PengaturanPage: React.FC = () => {
         <div className="relative">
           <pre className="p-3 bg-slate-900 text-slate-300 rounded font-mono text-[11px] overflow-x-auto max-h-48">
             {GAS_CODE_TEMPLATE.slice(0, 800)}
-            {'\n... (klik tombol Salin untuk mengambil seluruh kode GAS v1.0)'}
+            {'\n... (klik tombol Salin untuk mengambil seluruh kode GAS v1.2.2)'}
           </pre>
         </div>
       </div>
 
-      {/* Debug & Health Check Tools (Per Blueprint Section 44) */}
+      {/* Debug & Health Check Tools */}
       <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2 text-slate-900">
@@ -301,7 +298,7 @@ export const PengaturanPage: React.FC = () => {
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500 font-semibold">
                   <th className="py-1.5 px-2">ID Transaksi</th>
-                  <th className="py-1.5 px-2">Timestamp</th>
+                  <th className="py-1.5 px-2">Tanggal</th>
                   <th className="py-1.5 px-2">Jenis</th>
                   <th className="py-1.5 px-2">ID Item</th>
                   <th className="py-1.5 px-2">Jumlah</th>
@@ -309,14 +306,14 @@ export const PengaturanPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-[11px] text-slate-700">
-                {debugLogs.map((log) => (
-                  <tr key={log.ID_TRANSAKSI}>
-                    <td className="py-1.5 px-2 font-bold">{log.ID_TRANSAKSI}</td>
-                    <td className="py-1.5 px-2">{log.TIMESTAMP}</td>
-                    <td className="py-1.5 px-2">{log.JENIS_TRANSAKSI}</td>
-                    <td className="py-1.5 px-2">{log.ID_ITEM}</td>
-                    <td className="py-1.5 px-2 font-bold">{log.JUMLAH}</td>
-                    <td className="py-1.5 px-2">{log.NO_DOKUMEN}</td>
+                {debugLogs.map((log, idx) => (
+                  <tr key={log.ID_TRANSAKSI || idx}>
+                    <td className="py-1.5 px-2 font-bold">{log.ID_TRANSAKSI || '-'}</td>
+                    <td className="py-1.5 px-2">{log.TANGGAL || log.TIMESTAMP || '-'}</td>
+                    <td className="py-1.5 px-2">{log.JENIS_TRANSAKSI || '-'}</td>
+                    <td className="py-1.5 px-2">{log.ID_ITEM || '-'}</td>
+                    <td className="py-1.5 px-2 font-bold">{log.JUMLAH || 0}</td>
+                    <td className="py-1.5 px-2">{log.NO_DOKUMEN || '-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -324,7 +321,7 @@ export const PengaturanPage: React.FC = () => {
           </div>
         ) : (
           <p className="text-xs text-slate-400">
-            Klik tombol &quot;Tarik Debug Transaksi&quot; untuk memeriksa keutuhan data mentah dari backend.
+            Klik tombol &quot;Tarik Debug Transaksi&quot; untuk menguji respon API debug backend.
           </p>
         )}
       </div>

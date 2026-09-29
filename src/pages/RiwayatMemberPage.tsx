@@ -6,7 +6,7 @@ import { StatCard } from '../components/common/StatCard';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { MasterMember, MemberHistorySummary, Transaksi } from '../types';
-import { History, PackageCheck, Layers, Calendar, Sliders } from 'lucide-react';
+import { History, PackageCheck, Layers, Calendar, Sliders, Info } from 'lucide-react';
 
 export const RiwayatMemberPage: React.FC = () => {
   const { pageParams, navigateTo, refreshKey } = useApp();
@@ -37,7 +37,7 @@ export const RiwayatMemberPage: React.FC = () => {
     loadMembers();
   }, [refreshKey, pageParams.memberId]);
 
-  // Load history summary for selected member
+  // Load history summary from GAS for selected member
   useEffect(() => {
     if (!selectedMemberId) return;
     setIsLoading(true);
@@ -50,7 +50,7 @@ export const RiwayatMemberPage: React.FC = () => {
       })
       .catch((err) => {
         setIsError(true);
-        setErrorMessage(err.message || 'Gagal memuat riwayat member dari transaksi.');
+        setErrorMessage(err.message || 'Gagal memuat riwayat member dari GAS.');
       })
       .finally(() => {
         setIsLoading(false);
@@ -67,7 +67,9 @@ export const RiwayatMemberPage: React.FC = () => {
       render: (t) => (
         <div>
           <div className="font-mono text-slate-800 font-semibold">{t.TANGGAL}</div>
-          <div className="text-[11px] font-mono text-slate-400">{t.TIMESTAMP.slice(11)}</div>
+          <div className="text-[11px] font-mono text-slate-400">
+            {t.TIMESTAMP && t.TIMESTAMP.length > 10 ? t.TIMESTAMP.slice(11) : ''}
+          </div>
         </div>
       ),
     },
@@ -91,7 +93,7 @@ export const RiwayatMemberPage: React.FC = () => {
       render: (t) => (
         <div>
           <div className="font-medium text-slate-900">{t.NAMA_ITEM || t.ID_ITEM}</div>
-          <div className="text-[11px] text-slate-500 mt-0.5 italic">&quot;{t.KETERANGAN}&quot;</div>
+          <div className="text-[11px] text-slate-500 mt-0.5 italic">&quot;{t.KETERANGAN || '-'}&quot;</div>
         </div>
       ),
     },
@@ -110,7 +112,7 @@ export const RiwayatMemberPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Riwayat Pengambilan Member"
-        description="Owner page rekam jejak distribusi barang kepada setiap member. Menghitung akumulasi kuota bulanan, jenis item yang pernah diambil, dan audit transaksi."
+        description="Rekam jejak distribusi barang kepada setiap member dari GET action=memberhistory backend Google Apps Script."
         actions={
           selectedMember && (
             <button
@@ -167,6 +169,13 @@ export const RiwayatMemberPage: React.FC = () => {
         </div>
       </div>
 
+      <div className="p-3.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-2">
+        <Info className="w-4 h-4 text-slate-500 shrink-0" />
+        <span>
+          Data riwayat pengambilan member bersumber langsung dari backend GAS (<span className="font-mono">action=memberhistory</span>).
+        </span>
+      </div>
+
       {/* KPI Stats */}
       {summary && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -174,7 +183,7 @@ export const RiwayatMemberPage: React.FC = () => {
             label="Total Transaksi Member"
             value={summary.totalTransaksi}
             unit="Kali"
-            subtitle="Akumulasi pengambilan & pinjaman"
+            subtitle="Akumulasi pengambilan & pinjaman di GAS"
             icon={History}
           />
           <StatCard
@@ -232,13 +241,13 @@ export const RiwayatMemberPage: React.FC = () => {
       <DataTable
         columns={txColumns}
         data={summary?.transactions || []}
-        keyField="ID_TRANSAKSI"
+        keyField={(t) => `${t.ID_TRANSAKSI || t.NO_DOKUMEN}-${t.TIMESTAMP}`}
         isLoading={isLoading}
         isError={isError}
         errorMessage={errorMessage}
         searchPlaceholder="Cari nomor dokumen, nama barang, atau keterangan..."
         emptyTitle="Belum ada riwayat transaksi."
-        emptyDescription="Member ini belum pernah melakukan pengambilan atau peminjaman barang."
+        emptyDescription="Member ini belum memiliki catatan transaksi di backend."
       />
     </div>
   );

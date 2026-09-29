@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
 import { StatCard } from '../components/common/StatCard';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { LoadingState } from '../components/common/LoadingState';
+import { ErrorState } from '../components/common/ErrorState';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { ItemStock, Transaksi, MasterMember } from '../types';
@@ -23,33 +25,46 @@ export const LaporanPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaksi[]>([]);
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Period filter
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
 
+  const loadAll = async () => {
+    setIsLoading(true);
+    setIsError(false);
+    try {
+      const [stockData, txData, memData] = await Promise.all([
+        api.getStock(),
+        api.getTransactions(),
+        api.getMembers(),
+      ]);
+      setStocks(stockData);
+      setTransactions(txData);
+      setMembers(memData);
+    } catch (err: any) {
+      setIsError(true);
+      setErrorMessage(err.message || 'Gagal memuat data laporan dari backend.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadAll = async () => {
-      setIsLoading(true);
-      try {
-        const [stockData, txData, memData] = await Promise.all([
-          api.getStock(),
-          api.getTransactions(),
-          api.getMembers(),
-        ]);
-        setStocks(stockData);
-        setTransactions(txData);
-        setMembers(memData);
-      } catch (e) {
-        console.error('Laporan load error:', e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     loadAll();
   }, [refreshKey]);
 
+  if (isLoading) {
+    return <LoadingState message="Memuat rekapitulasi laporan dari Google Spreadsheet..." />;
+  }
+
+  if (isError) {
+    return <ErrorState error={errorMessage} onRetry={loadAll} />;
+  }
+
   // Calculations for selected period
-  const filteredTxs = transactions.filter((t) => t.TANGGAL.startsWith(selectedMonth));
+  const filteredTxs = transactions.filter((t) => t.TANGGAL && t.TANGGAL.startsWith(selectedMonth));
 
   const totalMasuk = filteredTxs
     .filter((t) => t.JENIS_TRANSAKSI === 'BARANG_MASUK')
@@ -77,7 +92,7 @@ export const LaporanPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Laporan & Rekapitulasi Operasional"
-        description="Analisis periodik pergerakan stok, rekapitulasi distribusi member, dan intensitas mutasi barang di gudang."
+        description="Analisis periodik mutasi stok dan intensitas transaksi barang yang bersumber dari database Google Spreadsheet."
         actions={
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded text-xs">
@@ -141,7 +156,7 @@ export const LaporanPage: React.FC = () => {
         <div className="bg-white rounded-lg border border-slate-200 p-5 space-y-4">
           <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
             <Boxes className="w-4 h-4 text-slate-600" />
-            <span>Komposisi SKU per Kategori</span>
+            <span>Komposisi SKU per Kategori (GAS)</span>
           </h3>
 
           <div className="space-y-3 text-xs">
@@ -185,7 +200,7 @@ export const LaporanPage: React.FC = () => {
 
           {filteredTxs.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded">
-              Tidak ada catatan mutasi pada periode {selectedMonth}.
+              Tidak ada catatan mutasi pada periode {selectedMonth} di database.
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -202,7 +217,7 @@ export const LaporanPage: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
                   {filteredTxs.slice(0, 10).map((t) => (
-                    <tr key={t.ID_TRANSAKSI} className="hover:bg-slate-50">
+                    <tr key={t.ID_TRANSAKSI || t.NO_DOKUMEN} className="hover:bg-slate-50">
                       <td className="py-2 px-3 font-mono text-slate-600">{t.TANGGAL}</td>
                       <td className="py-2 px-3 font-mono font-medium text-slate-900">{t.NO_DOKUMEN}</td>
                       <td className="py-2 px-3">

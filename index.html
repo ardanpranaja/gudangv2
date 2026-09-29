@@ -9,6 +9,26 @@
     <meta property="og:description" content="Sistem Pengelolaan Gudang Presisi — Master Barang, Member, Limit, Transaksi, Stok, Bin Card & Pengajuan" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      (function() {
+        try {
+          var origFetch = window.fetch;
+          var currentFetch = origFetch;
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return currentFetch;
+            },
+            set: function(newFetch) {
+              currentFetch = newFetch;
+            },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e) {
+          // Fallback if property is non-configurable
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

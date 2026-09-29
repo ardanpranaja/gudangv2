@@ -30,7 +30,7 @@ export const BarangKeluarPage: React.FC = () => {
   const [tanggal, setTanggal] = useState(new Date().toISOString().slice(0, 10));
   const [keterangan, setKeterangan] = useState('');
 
-  // Eligibility Preview State
+  // Eligibility Preview State from Backend
   const [eligibility, setEligibility] = useState<PickupEligibilityResult | null>(null);
   const [checkingEligibility, setCheckingEligibility] = useState(false);
 
@@ -68,7 +68,7 @@ export const BarangKeluarPage: React.FC = () => {
     loadData();
   }, [refreshKey]);
 
-  // Check eligibility whenever member, item, or quantity changes
+  // Check eligibility from GAS whenever member, item, or quantity changes
   useEffect(() => {
     if (!selectedMemberId || !selectedItemId) {
       setEligibility(null);
@@ -83,7 +83,7 @@ export const BarangKeluarPage: React.FC = () => {
         if (active) setEligibility(res);
       })
       .catch((err) => {
-        console.warn('Eligibility check failed:', err);
+        console.warn('Backend eligibility check failed:', err);
       })
       .finally(() => {
         if (active) setCheckingEligibility(false);
@@ -112,11 +112,11 @@ export const BarangKeluarPage: React.FC = () => {
     }
 
     if (isOutOfStock) {
-      addToast('error', 'Stok Tidak Cukup', `Sisa stok: ${currentStock} ${selectedItem?.SATUAN}.`);
+      addToast('error', 'Stok Tidak Cukup', `Sisa stok di backend: ${currentStock} ${selectedItem?.SATUAN || 'UNIT'}.`);
       return;
     }
 
-    if (eligibility && !eligibility.eligible && eligibility.requiresEarlyApproval) {
+    if (eligibility && !eligibility.allowed && eligibility.early) {
       addToast(
         'warning',
         'Memerlukan Pengajuan Approval',
@@ -136,13 +136,20 @@ export const BarangKeluarPage: React.FC = () => {
         tanggal,
       });
 
+      const docNo = res?.NO_DOKUMEN || res?.transaction?.NO_DOKUMEN || res?.documentNo || 'Berhasil';
+
       addToast(
         'success',
         'Barang Keluar Berhasil Dicatat',
-        `No Dokumen: ${res.transaction.NO_DOKUMEN} (${jumlah} ${selectedItem?.SATUAN})`
+        `No Dokumen: ${docNo} (${jumlah} ${selectedItem?.SATUAN || 'UNIT'})`
       );
 
-      setLastSubmittedTx(res.transaction);
+      setLastSubmittedTx({
+        NO_DOKUMEN: docNo,
+        NAMA_MEMBER: selectedMember?.NAMA_MEMBER || selectedMemberId,
+        ID_ITEM: selectedItemId,
+      });
+
       setJumlah(1);
       setKeterangan('');
       triggerRefresh();
@@ -157,7 +164,7 @@ export const BarangKeluarPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl">
       <PageHeader
         title="Pengeluaran Barang Keluar"
-        description="Owner page transaksi BARANG_KELUAR untuk distribusi item kepada Member. Memeriksa kepatuhan limit bulanan dan aturan masa pakai."
+        description="Owner page transaksi BARANG_KELUAR untuk distribusi item kepada Member. Memeriksa kelayakan batas kuota dan masa pakai via API GAS."
       />
 
       {lastSubmittedTx && (
@@ -279,35 +286,39 @@ export const BarangKeluarPage: React.FC = () => {
                 disabled={isSubmitting}
                 value={keterangan}
                 onChange={(e) => setKeterangan(e.target.value)}
-                placeholder="Contoh: Pengambilan rutin bulanan untuk Area Lobby Utama dan Toilet Timur."
+                placeholder="Contoh: Pengambilan rutin bulanan untuk Area Lobby Utama."
                 className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs"
               />
             </div>
 
-            {/* Eligibility Preview Banner */}
+            {/* Backend Eligibility Preview Banner */}
             {checkingEligibility ? (
               <div className="p-3 bg-slate-50 border border-slate-200 rounded text-slate-500 flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-slate-600" />
-                <span>Memvalidasi aturan limit member & masa pakai barang...</span>
+                <span>Memvalidasi aturan limit member & masa pakai via API GAS...</span>
               </div>
-            ) : eligibility && !eligibility.eligible ? (
+            ) : eligibility && !eligibility.allowed ? (
               <div className="p-4 bg-amber-50 border border-amber-300 rounded-lg space-y-2.5">
                 <div className="flex items-start gap-2 text-amber-900">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <div className="font-semibold text-xs">
-                      Permintaan Memerlukan Pengajuan Approval
+                      Hasil Evaluasi Backend: Memerlukan Pengajuan Approval
                     </div>
                     <div className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
-                      {eligibility.reason}
+                      {eligibility.reason || 'Pengambilan di luar batas kuota / masa pakai belum selesai.'}
                     </div>
+                    {eligibility.dueDate && (
+                      <div className="text-[11px] font-mono text-amber-900 mt-1">
+                        Jadwal Pengambilan Berikutnya: {eligibility.dueDate}
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-amber-200 flex items-center justify-between">
                   <span className="text-[11px] text-amber-800">
-                    Sesuai Blueprint Section 8: Pengambilan sebelum masa pakai selesai atau melebihi limit wajib
-                    disertai alasan dan disetujui Admin.
+                    Sesuai Blueprint: Pengambilan awal harus diajukan melalui form pengajuan.
                   </span>
                   <button
                     type="button"
@@ -321,22 +332,22 @@ export const BarangKeluarPage: React.FC = () => {
                     className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-white rounded font-medium hover:bg-amber-700 transition-colors shrink-0 ml-3"
                   >
                     <FileCheck2 className="w-3.5 h-3.5" />
-                    <span>Buat Pengajuan Pengambilan</span>
+                    <span>Buat Pengajuan</span>
                   </button>
                 </div>
               </div>
-            ) : eligibility && eligibility.eligible ? (
+            ) : eligibility && eligibility.allowed ? (
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-emerald-900 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span className="text-[11px]">
-                  Member memenuhi syarat pengambilan. Kuota dan masa pakai valid.
+                  Member memenuhi syarat pengambilan dari backend GAS. Kuota dan masa pakai valid.
                 </span>
               </div>
             ) : null}
 
             <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
               <span className="text-[11px] text-slate-400">
-                Pencatatan langsung mengurangi stok dan dicatat pada riwayat member.
+                Pencatatan dikirim langsung via POST action=transaction.
               </span>
               <button
                 type="submit"
@@ -344,7 +355,7 @@ export const BarangKeluarPage: React.FC = () => {
                   isSubmitting ||
                   isLoading ||
                   isOutOfStock ||
-                  (eligibility !== null && !eligibility.eligible)
+                  (eligibility !== null && !eligibility.allowed)
                 }
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -366,7 +377,6 @@ export const BarangKeluarPage: React.FC = () => {
 
         {/* Sidebar Info Card */}
         <div className="space-y-4">
-          {/* Stock Card */}
           <div className="bg-white rounded-lg border border-slate-200 p-4 space-y-3 text-xs">
             <h4 className="font-semibold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-1.5">
               <Boxes className="w-4 h-4 text-slate-600" />
@@ -376,7 +386,7 @@ export const BarangKeluarPage: React.FC = () => {
             {selectedItem && (
               <div className="space-y-2">
                 <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Stok Saat Ini</span>
+                  <span className="text-slate-500">Stok Saat Ini (GAS)</span>
                   <span
                     className={`font-mono font-semibold tabular-nums ${
                       isOutOfStock ? 'text-rose-600' : 'text-slate-900'
@@ -391,21 +401,10 @@ export const BarangKeluarPage: React.FC = () => {
                     {selectedItem.MASA_PAKAI_BULAN} Bulan
                   </span>
                 </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-500">Setelah Keluar (-{jumlah})</span>
-                  <span
-                    className={`font-mono font-bold tabular-nums ${
-                      currentStock - jumlah < 0 ? 'text-rose-600' : 'text-slate-800'
-                    }`}
-                  >
-                    {currentStock - (Number(jumlah) || 0)} {selectedItem.SATUAN}
-                  </span>
-                </div>
               </div>
             )}
           </div>
 
-          {/* Member Card */}
           {selectedMember && (
             <div className="bg-white rounded-lg border border-slate-200 p-4 space-y-3 text-xs">
               <h4 className="font-semibold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-1.5">

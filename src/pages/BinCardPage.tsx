@@ -4,21 +4,20 @@ import { DataTable, Column } from '../components/common/DataTable';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { MasterItem, BinCardEntry, ItemStock } from '../types';
-import { ScrollText, Boxes, Printer } from 'lucide-react';
+import { MasterItem, BinCardEntry, BinCardResult } from '../types';
+import { ScrollText, Printer, Info } from 'lucide-react';
 
 export const BinCardPage: React.FC = () => {
   const { pageParams, refreshKey } = useApp();
 
   const [items, setItems] = useState<MasterItem[]>([]);
-  const [stocks, setStocks] = useState<ItemStock[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<string>(pageParams.itemId || '');
-  const [entries, setEntries] = useState<BinCardEntry[]>([]);
+  const [binCardData, setBinCardData] = useState<BinCardResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Date filters
+  // UI filters on the returned rows
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedTxType, setSelectedTxType] = useState('ALL');
@@ -27,12 +26,8 @@ export const BinCardPage: React.FC = () => {
   useEffect(() => {
     const loadItems = async () => {
       try {
-        const [itemsData, stockData] = await Promise.all([
-          api.getItems(),
-          api.getStock(),
-        ]);
+        const itemsData = await api.getItems();
         setItems(itemsData);
-        setStocks(stockData);
 
         if (!selectedItemId && itemsData.length > 0) {
           const initial = pageParams.itemId || itemsData[0].ID_ITEM;
@@ -46,7 +41,7 @@ export const BinCardPage: React.FC = () => {
     loadItems();
   }, [refreshKey, pageParams.itemId]);
 
-  // Load Bin Card entries for selected item
+  // Load Bin Card from GAS for selected item
   useEffect(() => {
     if (!selectedItemId) return;
     setIsLoading(true);
@@ -55,11 +50,11 @@ export const BinCardPage: React.FC = () => {
     api
       .getBinCard(selectedItemId)
       .then((data) => {
-        setEntries(data);
+        setBinCardData(data);
       })
       .catch((err) => {
         setIsError(true);
-        setErrorMessage(err.message || 'Gagal menurunkan data Kartu Stok dari transaksi.');
+        setErrorMessage(err.message || 'Gagal mengambil data Kartu Stok dari GAS.');
       })
       .finally(() => {
         setIsLoading(false);
@@ -67,10 +62,10 @@ export const BinCardPage: React.FC = () => {
   }, [selectedItemId, refreshKey]);
 
   const selectedItem = items.find((i) => i.ID_ITEM === selectedItemId);
-  const selectedStock = stocks.find((s) => s.idItem === selectedItemId);
 
-  // Apply UI Filters on derived entries
-  const filteredEntries = entries.filter((e) => {
+  // Apply UI Filters on rows returned by GAS
+  const rawRows = binCardData?.rows || [];
+  const filteredEntries = rawRows.filter((e) => {
     if (startDate && e.tanggal < startDate) return false;
     if (endDate && e.tanggal > endDate) return false;
     if (selectedTxType !== 'ALL' && e.jenisTransaksi !== selectedTxType) return false;
@@ -85,7 +80,9 @@ export const BinCardPage: React.FC = () => {
       render: (e) => (
         <div>
           <div className="font-mono text-slate-800 font-semibold">{e.tanggal}</div>
-          <div className="text-[11px] font-mono text-slate-400">{e.timestamp.slice(11)}</div>
+          <div className="text-[11px] font-mono text-slate-400">
+            {e.timestamp && e.timestamp.length > 10 ? e.timestamp.slice(11) : ''}
+          </div>
         </div>
       ),
     },
@@ -157,7 +154,7 @@ export const BinCardPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Kartu Stok / Bin Card"
-        description="Derived view pergerakan fisik barang per transaksi. Dihitung otomatis dari urutan kronologis mutasi di Google Spreadsheet."
+        description="Rekapitulasi kronologis saldo berjalan pergerakan fisik barang yang dihitung langsung oleh GET action=bincard backend GAS."
         actions={
           <button
             onClick={() => window.print()}
@@ -169,7 +166,7 @@ export const BinCardPage: React.FC = () => {
         }
       />
 
-      {/* Item Selector & Header Card */}
+      {/* Item Selector & Summary Card */}
       <div className="bg-white rounded-lg border border-slate-200 p-5 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex-1 max-w-xl">
@@ -189,36 +186,45 @@ export const BinCardPage: React.FC = () => {
             </select>
           </div>
 
-          {selectedItem && (
+          {binCardData && (
             <div className="flex items-center gap-4 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
               <div>
-                <div className="text-[11px] text-slate-500">Saldo Akhir di Gudang</div>
-                <div className="font-mono text-xl font-bold text-slate-900 tabular-nums">
-                  {selectedStock?.stok ?? 0}{' '}
-                  <span className="text-xs font-normal text-slate-500">{selectedItem.SATUAN}</span>
+                <div className="text-[11px] text-slate-500">Saldo Awal (GAS)</div>
+                <div className="font-mono text-base font-semibold text-slate-700 tabular-nums">
+                  {binCardData.saldoAwal}
                 </div>
               </div>
               <div className="h-8 w-px bg-slate-200" />
               <div>
-                <div className="text-[11px] text-slate-500">Lokasi Simpan</div>
-                <div className="text-xs font-semibold text-slate-800">{selectedItem.LOKASI || '-'}</div>
+                <div className="text-[11px] text-slate-500">Saldo Akhir (GAS)</div>
+                <div className="font-mono text-xl font-bold text-slate-900 tabular-nums">
+                  {binCardData.saldoAkhir}{' '}
+                  <span className="text-xs font-normal text-slate-500">{selectedItem?.SATUAN || 'UNIT'}</span>
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
 
+      <div className="p-3.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-2">
+        <Info className="w-4 h-4 text-slate-500 shrink-0" />
+        <span>
+          Data Kartu Stok dan saldo berjalan dihitung langsung oleh backend Google Apps Script.
+        </span>
+      </div>
+
       {/* Bin Card Table */}
       <DataTable
         columns={columns}
         data={filteredEntries}
-        keyField={(e) => `${e.idTransaksi}-${e.saldo}`}
+        keyField={(e) => `${e.noDokumen}-${e.timestamp}-${e.saldo}`}
         isLoading={isLoading}
         isError={isError}
         errorMessage={errorMessage}
         searchPlaceholder="Cari nomor dokumen, keterangan, atau nama member..."
         emptyTitle="Belum ada riwayat mutasi."
-        emptyDescription="Barang ini belum memiliki catatan transaksi (masuk, keluar, pinjam, atau kembali)."
+        emptyDescription="Barang ini belum memiliki catatan transaksi di backend."
         filterControls={
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1.5">
@@ -254,15 +260,6 @@ export const BinCardPage: React.FC = () => {
           </div>
         }
       />
-
-      <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-2">
-        <ScrollText className="w-4 h-4 text-slate-500 shrink-0" />
-        <span>
-          <strong>Aturan Blueprint:</strong> Bin Card tidak disimpan sebagai tabel database terpisah di
-          Spreadsheet, melainkan diturunkan langsung dari lembar TRANSAKSI berdasarkan ID_ITEM untuk
-          menjamin integritas audit dan mencegah data ganda.
-        </span>
-      </div>
     </div>
   );
 };

@@ -5,11 +5,11 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { DetailDrawer } from '../components/common/DetailDrawer';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { MasterMember, JenisMember, StatusMember, MemberLimit, MemberHistorySummary } from '../types';
-import { Plus, Eye, History, Sliders, Loader2, ArrowRight } from 'lucide-react';
+import { MasterMember, MemberLimit, MemberHistorySummary } from '../types';
+import { Eye, History, Sliders, Loader2, Info } from 'lucide-react';
 
 export const MembersPage: React.FC = () => {
-  const { navigateTo, role, canPerformAction, addToast, refreshKey, triggerRefresh } = useApp();
+  const { navigateTo, refreshKey } = useApp();
 
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [limits, setLimits] = useState<MemberLimit[]>([]);
@@ -25,15 +25,6 @@ export const MembersPage: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<MasterMember | null>(null);
   const [memberHistorySummary, setMemberHistorySummary] = useState<MemberHistorySummary | null>(null);
   const [isLoadingDrawerSummary, setIsLoadingDrawerSummary] = useState(false);
-
-  // Create Modal State
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formNama, setFormNama] = useState('');
-  const [formJenis, setFormJenis] = useState<JenisMember>('CREW');
-  const [formNoHp, setFormNoHp] = useState('');
-  const [formStatus, setFormStatus] = useState<StatusMember>('AKTIF');
-  const [formTanggalMulai, setFormTanggalMulai] = useState(new Date().toISOString().slice(0, 10));
 
   const loadData = async () => {
     setIsLoading(true);
@@ -76,34 +67,6 @@ export const MembersPage: React.FC = () => {
     if (selectedStatus !== 'ALL' && m.STATUS !== selectedStatus) return false;
     return true;
   });
-
-  const handleCreateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formNama.trim()) {
-      addToast('error', 'Validasi Gagal', 'Nama member wajib diisi.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await api.createMember({
-        namaMember: formNama.trim(),
-        jenisMember: formJenis,
-        noHp: formNoHp.trim() || '-',
-        status: formStatus,
-      });
-
-      addToast('success', 'Member Berhasil Didaftarkan', `Member ${formNama} telah tersimpan.`);
-      setIsCreateModalOpen(false);
-      setFormNama('');
-      setFormNoHp('');
-      triggerRefresh();
-    } catch (err: any) {
-      addToast('error', 'Gagal Mendaftarkan Member', err.message || 'Terjadi kesalahan.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const columns: Column<MasterMember>[] = [
     {
@@ -175,23 +138,15 @@ export const MembersPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Master Member"
-        description="Owner page wajib untuk pengelolaan data personil lapangan, level jabatan (SM, SPV, TL, CREW, VENDOR), dan status kepesertaan."
-        actions={
-          canPerformAction('MASTER_MUTATION') ? (
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Tambah Member</span>
-            </button>
-          ) : (
-            <div className="text-[11px] text-slate-500 font-medium px-2 py-1 bg-slate-100 rounded">
-              Peran {role}: Hanya Lihat
-            </div>
-          )
-        }
+        description="Data personil lapangan, level jabatan (SM, SPV, TL, CREW, VENDOR), dan status kepesertaan dari MASTER_MEMBER Spreadsheet."
       />
+
+      <div className="p-3.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-2">
+        <Info className="w-4 h-4 text-slate-500 shrink-0" />
+        <span>
+          Data Master Member disinkronkan langsung dari Google Spreadsheet (<span className="font-mono font-medium">MASTER_MEMBER</span>).
+        </span>
+      </div>
 
       {/* Member Table */}
       <DataTable
@@ -204,7 +159,7 @@ export const MembersPage: React.FC = () => {
         onRetry={loadData}
         searchPlaceholder="Cari ID, nama member, atau no HP..."
         emptyTitle="Belum ada member terdaftar."
-        emptyDescription="Data member belum tersedia di spreadsheet."
+        emptyDescription="Data member belum tersedia di Google Spreadsheet."
         filterControls={
           <div className="flex items-center gap-2">
             <select
@@ -233,7 +188,7 @@ export const MembersPage: React.FC = () => {
         }
       />
 
-      {/* Member Detail Drawer (Per Blueprint Section 6) */}
+      {/* Member Detail Drawer */}
       <DetailDrawer
         isOpen={!!selectedMember}
         onClose={() => setSelectedMember(null)}
@@ -262,7 +217,7 @@ export const MembersPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Section Ringkasan Limit (Ringkasan Saja, Link ke Limit Member) */}
+            {/* Section Ringkasan Limit */}
             <div className="border border-slate-200 rounded-lg p-4 space-y-3 bg-white">
               <div className="flex items-center justify-between">
                 <div>
@@ -286,7 +241,7 @@ export const MembersPage: React.FC = () => {
 
               {memberLimits.length === 0 ? (
                 <div className="text-[11px] text-slate-400 italic">
-                  Belum ada limit khusus untuk member ini (menggunakan aturan standar).
+                  Belum ada limit khusus untuk member ini di lembar MEMBER_LIMIT.
                 </div>
               ) : (
                 <div className="space-y-1.5">
@@ -312,13 +267,13 @@ export const MembersPage: React.FC = () => {
               )}
             </div>
 
-            {/* Section Ringkasan Aktivitas (Ringkasan Saja, Link ke Riwayat Member) */}
+            {/* Section Ringkasan Aktivitas */}
             <div className="border border-slate-200 rounded-lg p-4 space-y-3 bg-white">
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-semibold text-slate-900">Ringkasan Aktivitas Pengambilan</h4>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    Total pengambilan barang tercatat
+                    Data diambil dari API memberhistory backend
                   </p>
                 </div>
                 <button
@@ -337,7 +292,7 @@ export const MembersPage: React.FC = () => {
               {isLoadingDrawerSummary ? (
                 <div className="flex items-center gap-2 text-slate-500 py-3">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Menghitung ringkasan aktivitas...</span>
+                  <span>Memuat ringkasan aktivitas dari GAS...</span>
                 </div>
               ) : memberHistorySummary ? (
                 <div className="grid grid-cols-2 gap-2 text-center">
@@ -360,127 +315,13 @@ export const MembersPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="text-[11px] text-slate-400 italic">
-                  Belum ada aktivitas transaksi untuk member ini.
+                  Belum ada aktivitas transaksi untuk member ini di backend.
                 </div>
               )}
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded border border-slate-200 text-[11px] text-slate-500 space-y-1">
-              <div>Didaftarkan: {selectedMember.CREATED_AT}</div>
-              <div>Terakhir Diperbarui: {selectedMember.UPDATED_AT}</div>
             </div>
           </div>
         )}
       </DetailDrawer>
-
-      {/* Modal Tambah Member */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="min-h-screen px-4 text-center flex items-center justify-center">
-            <div
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
-              onClick={() => !isSubmitting && setIsCreateModalOpen(false)}
-            />
-            <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle bg-white shadow-xl rounded-lg border border-slate-200 relative z-10">
-              <h3 className="text-base font-semibold text-slate-900 mb-1">
-                Pendaftaran Master Member Baru
-              </h3>
-              <p className="text-xs text-slate-500 mb-5">
-                ID Member permanen (contoh: MBR000001) dibuat oleh backend GAS.
-              </p>
-
-              <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">
-                    Nama Member <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formNama}
-                    onChange={(e) => setFormNama(e.target.value)}
-                    placeholder="Nama Lengkap Petugas / Nama Vendor"
-                    className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-medium text-slate-700 mb-1">
-                      Jenis / Level <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={formJenis}
-                      onChange={(e) => setFormJenis(e.target.value as JenisMember)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800"
-                    >
-                      <option value="SM">SM (Site Manager)</option>
-                      <option value="SPV">SPV (Supervisor)</option>
-                      <option value="TL">TL (Team Leader)</option>
-                      <option value="CREW">CREW</option>
-                      <option value="VENDOR">VENDOR</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium text-slate-700 mb-1">Status</label>
-                    <select
-                      value={formStatus}
-                      onChange={(e) => setFormStatus(e.target.value as StatusMember)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800"
-                    >
-                      <option value="AKTIF">AKTIF</option>
-                      <option value="NONAKTIF">NONAKTIF</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-medium text-slate-700 mb-1">No. Handphone</label>
-                    <input
-                      type="text"
-                      value={formNoHp}
-                      onChange={(e) => setFormNoHp(e.target.value)}
-                      placeholder="0812xxxxxxxx"
-                      className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-medium text-slate-700 mb-1">Tanggal Mulai</label>
-                    <input
-                      type="date"
-                      value={formTanggalMulai}
-                      onChange={(e) => setFormTanggalMulai(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-4 flex items-center justify-end gap-2.5 border-t border-slate-200">
-                  <button
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-50"
-                  >
-                    {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Simpan Member</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

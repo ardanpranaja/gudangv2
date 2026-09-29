@@ -30,10 +30,11 @@ export const BarangMasukPage: React.FC = () => {
         api.getItems(),
         api.getStock(),
       ]);
-      setItems(itemsData.filter((i) => i.STATUS === 'AKTIF'));
+      const activeItems = itemsData.filter((i) => i.STATUS === 'AKTIF');
+      setItems(activeItems);
       setStocks(stockData);
-      if (itemsData.length > 0 && !selectedItemId) {
-        setSelectedItemId(itemsData[0].ID_ITEM);
+      if (activeItems.length > 0 && !selectedItemId) {
+        setSelectedItemId(activeItems[0].ID_ITEM);
       }
     } catch (err: any) {
       addToast('error', 'Gagal Memuat Data Barang', err.message);
@@ -72,13 +73,20 @@ export const BarangMasukPage: React.FC = () => {
         tanggal,
       });
 
+      const docNo = res?.NO_DOKUMEN || res?.transaction?.NO_DOKUMEN || res?.documentNo || 'Berhasil';
+
       addToast(
         'success',
         'Barang Masuk Berhasil Dicatat',
-        `No Dokumen: ${res.transaction.NO_DOKUMEN} (${jumlah} ${selectedItem?.SATUAN})`
+        `No Dokumen: ${docNo} (${jumlah} ${selectedItem?.SATUAN || 'UNIT'})`
       );
 
-      setLastSubmittedTx(res.transaction);
+      setLastSubmittedTx({
+        NO_DOKUMEN: docNo,
+        JUMLAH: jumlah,
+        ID_ITEM: selectedItemId,
+      });
+
       // Reset form fields
       setJumlah(1);
       setKeterangan('');
@@ -108,8 +116,7 @@ export const BarangMasukPage: React.FC = () => {
               </div>
               <p className="mt-1 text-emerald-800">
                 Dokumen <span className="font-mono font-bold">{lastSubmittedTx.NO_DOKUMEN}</span> telah
-                menambah saldo stok sebesar{' '}
-                <span className="font-mono font-bold tabular-nums">{lastSubmittedTx.JUMLAH}</span> unit.
+                tercatat ke Google Spreadsheet.
               </p>
             </div>
           </div>
@@ -199,12 +206,9 @@ export const BarangMasukPage: React.FC = () => {
                 disabled={isSubmitting}
                 value={noDokumen}
                 onChange={(e) => setNoDokumen(e.target.value)}
-                placeholder="Kosongkan jika ingin dibuat otomatis (BM-YYYYMM-XXXX)"
+                placeholder="Kosongkan jika ingin dibuat otomatis oleh backend GAS"
                 className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 font-mono text-xs"
               />
-              <p className="text-[11px] text-slate-400 mt-1">
-                Opsional. Backend GAS akan membuat nomor dokumen resmi otomatis jika tidak diisi.
-              </p>
             </div>
 
             <div>
@@ -223,7 +227,7 @@ export const BarangMasukPage: React.FC = () => {
 
             <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
               <span className="text-[11px] text-slate-400">
-                Pencatatan langsung memperbarui saldo stok dan kartu stok (Bin Card).
+                Pencatatan dikirim langsung via POST action=transaction ke GAS.
               </span>
               <button
                 type="submit"
@@ -261,7 +265,7 @@ export const BarangMasukPage: React.FC = () => {
                   <div className="font-semibold text-slate-900">{selectedItem.NAMA_ITEM}</div>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Stok Saat Ini</span>
+                  <span className="text-slate-500">Stok Saat Ini (Backend)</span>
                   <span className="font-mono font-semibold text-slate-900 tabular-nums">
                     {currentItemStock} {selectedItem.SATUAN}
                   </span>
@@ -276,24 +280,10 @@ export const BarangMasukPage: React.FC = () => {
                   <span className="text-slate-500">Lokasi Rak</span>
                   <span className="text-slate-700">{selectedItem.LOKASI || '-'}</span>
                 </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-500">Setelah Masuk (+{jumlah})</span>
-                  <span className="font-mono font-bold text-emerald-700 tabular-nums">
-                    {currentItemStock + (Number(jumlah) || 0)} {selectedItem.SATUAN}
-                  </span>
-                </div>
               </div>
             ) : (
               <div className="text-slate-400 text-[11px] italic">Pilih barang untuk melihat info stok.</div>
             )}
-          </div>
-
-          <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 text-[11px] text-slate-600 space-y-2">
-            <div className="font-semibold text-slate-800">Prinsip Anti-Duplicate:</div>
-            <p>
-              Barang Masuk adalah satu-satunya halaman untuk mencatat penerimaan stok baru. Transaksi
-              KEMBALI memiliki halaman terpisah khusus pengembalian pinjaman.
-            </p>
           </div>
         </div>
       </div>

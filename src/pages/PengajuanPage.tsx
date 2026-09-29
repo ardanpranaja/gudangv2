@@ -1,36 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
-import { DataTable, Column } from '../components/common/DataTable';
-import { StatusBadge } from '../components/common/StatusBadge';
-import { ConfirmDialog } from '../components/common/ConfirmDialog';
-import { DetailDrawer } from '../components/common/DetailDrawer';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { PengajuanPengambilan, MasterMember, MasterItem } from '../types';
-import { Plus, CheckCircle2, XCircle, FileCheck2, Loader2, Eye } from 'lucide-react';
+import { MasterMember, MasterItem } from '../types';
+import { Plus, FileCheck2, Loader2, Info, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const PengajuanPage: React.FC = () => {
-  const { pageParams, canPerformAction, addToast, refreshKey, triggerRefresh } = useApp();
+  const { pageParams, addToast, refreshKey } = useApp();
 
-  const [requests, setRequests] = useState<PengajuanPengambilan[]>([]);
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [items, setItems] = useState<MasterItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-
-  // Filters
-  const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
-  const [selectedMemberId, setSelectedMemberId] = useState<string>('ALL');
-
-  // Detail Drawer
-  const [selectedRequest, setSelectedRequest] = useState<PengajuanPengambilan | null>(null);
-
-  // Approval/Rejection State
-  const [actionTarget, setActionTarget] = useState<PengajuanPengambilan | null>(null);
-  const [actionType, setActionType] = useState<'APPROVE' | 'REJECT' | null>(null);
-  const [actionNotes, setActionNotes] = useState('');
-  const [isProcessingAction, setIsProcessingAction] = useState(false);
 
   // Create Request Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -40,28 +20,32 @@ export const PengajuanPage: React.FC = () => {
   const [formJumlah, setFormJumlah] = useState<number>(pageParams.jumlah || 1);
   const [formAlasan, setFormAlasan] = useState('');
 
+  // Quick Action State for Approval/Rejection if user inputs ID
+  const [quickRequestId, setQuickRequestId] = useState('');
+  const [quickApproverId, setQuickApproverId] = useState('ADMIN');
+  const [quickNote, setQuickNote] = useState('');
+  const [isProcessingQuick, setIsProcessingQuick] = useState(false);
+
   const loadData = async () => {
     setIsLoading(true);
-    setIsError(false);
     try {
-      const [reqData, memData, itmData] = await Promise.all([
-        api.getRequests(),
+      const [memData, itmData] = await Promise.all([
         api.getMembers(),
         api.getItems(),
       ]);
-      setRequests(reqData);
-      setMembers(memData);
-      setItems(itmData);
+      const activeMembers = memData.filter((m) => m.STATUS === 'AKTIF');
+      const activeItems = itmData.filter((i) => i.STATUS === 'AKTIF');
+      setMembers(activeMembers);
+      setItems(activeItems);
 
-      if (memData.length > 0 && !formMemberId) {
-        setFormMemberId(memData[0].ID_MEMBER);
+      if (activeMembers.length > 0 && !formMemberId) {
+        setFormMemberId(activeMembers[0].ID_MEMBER);
       }
-      if (itmData.length > 0 && !formItemId) {
-        setFormItemId(itmData[0].ID_ITEM);
+      if (activeItems.length > 0 && !formItemId) {
+        setFormItemId(activeItems[0].ID_ITEM);
       }
     } catch (err: any) {
-      setIsError(true);
-      setErrorMessage(err.message || 'Gagal memuat daftar pengajuan pengambilan.');
+      console.warn('Gagal memuat master data untuk form pengajuan:', err);
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +74,7 @@ export const PengajuanPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await api.submitRequest({
+      const res = await api.submitRequest({
         memberId: formMemberId,
         itemId: formItemId,
         jumlah: Number(formJumlah),
@@ -99,170 +83,56 @@ export const PengajuanPage: React.FC = () => {
 
       addToast(
         'success',
-        'Pengajuan Terkirim',
-        'Permintaan telah masuk antrean approval Admin dan berstatus MENUNGGU.'
+        'Pengajuan Terkirim ke GAS',
+        res?.message || 'Permintaan telah dikirim via POST action=request ke backend.'
       );
 
       setIsCreateModalOpen(false);
       setFormAlasan('');
-      triggerRefresh();
     } catch (err: any) {
-      addToast('error', 'Gagal Mengirim Pengajuan', err.message || 'Terjadi kesalahan.');
+      addToast('error', 'Gagal Mengirim Pengajuan', err.message || 'Terjadi kesalahan pada backend.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleConfirmAction = async () => {
-    if (!actionTarget || !actionType) return;
-    setIsProcessingAction(true);
+  const handleProcessApproval = async (type: 'APPROVE' | 'REJECT') => {
+    if (!quickRequestId.trim()) {
+      addToast('error', 'Validasi Gagal', 'Masukkan ID Pengajuan (misal: REQ-202609-0001).');
+      return;
+    }
 
+    setIsProcessingQuick(true);
     try {
-      if (actionType === 'APPROVE') {
-        await api.approveRequest({
-          requestId: actionTarget.ID_PENGAJUAN,
-          approver: 'Admin Gudang',
-          catatan: actionNotes.trim() || 'Disetujui',
+      if (type === 'APPROVE') {
+        const res = await api.approveRequest({
+          requestId: quickRequestId.trim(),
+          approverId: quickApproverId.trim() || 'ADMIN',
+          note: quickNote.trim() || 'Disetujui',
         });
-        addToast(
-          'success',
-          'Pengajuan Disetujui',
-          `Pengajuan ${actionTarget.ID_PENGAJUAN} telah disetujui dan transaksi BARANG_KELUAR otomatis diterbitkan.`
-        );
+        addToast('success', 'Persetujuan Diproses di GAS', res?.message || 'Pengajuan disetujui.');
       } else {
-        await api.rejectRequest({
-          requestId: actionTarget.ID_PENGAJUAN,
-          approver: 'Admin Gudang',
-          catatan: actionNotes.trim() || 'Ditolak oleh Admin',
+        const res = await api.rejectRequest({
+          requestId: quickRequestId.trim(),
+          approverId: quickApproverId.trim() || 'ADMIN',
+          note: quickNote.trim() || 'Ditolak',
         });
-        addToast(
-          'info',
-          'Pengajuan Ditolak',
-          `Pengajuan ${actionTarget.ID_PENGAJUAN} telah ditolak.`
-        );
+        addToast('info', 'Penolakan Diproses di GAS', res?.message || 'Pengajuan ditolak.');
       }
-
-      setActionTarget(null);
-      setActionType(null);
-      setActionNotes('');
-      triggerRefresh();
+      setQuickRequestId('');
+      setQuickNote('');
     } catch (err: any) {
-      addToast('error', 'Gagal Memproses Approval', err.message || 'Terjadi kesalahan.');
+      addToast('error', 'Gagal Memproses Permintaan', err.message);
     } finally {
-      setIsProcessingAction(false);
+      setIsProcessingQuick(false);
     }
   };
 
-  const filteredRequests = requests.filter((r) => {
-    if (selectedStatus !== 'ALL' && r.STATUS !== selectedStatus) return false;
-    if (selectedMemberId !== 'ALL' && r.ID_MEMBER !== selectedMemberId) return false;
-    return true;
-  });
-
-  const columns: Column<PengajuanPengambilan>[] = [
-    {
-      key: 'ID_PENGAJUAN',
-      header: 'ID Pengajuan',
-      sortable: true,
-      className: 'font-mono text-slate-800 font-semibold',
-    },
-    {
-      key: 'NAMA_MEMBER',
-      header: 'Member Pemohon',
-      sortable: true,
-      render: (r) => (
-        <div>
-          <div className="font-semibold text-slate-900">{r.NAMA_MEMBER}</div>
-          <div className="text-[11px] font-mono text-slate-400">{r.ID_MEMBER}</div>
-        </div>
-      ),
-    },
-    {
-      key: 'NAMA_ITEM',
-      header: 'Barang yang Diminta',
-      sortable: true,
-      render: (r) => (
-        <div>
-          <div className="font-medium text-slate-900">{r.NAMA_ITEM}</div>
-          <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-1 italic">
-            &quot;{r.ALASAN}&quot;
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'JUMLAH',
-      header: 'Jumlah',
-      sortable: true,
-      align: 'right',
-      render: (r) => (
-        <span className="font-mono font-semibold text-slate-900 tabular-nums">{r.JUMLAH}</span>
-      ),
-    },
-    {
-      key: 'STATUS',
-      header: 'Status',
-      align: 'center',
-      render: (r) => <StatusBadge status={r.STATUS} size="sm" />,
-    },
-    {
-      key: 'CREATED_AT',
-      header: 'Tanggal Diajukan',
-      sortable: true,
-      render: (r) => <span className="font-mono text-slate-500 text-[11px]">{r.CREATED_AT}</span>,
-    },
-    {
-      key: 'AKSI',
-      header: 'Aksi / Approval',
-      align: 'center',
-      render: (r) => (
-        <div className="flex items-center justify-center gap-1.5">
-          <button
-            onClick={() => setSelectedRequest(r)}
-            className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900"
-            title="Lihat Detail Pengajuan"
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-
-          {r.STATUS === 'MENUNGGU' && canPerformAction('APPROVAL') && (
-            <>
-              <button
-                onClick={() => {
-                  setActionTarget(r);
-                  setActionType('APPROVE');
-                  setActionNotes('');
-                }}
-                className="px-2 py-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded flex items-center gap-1"
-                title="Setujui dan terbitkan Barang Keluar"
-              >
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                <span>Approve</span>
-              </button>
-              <button
-                onClick={() => {
-                  setActionTarget(r);
-                  setActionType('REJECT');
-                  setActionNotes('');
-                }}
-                className="px-2 py-1 text-[11px] font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded flex items-center gap-1"
-                title="Tolak pengajuan"
-              >
-                <XCircle className="w-3 h-3 text-rose-600" />
-                <span>Tolak</span>
-              </button>
-            </>
-          )}
-        </div>
-      ),
-    },
-  ];
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl">
       <PageHeader
         title="Pengajuan Pengambilan Awal"
-        description="Owner page approval pengambilan sebelum masa pakai selesai atau melebihi limit. Pengajuan yang disetujui Admin akan otomatis menerbitkan mutasi BARANG_KELUAR."
+        description="Layanan permohonan pengambilan barang sebelum masa pakai selesai atau melebihi limit. Terhubung langsung via POST action=request ke GAS."
         actions={
           <button
             onClick={() => setIsCreateModalOpen(true)}
@@ -274,95 +144,89 @@ export const PengajuanPage: React.FC = () => {
         }
       />
 
-      <DataTable
-        columns={columns}
-        data={filteredRequests}
-        keyField="ID_PENGAJUAN"
-        isLoading={isLoading}
-        isError={isError}
-        errorMessage={errorMessage}
-        onRetry={loadData}
-        searchPlaceholder="Cari ID pengajuan, nama member, alasan..."
-        emptyTitle="Tidak ada pengajuan pengambilan."
-        emptyDescription="Seluruh antrean pengajuan sudah diproses atau belum ada pengajuan baru."
-        filterControls={
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700"
-            >
-              <option value="ALL">Semua Status</option>
-              <option value="MENUNGGU">MENUNGGU</option>
-              <option value="DISETUJUI">DISETUJUI</option>
-              <option value="DITOLAK">DITOLAK</option>
-              <option value="DIBATALKAN">DIBATALKAN</option>
-            </select>
+      {/* Backend API Status Banner per Step 11 */}
+      <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-2">
+        <div className="flex items-center gap-2 font-semibold">
+          <Info className="w-4 h-4 text-amber-700 shrink-0" />
+          <span>Status Endpoint API GAS (v1.2.2)</span>
+        </div>
+        <p className="text-amber-800 leading-relaxed">
+          Sesuai spesifikasi GAS v1.2.2, endpoint daftar pengajuan (<code>GET action=requests</code>) belum
+          disediakan oleh backend. Namun, pengiriman pengajuan baru (<code>POST action=request</code>) serta
+          persetujuan/penolakan (<code>POST action=approve_request</code> & <code>POST action=reject_request</code>)
+          sepenuhnya aktif dan terhubung.
+        </p>
+      </div>
 
-            <select
-              value={selectedMemberId}
-              onChange={(e) => setSelectedMemberId(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 max-w-[200px]"
-            >
-              <option value="ALL">Semua Member</option>
-              {members.map((m) => (
-                <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                  {m.NAMA_MEMBER}
-                </option>
-              ))}
-            </select>
+      {/* Approval / Rejection Processor Form */}
+      <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 text-slate-900">
+          <FileCheck2 className="w-4 h-4 text-slate-700" />
+          <h3 className="text-sm font-semibold">Proses Approval / Rejection Pengajuan (GAS Contract)</h3>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label className="block font-medium text-slate-700 mb-1">
+              ID Pengajuan (ID_PENGAJUAN) <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={quickRequestId}
+              onChange={(e) => setQuickRequestId(e.target.value)}
+              placeholder="Contoh: REQ-202609-0001"
+              className="w-full px-3 py-2 border border-slate-200 rounded font-mono text-xs focus:ring-1 focus:ring-slate-900 text-slate-800 uppercase"
+            />
           </div>
-        }
-      />
 
-      {/* Detail Drawer */}
-      <DetailDrawer
-        isOpen={!!selectedRequest}
-        onClose={() => setSelectedRequest(null)}
-        title="Detail Pengajuan Pengambilan"
-        subtitle={`ID: ${selectedRequest?.ID_PENGAJUAN || '-'}`}
-      >
-        {selectedRequest && (
-          <div className="space-y-5 text-xs">
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Status Pengajuan</span>
-                <StatusBadge status={selectedRequest.STATUS} size="sm" />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Member Pemohon</span>
-                <span className="font-semibold text-slate-900">{selectedRequest.NAMA_MEMBER}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Barang Diminta</span>
-                <span className="font-semibold text-slate-900">{selectedRequest.NAMA_ITEM}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Jumlah Diminta</span>
-                <span className="font-mono font-bold text-slate-900 tabular-nums">
-                  {selectedRequest.JUMLAH} Unit
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <h4 className="font-semibold text-slate-900">Alasan Permintaan Pengambilan Awal:</h4>
-              <div className="p-3 bg-white border border-slate-200 rounded text-slate-700 leading-relaxed italic">
-                &quot;{selectedRequest.ALASAN}&quot;
-              </div>
-            </div>
-
-            {selectedRequest.STATUS !== 'MENUNGGU' && (
-              <div className="p-3 bg-slate-50 rounded border border-slate-200 space-y-1.5">
-                <div className="font-semibold text-slate-800">Catatan Verifikasi Admin:</div>
-                <div className="text-slate-600">Approver: {selectedRequest.APPROVER || '-'}</div>
-                <div className="text-slate-600">Catatan: {selectedRequest.CATATAN || '-'}</div>
-                <div className="text-slate-400 text-[11px]">Waktu Update: {selectedRequest.UPDATED_AT}</div>
-              </div>
-            )}
+          <div>
+            <label className="block font-medium text-slate-700 mb-1">
+              ID Approver (ID_APPROVER)
+            </label>
+            <input
+              type="text"
+              value={quickApproverId}
+              onChange={(e) => setQuickApproverId(e.target.value)}
+              placeholder="ADMIN / MBR000001"
+              className="w-full px-3 py-2 border border-slate-200 rounded font-mono text-xs focus:ring-1 focus:ring-slate-900 text-slate-800"
+            />
           </div>
-        )}
-      </DetailDrawer>
+        </div>
+
+        <div className="text-xs">
+          <label className="block font-medium text-slate-700 mb-1">
+            Catatan Approver (CATATAN_APPROVER)
+          </label>
+          <textarea
+            rows={2}
+            value={quickNote}
+            onChange={(e) => setQuickNote(e.target.value)}
+            placeholder="Catatan persetujuan atau alasan penolakan..."
+            className="w-full px-3 py-2 border border-slate-200 rounded text-xs focus:ring-1 focus:ring-slate-900 text-slate-800"
+          />
+        </div>
+
+        <div className="pt-2 flex items-center justify-end gap-2.5">
+          <button
+            type="button"
+            disabled={isProcessingQuick || !quickRequestId.trim()}
+            onClick={() => handleProcessApproval('REJECT')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded transition-colors disabled:opacity-50"
+          >
+            {isProcessingQuick ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <AlertCircle className="w-3.5 h-3.5" />}
+            <span>Tolak (POST reject_request)</span>
+          </button>
+          <button
+            type="button"
+            disabled={isProcessingQuick || !quickRequestId.trim()}
+            onClick={() => handleProcessApproval('APPROVE')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded transition-colors disabled:opacity-50"
+          >
+            {isProcessingQuick ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+            <span>Setujui (POST approve_request)</span>
+          </button>
+        </div>
+      </div>
 
       {/* Create Request Modal */}
       {isCreateModalOpen && (
@@ -378,13 +242,13 @@ export const PengajuanPage: React.FC = () => {
                 <h3 className="text-base font-semibold">Form Pengajuan Pengambilan Awal</h3>
               </div>
               <p className="text-xs text-slate-500 mb-5">
-                Alasan wajib diisi secara transparan untuk pertimbangan persetujuan Admin.
+                Payload dikirim langsung ke backend GAS via <code>POST action=request</code>.
               </p>
 
               <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
                 <div>
                   <label className="block font-medium text-slate-700 mb-1">
-                    Member Pemohon <span className="text-rose-500">*</span>
+                    Member Pemohon (ID_MEMBER) <span className="text-rose-500">*</span>
                   </label>
                   <select
                     required
@@ -392,19 +256,17 @@ export const PengajuanPage: React.FC = () => {
                     onChange={(e) => setFormMemberId(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800"
                   >
-                    {members
-                      .filter((m) => m.STATUS === 'AKTIF')
-                      .map((m) => (
-                        <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                          {m.NAMA_MEMBER} ({m.JENIS_MEMBER})
-                        </option>
-                      ))}
+                    {members.map((m) => (
+                      <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
+                        [{m.ID_MEMBER}] {m.NAMA_MEMBER} ({m.JENIS_MEMBER})
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block font-medium text-slate-700 mb-1">
-                    Barang yang Diajukan <span className="text-rose-500">*</span>
+                    Barang yang Diajukan (ID_ITEM) <span className="text-rose-500">*</span>
                   </label>
                   <select
                     required
@@ -412,19 +274,17 @@ export const PengajuanPage: React.FC = () => {
                     onChange={(e) => setFormItemId(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800"
                   >
-                    {items
-                      .filter((i) => i.STATUS === 'AKTIF')
-                      .map((i) => (
-                        <option key={i.ID_ITEM} value={i.ID_ITEM}>
-                          {i.NAMA_ITEM} ({i.KATEGORI} - Masa Pakai: {i.MASA_PAKAI_BULAN} Bln)
-                        </option>
-                      ))}
+                    {items.map((i) => (
+                      <option key={i.ID_ITEM} value={i.ID_ITEM}>
+                        [{i.ID_ITEM}] {i.NAMA_ITEM} ({i.KATEGORI} - Masa Pakai: {i.MASA_PAKAI_BULAN} Bln)
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block font-medium text-slate-700 mb-1">
-                    Jumlah Diminta <span className="text-rose-500">*</span>
+                    Jumlah Diminta (JUMLAH) <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -438,7 +298,7 @@ export const PengajuanPage: React.FC = () => {
 
                 <div>
                   <label className="block font-medium text-slate-700 mb-1">
-                    Alasan Pengambilan Awal <span className="text-rose-500">* (Wajib Diisi)</span>
+                    Alasan Pengambilan Awal (ALASAN) <span className="text-rose-500">* (Wajib Diisi)</span>
                   </label>
                   <textarea
                     rows={3}
@@ -465,74 +325,10 @@ export const PengajuanPage: React.FC = () => {
                     className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-50"
                   >
                     {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Kirim Pengajuan</span>
+                    <span>Kirim ke GAS (action=request)</span>
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirmation Dialog with Note */}
-      {actionTarget && actionType && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="min-h-screen px-4 text-center flex items-center justify-center">
-            <div
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
-              onClick={() => !isProcessingAction && setActionTarget(null)}
-            />
-            <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle bg-white shadow-xl rounded-lg border border-slate-200 relative z-10">
-              <h3 className="text-base font-semibold text-slate-900 mb-2">
-                {actionType === 'APPROVE' ? 'Setujui Pengajuan Pengambilan' : 'Tolak Pengajuan'}
-              </h3>
-              <p className="text-xs text-slate-600 mb-4">
-                {actionType === 'APPROVE'
-                  ? `Pengajuan untuk ${actionTarget.NAMA_MEMBER} sebanyak ${actionTarget.JUMLAH} unit ${actionTarget.NAMA_ITEM} akan disetujui dan mutasi BARANG_KELUAR otomatis dicatat ke Google Spreadsheet.`
-                  : `Pengajuan untuk ${actionTarget.NAMA_MEMBER} akan ditolak.`}
-              </p>
-
-              <div className="mb-4">
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Catatan Admin {actionType === 'REJECT' && <span className="text-rose-500">*</span>}
-                </label>
-                <textarea
-                  rows={2}
-                  required={actionType === 'REJECT'}
-                  value={actionNotes}
-                  onChange={(e) => setActionNotes(e.target.value)}
-                  placeholder={
-                    actionType === 'APPROVE'
-                      ? 'Catatan persetujuan (opsional)'
-                      : 'Alasan penolakan pengajuan...'
-                  }
-                  className="w-full px-3 py-2 border border-slate-200 rounded text-xs focus:ring-1 focus:ring-slate-900 text-slate-800"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2.5">
-                <button
-                  type="button"
-                  disabled={isProcessingAction}
-                  onClick={() => setActionTarget(null)}
-                  className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50"
-                >
-                  Batal
-                </button>
-                <button
-                  type="button"
-                  disabled={isProcessingAction || (actionType === 'REJECT' && !actionNotes.trim())}
-                  onClick={handleConfirmAction}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white rounded transition-colors disabled:opacity-50 ${
-                    actionType === 'APPROVE'
-                      ? 'bg-emerald-600 hover:bg-emerald-700'
-                      : 'bg-rose-600 hover:bg-rose-700'
-                  }`}
-                >
-                  {isProcessingAction && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{actionType === 'APPROVE' ? 'Setujui (Approve)' : 'Tolak Pengajuan'}</span>
-                </button>
-              </div>
             </div>
           </div>
         </div>

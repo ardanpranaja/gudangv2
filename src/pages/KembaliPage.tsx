@@ -53,6 +53,7 @@ export const KembaliPage: React.FC = () => {
     loadData();
   }, [refreshKey]);
 
+  const selectedMember = members.find((m) => m.ID_MEMBER === selectedMemberId);
   const selectedItem = items.find((i) => i.ID_ITEM === selectedItemId);
   const currentStock = stocks.find((s) => s.idItem === selectedItemId)?.stok || 0;
 
@@ -79,13 +80,20 @@ export const KembaliPage: React.FC = () => {
         tanggal,
       });
 
+      const docNo = res?.NO_DOKUMEN || res?.transaction?.NO_DOKUMEN || res?.documentNo || 'Berhasil';
+
       addToast(
         'success',
         'Pengembalian Berhasil Dicatat',
-        `No Dokumen: ${res.transaction.NO_DOKUMEN} (+${jumlah} ${selectedItem?.SATUAN})`
+        `No Dokumen: ${docNo} (+${jumlah} ${selectedItem?.SATUAN || 'UNIT'})`
       );
 
-      setLastSubmittedTx(res.transaction);
+      setLastSubmittedTx({
+        NO_DOKUMEN: docNo,
+        NAMA_MEMBER: selectedMember?.NAMA_MEMBER || selectedMemberId,
+        ID_ITEM: selectedItemId,
+      });
+
       setJumlah(1);
       setKeterangan('');
       triggerRefresh();
@@ -100,7 +108,7 @@ export const KembaliPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl">
       <PageHeader
         title="Pengembalian Pinjaman (Kembali)"
-        description="Owner page transaksi KEMBALI. Mencatat pengembalian alat, mesin, atau barang pinjaman oleh Member dan menambahkan kembali saldo stok gudang."
+        description="Owner page transaksi KEMBALI. Mencatat pengembalian alat atau barang pinjaman oleh Member dan menambahkan saldo stok di Google Spreadsheet."
       />
 
       {lastSubmittedTx && (
@@ -114,7 +122,6 @@ export const KembaliPage: React.FC = () => {
               <p className="mt-1 text-emerald-800">
                 Dokumen <span className="font-mono font-bold">{lastSubmittedTx.NO_DOKUMEN}</span> telah
                 diterbitkan untuk member <span className="font-semibold">{lastSubmittedTx.NAMA_MEMBER}</span>.
-                Saldo bertambah <span className="font-mono font-bold">+{lastSubmittedTx.JUMLAH}</span>.
               </p>
             </div>
           </div>
@@ -230,7 +237,7 @@ export const KembaliPage: React.FC = () => {
 
             <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
               <span className="text-[11px] text-slate-400">
-                Dokumen pengembalian otomatis diterbitkan dengan nomor awalan KB-.
+                Pencatatan dikirim langsung via POST action=transaction ke GAS.
               </span>
               <button
                 type="submit"
@@ -264,27 +271,13 @@ export const KembaliPage: React.FC = () => {
             {selectedItem && (
               <div className="space-y-2">
                 <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Stok Saat Ini</span>
+                  <span className="text-slate-500">Stok Saat Ini (GAS)</span>
                   <span className="font-mono font-semibold text-slate-900 tabular-nums">
                     {currentStock} {selectedItem.SATUAN}
                   </span>
                 </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-500">Setelah Pengembalian (+{jumlah})</span>
-                  <span className="font-mono font-bold text-emerald-700 tabular-nums">
-                    {currentStock + (Number(jumlah) || 0)} {selectedItem.SATUAN}
-                  </span>
-                </div>
               </div>
             )}
-          </div>
-
-          <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 text-[11px] text-slate-600 space-y-2">
-            <div className="font-semibold text-slate-800">Prinsip Anti-Duplicate:</div>
-            <p>
-              Kembali adalah transaksi independen untuk menutup status pinjaman lapangan. Tidak boleh
-              dicampur aduk dengan alur pengadaan Barang Masuk dari vendor.
-            </p>
           </div>
         </div>
       </div>

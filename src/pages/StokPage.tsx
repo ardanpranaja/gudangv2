@@ -5,7 +5,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { ItemStock } from '../types';
-import { ScrollText, AlertTriangle, ArrowRight } from 'lucide-react';
+import { ScrollText, AlertTriangle, ArrowRight, Info } from 'lucide-react';
 
 export const StokPage: React.FC = () => {
   const { navigateTo, refreshKey } = useApp();
@@ -144,7 +144,7 @@ export const StokPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Monitoring Stok Fisik Gudang"
-        description="Satu-satunya halaman utama posisi saldo stok. Nilai stok diturunkan secara sah dari histori transaksi masuk, keluar, pinjam, dan kembali di Spreadsheet."
+        description="Satu-satunya halaman utama posisi saldo stok. Nilai stok diperoleh langsung dari GET action=stock backend Google Apps Script."
         actions={
           lowStockCount > 0 ? (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded text-amber-900 text-xs">
@@ -157,6 +157,13 @@ export const StokPage: React.FC = () => {
         }
       />
 
+      <div className="p-3.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-2">
+        <Info className="w-4 h-4 text-slate-500 shrink-0" />
+        <span>
+          Nilai saldo stok dihitung dan divalidasi oleh backend GAS dari seluruh transaksi sah di Spreadsheet.
+        </span>
+      </div>
+
       <DataTable
         columns={columns}
         data={filteredStocks}
@@ -167,7 +174,7 @@ export const StokPage: React.FC = () => {
         onRetry={loadStock}
         searchPlaceholder="Cari ID barang, nama item, atau lokasi..."
         emptyTitle="Tidak ada data stok."
-        emptyDescription="Katalog barang atau transaksi belum tercatat di backend."
+        emptyDescription="Katalog barang atau transaksi belum tercatat di Google Spreadsheet."
         filterControls={
           <div className="flex flex-wrap items-center gap-2">
             <select
@@ -195,12 +202,10 @@ export const StokPage: React.FC = () => {
         }
       />
 
-      {/* Principles card */}
       <div className="p-4 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <span className="font-semibold text-slate-800">Prinsip Integritas Stok:</span> Stok tidak
-          diinput secara manual melainkan dihitung otomatis dari mutasi transaksi: SALDO_AWAL (+),
-          BARANG_MASUK (+), BARANG_KELUAR (-), PINJAM (-), KEMBALI (+).
+          <span className="font-semibold text-slate-800">Prinsip Integritas Stok:</span> Saldo stok fisik
+          berasal dari backend GAS tanpa manipulasi lokal di frontend.
         </div>
         <button
           onClick={() => navigateTo('masuk')}

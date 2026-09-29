@@ -55,6 +55,7 @@ export const PinjamPage: React.FC = () => {
     loadData();
   }, [refreshKey]);
 
+  const selectedMember = members.find((m) => m.ID_MEMBER === selectedMemberId);
   const selectedItem = items.find((i) => i.ID_ITEM === selectedItemId);
   const currentStock = stocks.find((s) => s.idItem === selectedItemId)?.stok || 0;
   const isOutOfStock = currentStock < (Number(jumlah) || 1);
@@ -72,7 +73,7 @@ export const PinjamPage: React.FC = () => {
     }
 
     if (isOutOfStock) {
-      addToast('error', 'Stok Tidak Mencukupi', `Sisa stok: ${currentStock} ${selectedItem?.SATUAN}.`);
+      addToast('error', 'Stok Tidak Mencukupi', `Sisa stok di GAS: ${currentStock} ${selectedItem?.SATUAN || 'UNIT'}.`);
       return;
     }
 
@@ -92,13 +93,20 @@ export const PinjamPage: React.FC = () => {
         tanggal,
       });
 
+      const docNo = res?.NO_DOKUMEN || res?.transaction?.NO_DOKUMEN || res?.documentNo || 'Berhasil';
+
       addToast(
         'success',
         'Peminjaman Berhasil Dicatat',
-        `No Dokumen: ${res.transaction.NO_DOKUMEN} (${jumlah} ${selectedItem?.SATUAN})`
+        `No Dokumen: ${docNo} (${jumlah} ${selectedItem?.SATUAN || 'UNIT'})`
       );
 
-      setLastSubmittedTx(res.transaction);
+      setLastSubmittedTx({
+        NO_DOKUMEN: docNo,
+        NAMA_MEMBER: selectedMember?.NAMA_MEMBER || selectedMemberId,
+        ID_ITEM: selectedItemId,
+      });
+
       setJumlah(1);
       setKeterangan('');
       triggerRefresh();
@@ -113,7 +121,7 @@ export const PinjamPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl">
       <PageHeader
         title="Peminjaman Barang & Peralatan"
-        description="Owner page transaksi PINJAM. Mencatat peminjaman alat kerja atau mesin oleh personil lapangan (mengurangi stok fisik sementara hingga dikembalikan)."
+        description="Owner page transaksi PINJAM. Mencatat peminjaman alat kerja atau mesin oleh personil lapangan via POST action=transaction ke GAS."
       />
 
       {lastSubmittedTx && (
@@ -243,7 +251,7 @@ export const PinjamPage: React.FC = () => {
 
             <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
               <span className="text-[11px] text-slate-400">
-                Peminjaman akan mengurangi saldo stok dan tercatat dengan awalan dokumen PM-.
+                Pencatatan dikirim langsung via POST action=transaction ke GAS.
               </span>
               <button
                 type="submit"
@@ -277,7 +285,7 @@ export const PinjamPage: React.FC = () => {
             {selectedItem && (
               <div className="space-y-2">
                 <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Stok di Gudang</span>
+                  <span className="text-slate-500">Stok di Gudang (GAS)</span>
                   <span
                     className={`font-mono font-semibold tabular-nums ${
                       isOutOfStock ? 'text-rose-600' : 'text-slate-900'
@@ -286,32 +294,8 @@ export const PinjamPage: React.FC = () => {
                     {currentStock} {selectedItem.SATUAN}
                   </span>
                 </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-500">Sisa Jika Dipinjam</span>
-                  <span
-                    className={`font-mono font-bold tabular-nums ${
-                      currentStock - jumlah < 0 ? 'text-rose-600' : 'text-slate-800'
-                    }`}
-                  >
-                    {currentStock - (Number(jumlah) || 0)} {selectedItem.SATUAN}
-                  </span>
-                </div>
               </div>
             )}
-          </div>
-
-          <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 text-[11px] text-slate-600 space-y-2">
-            <div className="font-semibold text-slate-800">Ketentuan Peminjaman:</div>
-            <p>
-              Setelah pekerjaan selesai, lakukan transaksi pengembalian melalui halaman{' '}
-              <button
-                onClick={() => navigateTo('kembali')}
-                className="text-slate-900 font-semibold underline"
-              >
-                Kembali
-              </button>{' '}
-              agar stok fisik bertambah kembali.
-            </p>
           </div>
         </div>
       </div>

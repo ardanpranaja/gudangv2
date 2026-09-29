@@ -30,6 +30,7 @@ export type StatusMesin =
 
 export type UserRole = 'ADMIN' | 'OPERATOR' | 'VIEWER';
 
+// Master Data Models
 export interface MasterItem {
   ID_ITEM: string;
   NAMA_ITEM: string;
@@ -40,8 +41,8 @@ export interface MasterItem {
   MIN_STOK: number;
   LOKASI: string;
   STATUS: StatusItem;
-  CREATED_AT: string;
-  UPDATED_AT: string;
+  CREATED_AT?: string;
+  UPDATED_AT?: string;
 }
 
 export interface MasterMember {
@@ -51,8 +52,8 @@ export interface MasterMember {
   NO_HP: string;
   STATUS: StatusMember;
   TANGGAL_MULAI: string;
-  CREATED_AT: string;
-  UPDATED_AT: string;
+  CREATED_AT?: string;
+  UPDATED_AT?: string;
 }
 
 export interface MemberLimit {
@@ -62,13 +63,13 @@ export interface MemberLimit {
   MAX_QTY: number;
   SATUAN: string;
   STATUS: 'AKTIF' | 'NONAKTIF';
-  CREATED_AT: string;
-  UPDATED_AT: string;
-  // Optional enriched display properties
+  CREATED_AT?: string;
+  UPDATED_AT?: string;
   NAMA_MEMBER?: string;
   NAMA_ITEM?: string;
 }
 
+// Transaction Model
 export interface Transaksi {
   ID_TRANSAKSI: string;
   TIMESTAMP: string;
@@ -81,9 +82,75 @@ export interface Transaksi {
   ID_MEMBER?: string;
   NAMA_MEMBER?: string;
   KETERANGAN: string;
-  CREATED_AT: string;
+  CREATED_AT?: string;
 }
 
+// Stock Model
+export interface ItemStock {
+  idItem: string;
+  namaItem: string;
+  kategori: KategoriItem;
+  satuan: string;
+  stok: number;
+  minStok: number;
+  lokasi: string;
+  status: StatusItem;
+  isLowStock: boolean;
+}
+
+// Bin Card Models (from GAS action=bincard)
+export interface BinCardEntry {
+  tanggal: string;
+  timestamp: string;
+  noDokumen: string;
+  jenisTransaksi: JenisTransaksi;
+  keterangan: string;
+  masuk: number;
+  keluar: number;
+  saldo: number;
+  memberId?: string;
+  namaMember?: string;
+}
+
+export interface BinCardResult {
+  item: string;
+  saldoAwal: number;
+  saldoAkhir: number;
+  count: number;
+  rows: BinCardEntry[];
+}
+
+// Member History Model (from GAS action=memberhistory)
+export interface MemberHistoryItem {
+  idItem: string;
+  namaItem: string;
+  totalQty: number;
+  satuan: string;
+  lastDate: string;
+  count: number;
+}
+
+export interface MemberHistorySummary {
+  member: MasterMember | { ID_MEMBER: string; NAMA_MEMBER: string; JENIS_MEMBER?: string };
+  totalTransaksi: number;
+  totalQty: number;
+  items: MemberHistoryItem[];
+  transactions: Transaksi[];
+  currentMonthQty: number;
+}
+
+// Pickup Eligibility (from GAS action=pickupeligibility)
+export interface PickupEligibilityResult {
+  allowed: boolean;
+  early: boolean;
+  reason?: string;
+  masaPakaiBulan?: number;
+  maxQty?: number;
+  lastPickupDate?: string;
+  dueDate?: string;
+}
+
+// Request Models
 export interface PengajuanPengambilan {
   ID_PENGAJUAN: string;
   ID_MEMBER: string;
@@ -95,10 +162,11 @@ export interface PengajuanPengambilan {
   STATUS: StatusPengajuan;
   APPROVER?: string;
   CATATAN?: string;
-  CREATED_AT: string;
-  UPDATED_AT: string;
+  CREATED_AT?: string;
+  UPDATED_AT?: string;
 }
 
+// Machine Models (Tahap Berikutnya)
 export interface MasterMesin {
   ID_MESIN: string;
   NAMA_MESIN: string;
@@ -110,8 +178,8 @@ export interface MasterMesin {
   KONDISI: string;
   STATUS: StatusMesin;
   TANGGAL_MASUK: string;
-  CREATED_AT: string;
-  UPDATED_AT: string;
+  CREATED_AT?: string;
+  UPDATED_AT?: string;
 }
 
 export interface PemakaianMesin {
@@ -130,80 +198,11 @@ export interface PemakaianMesin {
   KONDISI_SESUDAH: string;
   KETERANGAN: string;
   STATUS: string;
-  CREATED_AT: string;
-  UPDATED_AT: string;
+  CREATED_AT?: string;
+  UPDATED_AT?: string;
 }
 
-export interface ItemStock {
-  idItem: string;
-  namaItem: string;
-  kategori: KategoriItem;
-  satuan: string;
-  stok: number;
-  minStok: number;
-  lokasi: string;
-  status: StatusItem;
-  isLowStock: boolean;
-}
-
-export interface BinCardEntry {
-  idTransaksi: string;
-  tanggal: string;
-  timestamp: string;
-  noDokumen: string;
-  jenisTransaksi: JenisTransaksi;
-  keterangan: string;
-  masuk: number;
-  keluar: number;
-  saldo: number;
-  memberId?: string;
-  namaMember?: string;
-}
-
-export interface MemberHistoryItem {
-  idItem: string;
-  namaItem: string;
-  totalQty: number;
-  satuan: string;
-  lastDate: string;
-  count: number;
-}
-
-export interface MemberHistorySummary {
-  member: MasterMember;
-  totalTransaksi: number;
-  totalQty: number;
-  items: MemberHistoryItem[];
-  transactions: Transaksi[];
-  currentMonthQty: number;
-}
-
-export interface PickupEligibilityResult {
-  eligible: boolean;
-  requiresEarlyApproval: boolean;
-  reason?: string;
-  limitRule?: {
-    maxQty: number;
-    usedThisMonth: number;
-    remaining: number;
-  };
-  usageRule?: {
-    masaPakaiBulan: number;
-    lastPickupDate?: string;
-    nextEligibleDate?: string;
-    daysRemaining?: number;
-    isEarly: boolean;
-  };
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  error?: string;
-  timestamp?: string;
-}
-
+// Health Model
 export interface SystemHealth {
   status: 'ONLINE' | 'OFFLINE' | 'UNCONFIGURED';
   spreadsheetId?: string;
@@ -212,4 +211,78 @@ export interface SystemHealth {
   version?: string;
   lastChecked?: string;
   error?: string;
+}
+
+// --- Frontend Payload Input Models ---
+
+export interface TransactionInput {
+  itemId: string;
+  type: 'BARANG_MASUK' | 'BARANG_KELUAR' | 'PINJAM' | 'KEMBALI';
+  jumlah: number;
+  memberId?: string;
+  keterangan?: string;
+  tanggal?: string;
+  noDokumen?: string;
+}
+
+export interface PickupRequestInput {
+  memberId: string;
+  itemId: string;
+  jumlah: number;
+  alasan: string;
+}
+
+export interface ApprovalInput {
+  requestId: string;
+  approverId?: string;
+  note?: string;
+}
+
+export interface RejectionInput {
+  requestId: string;
+  approverId?: string;
+  note?: string;
+}
+
+// --- GAS Backend Contract DTOs ---
+
+export interface GasEnvelope<T> {
+  success: boolean;
+  action: string;
+  data: T;
+  error?: string;
+  message?: string;
+}
+
+export interface GasTransactionPayload {
+  action: 'transaction';
+  ID_ITEM: string;
+  JENIS_TRANSAKSI: string;
+  JUMLAH: number;
+  ID_MEMBER: string;
+  KETERANGAN: string;
+  TANGGAL: string;
+  NO_DOKUMEN: string;
+}
+
+export interface GasRequestPayload {
+  action: 'request';
+  ID_MEMBER: string;
+  ID_ITEM: string;
+  JUMLAH: number;
+  ALASAN: string;
+}
+
+export interface GasApprovalPayload {
+  action: 'approve_request';
+  ID_PENGAJUAN: string;
+  ID_APPROVER: string;
+  CATATAN_APPROVER: string;
+}
+
+export interface GasRejectionPayload {
+  action: 'reject_request';
+  ID_PENGAJUAN: string;
+  ID_APPROVER: string;
+  CATATAN_APPROVER: string;
 }

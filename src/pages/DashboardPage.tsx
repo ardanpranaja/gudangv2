@@ -6,12 +6,11 @@ import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { ItemStock, Transaksi, PengajuanPengambilan, MasterMember } from '../types';
+import { ItemStock, Transaksi, MasterMember } from '../types';
 import {
   Package,
   Users,
   AlertTriangle,
-  FileCheck2,
   ArrowDownLeft,
   ArrowUpRight,
   RotateCcw,
@@ -30,22 +29,19 @@ export const DashboardPage: React.FC = () => {
   const [stocks, setStocks] = useState<ItemStock[]>([]);
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [transactions, setTransactions] = useState<Transaksi[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<PengajuanPengambilan[]>([]);
 
   const loadDashboardData = async () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const [stockData, memberData, txData, reqData] = await Promise.all([
+      const [stockData, memberData, txData] = await Promise.all([
         api.getStock(),
         api.getMembers(),
-        api.getTransactions(),
-        api.getRequests(),
+        api.getTransactions({ limit: '20' }),
       ]);
       setStocks(stockData);
       setMembers(memberData);
       setTransactions(txData);
-      setPendingRequests(reqData.filter((r) => r.STATUS === 'MENUNGGU'));
     } catch (err: any) {
       setIsError(true);
       setErrorMessage(err.message || 'Gagal memuat ringkasan dashboard.');
@@ -59,7 +55,7 @@ export const DashboardPage: React.FC = () => {
   }, [refreshKey]);
 
   if (isLoading) {
-    return <LoadingState message="Memuat ringkasan operasional gudang..." />;
+    return <LoadingState message="Memuat ringkasan operasional dari Google Spreadsheet..." />;
   }
 
   if (isError) {
@@ -75,7 +71,7 @@ export const DashboardPage: React.FC = () => {
       {/* Header */}
       <PageHeader
         title="Ringkasan Operasional Gudang"
-        description="Ringkasan posisi stok, transaksi terkini, dan pengajuan pengambilan yang memerlukan perhatian."
+        description="Ringkasan posisi stok fisik dan aktivitas mutasi terkini yang bersumber langsung dari Google Spreadsheet."
         actions={
           <div className="flex items-center gap-2">
             <button
@@ -97,12 +93,12 @@ export const DashboardPage: React.FC = () => {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
           label="Total Master Barang"
           value={stocks.length}
           unit="SKU"
-          subtitle="Katalog item terdaftar"
+          subtitle="Katalog item terdaftar di backend"
           icon={Package}
           onClick={() => navigateTo('items')}
         />
@@ -122,15 +118,6 @@ export const DashboardPage: React.FC = () => {
           icon={AlertTriangle}
           variant={lowStockItems.length > 0 ? 'warning' : 'default'}
           onClick={() => navigateTo('stok')}
-        />
-        <StatCard
-          label="Pengajuan Menunggu"
-          value={pendingRequests.length}
-          unit="Antrean"
-          subtitle={pendingRequests.length > 0 ? 'Menunggu verifikasi Admin' : 'Tidak ada antrean tertunda'}
-          icon={FileCheck2}
-          variant={pendingRequests.length > 0 ? 'danger' : 'default'}
-          onClick={() => navigateTo('pengajuan')}
         />
       </div>
 
@@ -173,73 +160,27 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Grid: Pending Approval Alert & Low Stock & Recent Transactions */}
+      {/* Main Grid: Low Stock & Recent Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column: Pengajuan & Low Stock Alerts */}
-        <div className="space-y-6">
-          {/* Pending Requests Alert */}
-          {pendingRequests.length > 0 && (
-            <div className="bg-amber-50/50 border border-amber-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  <h3 className="text-xs font-semibold text-amber-900 uppercase tracking-wider">
-                    Pengajuan Pengambilan Awal ({pendingRequests.length})
-                  </h3>
-                </div>
-                <button
-                  onClick={() => navigateTo('pengajuan')}
-                  className="text-xs font-medium text-amber-800 hover:text-amber-950 inline-flex items-center gap-1"
-                >
-                  <span>Buka Halaman Approval</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-              <div className="space-y-2">
-                {pendingRequests.slice(0, 3).map((req) => (
-                  <div
-                    key={req.ID_PENGAJUAN}
-                    className="p-3 bg-white border border-amber-200/80 rounded flex items-center justify-between text-xs"
-                  >
-                    <div>
-                      <div className="font-semibold text-slate-900">{req.NAMA_MEMBER}</div>
-                      <div className="text-slate-500 mt-0.5 line-clamp-1">
-                        Meminta {req.JUMLAH} unit · {req.NAMA_ITEM}
-                      </div>
-                      <div className="text-[11px] text-amber-800 mt-1 italic">
-                        &quot;{req.ALASAN}&quot;
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => navigateTo('pengajuan')}
-                      className="px-2.5 py-1 text-xs font-medium bg-amber-600 text-white rounded hover:bg-amber-700 shrink-0 ml-3"
-                    >
-                      Tinjau
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Low Stock Warning Card */}
-          <div className="bg-white border border-slate-200 rounded-lg p-5">
+        {/* Left Column: Low Stock Warnings */}
+        <div className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between">
+          <div>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">Perhatian Minimum Stok</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Barang dengan stok kurang dari batas minimum</p>
+                <p className="text-xs text-slate-500 mt-0.5">Barang dengan stok sama atau di bawah batas minimum</p>
               </div>
               <button
                 onClick={() => navigateTo('stok')}
                 className="text-xs font-medium text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
               >
-                <span>Lihat Stok</span>
+                <span>Lihat Semua Stok</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
             </div>
 
             {lowStockItems.length === 0 ? (
-              <div className="text-xs text-slate-500 p-4 border border-dashed border-slate-200 rounded text-center">
+              <div className="text-xs text-slate-500 p-6 border border-dashed border-slate-200 rounded text-center">
                 Semua stok barang berada dalam batas aman.
               </div>
             ) : (
@@ -249,7 +190,7 @@ export const DashboardPage: React.FC = () => {
                     <div>
                       <div className="font-medium text-slate-900">{item.namaItem}</div>
                       <div className="text-slate-400 text-[11px] mt-0.5">
-                        Kategori {item.kategori} · Lokasi: {item.lokasi}
+                        Kategori: {item.kategori} · Lokasi: {item.lokasi}
                       </div>
                     </div>
                     <div className="text-right">
@@ -268,6 +209,17 @@ export const DashboardPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span>Menampilkan {Math.min(lowStockItems.length, 5)} barang menipis</span>
+            <button
+              onClick={() => navigateTo('stok')}
+              className="text-slate-800 font-medium hover:underline inline-flex items-center gap-1"
+            >
+              <span>Halaman Stok</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
         </div>
 
         {/* Right Column: Recent Transactions Summary */}
@@ -276,25 +228,25 @@ export const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">Aktivitas Transaksi Terkini</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Pencatatan mutasi barang terakhir di gudang</p>
+                <p className="text-xs text-slate-500 mt-0.5">Pencatatan mutasi barang terakhir di Google Spreadsheet</p>
               </div>
               <button
                 onClick={() => navigateTo('bincard')}
                 className="text-xs font-medium text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
               >
-                <span>Buka Kartu Stok</span>
+                <span>Buka Bin Card</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
             </div>
 
             {recentTransactions.length === 0 ? (
               <div className="text-xs text-slate-500 p-6 border border-dashed border-slate-200 rounded text-center">
-                Belum ada transaksi tercatat.
+                Belum ada transaksi tercatat di database.
               </div>
             ) : (
               <div className="divide-y divide-slate-100 text-xs">
                 {recentTransactions.map((tx) => (
-                  <div key={tx.ID_TRANSAKSI} className="py-3 flex items-start justify-between gap-3">
+                  <div key={tx.ID_TRANSAKSI || tx.NO_DOKUMEN} className="py-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-semibold text-slate-800">{tx.NO_DOKUMEN}</span>
@@ -305,7 +257,7 @@ export const DashboardPage: React.FC = () => {
                         {tx.NAMA_MEMBER ? ` · Member: ${tx.NAMA_MEMBER}` : ''}
                       </div>
                       <div className="text-[11px] text-slate-400 mt-0.5">
-                        {tx.TIMESTAMP} · &quot;{tx.KETERANGAN}&quot;
+                        {tx.TIMESTAMP || tx.TANGGAL} · &quot;{tx.KETERANGAN || '-'}&quot;
                       </div>
                     </div>
                     <div className="text-right shrink-0">
@@ -320,7 +272,7 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Menampilkan 6 transaksi terbaru</span>
+            <span>Menampilkan {recentTransactions.length} transaksi terbaru</span>
             <button
               onClick={() => navigateTo('laporan')}
               className="text-slate-800 font-medium hover:underline inline-flex items-center gap-1"
