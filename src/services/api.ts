@@ -343,7 +343,7 @@ class ApiService {
     const currentMonthPrefix = new Date().toISOString().slice(0, 7);
     let totalQty = 0;
     let currentMonthQty = 0;
-    const itemMap = new Map<string, { namaItem: string; qty: number; count: number; lastDate: string; satuan: string }>();
+    const itemMap = new Map<string, { namaItem: string; qty: number; count: number; lastDate: string; satuan?: string }>();
 
     const transactions: Transaksi[] = data.history.map((t) => {
       const idTrx = t.ID_TRANSAKSI || '';
@@ -355,7 +355,7 @@ class ApiService {
       const noDok = t.NO_DOKUMEN || '-';
       const jumlah = Number(t.JUMLAH ?? 0);
       const ket = t.KETERANGAN || '-';
-      const satuan = t.SATUAN || 'UNIT';
+      const satuan = t.SATUAN || undefined;
 
       totalQty += jumlah;
       if (tanggal.startsWith(currentMonthPrefix)) {
@@ -365,7 +365,7 @@ class ApiService {
       const prev = itemMap.get(idItem) || { namaItem, qty: 0, count: 0, lastDate: tanggal, satuan };
       prev.qty += jumlah;
       prev.count += 1;
-      if (t.SATUAN && prev.satuan === 'UNIT') {
+      if (t.SATUAN && !prev.satuan) {
         prev.satuan = t.SATUAN;
       }
       if (tanggal > prev.lastDate) {

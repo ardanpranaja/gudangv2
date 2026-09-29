@@ -126,7 +126,7 @@ export interface MemberHistoryItem {
   idItem: string;
   namaItem: string;
   totalQty: number;
-  satuan: string;
+  satuan?: string;
   lastDate: string;
   count: number;
 }
