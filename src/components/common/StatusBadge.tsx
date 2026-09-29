@@ -2,12 +2,13 @@ import React from 'react';
 import { CheckCircle2, AlertTriangle, XCircle, Clock, ShieldCheck, Ban } from 'lucide-react';
 
 interface StatusBadgeProps {
-  status: string;
+  status?: string | null;
   size?: 'sm' | 'md';
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' }) => {
-  const normalized = status.toUpperCase();
+  const displayStatus = typeof status === 'string' && status.trim() ? status.trim() : '-';
+  const normalized = displayStatus.toUpperCase();
 
   let colorClasses = 'text-slate-600 bg-slate-100 border-slate-200';
   let Icon = Clock;
@@ -58,7 +59,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
       className={`inline-flex items-center gap-1.5 font-medium rounded border ${colorClasses} ${sizeClasses} whitespace-nowrap`}
     >
       <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-      <span>{status}</span>
+      <span>{displayStatus}</span>
     </span>
   );
 };
