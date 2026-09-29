@@ -49,9 +49,9 @@ export interface MasterMember {
   ID_MEMBER: string;
   NAMA_MEMBER: string;
   JENIS_MEMBER: JenisMember;
-  NO_HP: string;
+  NO_HP?: string;
   STATUS: StatusMember;
-  TANGGAL_MULAI: string;
+  TANGGAL_MULAI?: string;
   CREATED_AT?: string;
   UPDATED_AT?: string;
 }
@@ -81,6 +81,7 @@ export interface Transaksi {
   JUMLAH: number;
   ID_MEMBER?: string;
   NAMA_MEMBER?: string;
+  SATUAN?: string;
   KETERANGAN: string;
   CREATED_AT?: string;
 }

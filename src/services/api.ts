@@ -355,7 +355,7 @@ class ApiService {
       const noDok = t.NO_DOKUMEN || '-';
       const jumlah = Number(t.JUMLAH ?? 0);
       const ket = t.KETERANGAN || '-';
-      const satuan = 'UNIT';
+      const satuan = t.SATUAN || 'UNIT';
 
       totalQty += jumlah;
       if (tanggal.startsWith(currentMonthPrefix)) {
@@ -365,6 +365,9 @@ class ApiService {
       const prev = itemMap.get(idItem) || { namaItem, qty: 0, count: 0, lastDate: tanggal, satuan };
       prev.qty += jumlah;
       prev.count += 1;
+      if (t.SATUAN && prev.satuan === 'UNIT') {
+        prev.satuan = t.SATUAN;
+      }
       if (tanggal > prev.lastDate) {
         prev.lastDate = tanggal;
       }
@@ -381,6 +384,7 @@ class ApiService {
         JUMLAH: jumlah,
         ID_MEMBER: memberId,
         NAMA_MEMBER: typeof data.member === 'object' ? data.member.NAMA_MEMBER : data.member || memberId,
+        SATUAN: satuan,
         KETERANGAN: ket,
         CREATED_AT: timestamp,
       };
@@ -440,7 +444,9 @@ class ApiService {
    */
   public async getDebugTransactions(): Promise<Transaksi[]> {
     const data = await this.get<GasTransactionsResponse>('debug_transactions');
-    if (!data || !Array.isArray(data.transactions)) return [];
+    if (!data || !Array.isArray(data.transactions)) {
+      throw new GasApiError('Format response debug_transactions dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+    }
     return data.transactions;
   }
 
