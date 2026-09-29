@@ -1,0 +1,6 @@
+{
+  "name": "GudangPresisi",
+  "description": "Sistem Pengelolaan Gudang Presisi — Master Barang, Member, Limit, Transaksi, Stok, Bin Card & Pengajuan",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
