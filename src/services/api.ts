@@ -13,18 +13,30 @@ import {
   PickupRequestInput,
   ApprovalInput,
   RejectionInput,
+  TransactionResult,
+  PickupRequestResult,
+  ActionResult,
   GasEnvelope,
   GasTransactionPayload,
   GasRequestPayload,
   GasApprovalPayload,
   GasRejectionPayload,
+  GasStockResponse,
+  GasItemsResponse,
+  GasMembersResponse,
+  GasLimitsResponse,
+  GasTransactionsResponse,
+  GasBinCardResponse,
+  GasMemberHistoryResponse,
+  GasPickupEligibilityResponse,
+  GasHealthResponse,
 } from '../types';
 
 export class GasApiError extends Error {
   public code?: string;
-  public details?: any;
+  public details?: unknown;
 
-  constructor(message: string, code?: string, details?: any) {
+  constructor(message: string, code?: string, details?: unknown) {
     super(message);
     this.name = 'GasApiError';
     this.code = code;
@@ -46,7 +58,7 @@ class ApiService {
     if (saved) {
       this.gasUrl = saved.trim();
     } else {
-      const envUrl = (import.meta as any).env?.VITE_GAS_API_URL;
+      const envUrl = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_GAS_API_URL;
       if (envUrl) {
         this.gasUrl = envUrl.trim();
       }
@@ -98,22 +110,19 @@ class ApiService {
       }
 
       return json.data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof GasApiError) {
         throw err;
       }
-      throw new GasApiError(
-        err.message || 'Gagal terhubung ke backend Google Apps Script.',
-        'NETWORK_ERROR',
-        err
-      );
+      const msg = err instanceof Error ? err.message : 'Gagal terhubung ke backend Google Apps Script.';
+      throw new GasApiError(msg, 'NETWORK_ERROR', err);
     }
   }
 
   /**
    * Authoritative POST requester
    */
-  private async post<T>(bodyPayload: Record<string, any>): Promise<T> {
+  private async post<T>(bodyPayload: unknown): Promise<T> {
     if (!this.gasUrl) {
       throw new GasApiError(
         'URL Google Apps Script belum dikonfigurasi. Silakan atur URL Web App di menu Pengaturan.',
@@ -146,15 +155,12 @@ class ApiService {
       }
 
       return json.data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof GasApiError) {
         throw err;
       }
-      throw new GasApiError(
-        err.message || 'Gagal mengirim transaksi ke Google Apps Script.',
-        'NETWORK_POST_ERROR',
-        err
-      );
+      const msg = err instanceof Error ? err.message : 'Gagal mengirim transaksi ke Google Apps Script.';
+      throw new GasApiError(msg, 'NETWORK_POST_ERROR', err);
     }
   }
 
@@ -162,7 +168,7 @@ class ApiService {
 
   /**
    * Health Check
-   * GAS response: data.sheets, data.spreadsheetId, etc.
+   * GAS response: data.sheets, data.spreadsheetId, data.version, etc.
    */
   public async checkHealth(): Promise<SystemHealth> {
     if (!this.gasUrl) {
@@ -176,7 +182,7 @@ class ApiService {
 
     const start = performance.now();
     try {
-      const data: any = await this.get('health');
+      const data = await this.get<GasHealthResponse>('health');
       const latencyMs = Math.round(performance.now() - start);
 
       return {
@@ -187,11 +193,13 @@ class ApiService {
         version: data?.version || '1.2.2',
         lastChecked: new Date().toISOString(),
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal menghubungi backend GAS';
       return {
         status: 'OFFLINE',
+        version: '1.2.2',
         lastChecked: new Date().toISOString(),
-        error: err.message || 'Gagal menghubungi backend GAS',
+        error: msg,
       };
     }
   }
@@ -200,33 +208,33 @@ class ApiService {
    * Items: GET action=items -> normalized data.items
    */
   public async getItems(): Promise<MasterItem[]> {
-    const data: any = await this.get('items');
-    if (!data) return [];
-    if (Array.isArray(data.items)) return data.items;
-    if (Array.isArray(data)) return data;
-    return [];
+    const data = await this.get<GasItemsResponse>('items');
+    if (!data || !Array.isArray(data.items)) {
+      throw new GasApiError('Format response items dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+    }
+    return data.items;
   }
 
   /**
    * Members: GET action=members -> normalized data.members
    */
   public async getMembers(): Promise<MasterMember[]> {
-    const data: any = await this.get('members');
-    if (!data) return [];
-    if (Array.isArray(data.members)) return data.members;
-    if (Array.isArray(data)) return data;
-    return [];
+    const data = await this.get<GasMembersResponse>('members');
+    if (!data || !Array.isArray(data.members)) {
+      throw new GasApiError('Format response members dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+    }
+    return data.members;
   }
 
   /**
    * Limits: GET action=limits -> normalized data.limits
    */
   public async getLimits(): Promise<MemberLimit[]> {
-    const data: any = await this.get('limits');
-    if (!data) return [];
-    if (Array.isArray(data.limits)) return data.limits;
-    if (Array.isArray(data)) return data;
-    return [];
+    const data = await this.get<GasLimitsResponse>('limits');
+    if (!data || !Array.isArray(data.limits)) {
+      throw new GasApiError('Format response limits dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+    }
+    return data.limits;
   }
 
   /**
@@ -245,39 +253,36 @@ class ApiService {
       queryParams.id_member = params.memberId;
     }
 
-    const data: any = await this.get('transactions', queryParams);
-    if (!data) return [];
-    if (Array.isArray(data.transactions)) return data.transactions;
-    if (Array.isArray(data)) return data;
-    return [];
+    const data = await this.get<GasTransactionsResponse>('transactions', queryParams);
+    if (!data || !Array.isArray(data.transactions)) {
+      throw new GasApiError('Format response transactions dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+    }
+    return data.transactions;
   }
 
   /**
    * Stock: GET action=stock -> normalized data.stock
+   * Authoritative source of stock is STOK_SAAT_INI
    */
   public async getStock(): Promise<ItemStock[]> {
-    const data: any = await this.get('stock');
-    const rawList: any[] = Array.isArray(data?.stock) ? data.stock : Array.isArray(data) ? data : [];
+    const data = await this.get<GasStockResponse>('stock');
+    if (!data || !Array.isArray(data.stock)) {
+      throw new GasApiError('Format response stock dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+    }
 
-    return rawList.map((item: any) => {
-      const idItem = item.ID_ITEM || item.idItem || item.id || '';
-      const namaItem = item.NAMA_ITEM || item.namaItem || item.name || '';
-      const kategori = item.KATEGORI || item.kategori || 'PERALATAN';
-      const satuan = item.SATUAN || item.satuan || 'UNIT';
-      const stok = Number(item.STOK ?? item.stok ?? item.SALDO ?? item.saldo ?? 0);
-      const minStok = Number(item.MIN_STOK ?? item.minStok ?? 0);
-      const lokasi = item.LOKASI || item.lokasi || '-';
-      const status = item.STATUS || item.status || 'AKTIF';
+    return data.stock.map((item) => {
+      const stok = Number(item.STOK_SAAT_INI ?? 0);
+      const minStok = Number(item.MIN_STOK ?? 0);
 
       return {
-        idItem,
-        namaItem,
-        kategori,
-        satuan,
+        idItem: item.ID_ITEM,
+        namaItem: item.NAMA_ITEM,
+        kategori: item.KATEGORI,
+        satuan: item.SATUAN,
         stok,
         minStok,
-        lokasi,
-        status,
+        lokasi: item.LOKASI || '-',
+        status: item.STATUS,
         isLowStock: stok <= minStok,
       };
     });
@@ -292,34 +297,28 @@ class ApiService {
       throw new GasApiError('ID barang wajib disertakan untuk memuat Bin Card.', 'INVALID_PARAM');
     }
 
-    const data: any = await this.get('bincard', { id_item: itemId });
-    if (!data) {
-      return {
-        item: itemId,
-        saldoAwal: 0,
-        saldoAkhir: 0,
-        count: 0,
-        rows: [],
-      };
+    const data = await this.get<GasBinCardResponse>('bincard', { id_item: itemId });
+    if (!data || !Array.isArray(data.rows)) {
+      throw new GasApiError('Format response bincard dari GAS tidak valid.', 'MALFORMED_RESPONSE');
     }
 
-    const rawRows: any[] = Array.isArray(data.rows) ? data.rows : Array.isArray(data) ? data : [];
-
-    const normalizedRows: BinCardEntry[] = rawRows.map((r: any) => ({
-      tanggal: r.TANGGAL || r.tanggal || '',
-      timestamp: r.TIMESTAMP || r.timestamp || r.TANGGAL || '',
-      noDokumen: r.NO_DOKUMEN || r.noDokumen || '-',
-      jenisTransaksi: r.JENIS_TRANSAKSI || r.jenisTransaksi || 'BARANG_KELUAR',
-      keterangan: r.KETERANGAN || r.keterangan || '-',
-      masuk: Number(r.MASUK ?? r.masuk ?? 0),
-      keluar: Number(r.KELUAR ?? r.keluar ?? 0),
-      saldo: Number(r.SALDO ?? r.saldo ?? 0),
-      memberId: r.ID_MEMBER || r.memberId || '',
-      namaMember: r.NAMA_MEMBER || r.namaMember || '',
+    const normalizedRows: BinCardEntry[] = data.rows.map((r) => ({
+      tanggal: r.TANGGAL || '',
+      timestamp: r.TIMESTAMP || r.TANGGAL || '',
+      noDokumen: r.NO_DOKUMEN || '-',
+      jenisTransaksi: r.JENIS_TRANSAKSI || 'BARANG_KELUAR',
+      keterangan: r.KETERANGAN || '-',
+      masuk: Number(r.MASUK ?? 0),
+      keluar: Number(r.KELUAR ?? 0),
+      saldo: Number(r.SALDO ?? 0),
+      memberId: r.ID_MEMBER || '',
+      namaMember: r.NAMA_MEMBER || '',
     }));
 
+    const itemName = typeof data.item === 'string' ? data.item : data.item?.NAMA_ITEM || itemId;
+
     return {
-      item: typeof data.item === 'string' ? data.item : data.item?.NAMA_ITEM || itemId,
+      item: itemName,
       saldoAwal: Number(data.saldoAwal ?? 0),
       saldoAkhir: Number(data.saldoAkhir ?? 0),
       count: Number(data.count ?? normalizedRows.length),
@@ -336,42 +335,27 @@ class ApiService {
       throw new GasApiError('ID member wajib disertakan untuk memuat riwayat.', 'INVALID_PARAM');
     }
 
-    const data: any = await this.get('memberhistory', { id_member: memberId });
-    if (!data) {
-      return {
-        member: { ID_MEMBER: memberId, NAMA_MEMBER: memberId, JENIS_MEMBER: 'CREW' },
-        totalTransaksi: 0,
-        totalQty: 0,
-        currentMonthQty: 0,
-        items: [],
-        transactions: [],
-      };
+    const data = await this.get<GasMemberHistoryResponse>('memberhistory', { id_member: memberId });
+    if (!data || !Array.isArray(data.history)) {
+      throw new GasApiError('Format response memberhistory dari GAS tidak valid.', 'MALFORMED_RESPONSE');
     }
-
-    const rawHistory: any[] = Array.isArray(data.history)
-      ? data.history
-      : Array.isArray(data.transactions)
-      ? data.transactions
-      : Array.isArray(data)
-      ? data
-      : [];
 
     const currentMonthPrefix = new Date().toISOString().slice(0, 7);
     let totalQty = 0;
     let currentMonthQty = 0;
     const itemMap = new Map<string, { namaItem: string; qty: number; count: number; lastDate: string; satuan: string }>();
 
-    const transactions: Transaksi[] = rawHistory.map((t: any) => {
-      const idTrx = t.ID_TRANSAKSI || t.idTransaksi || '';
-      const tanggal = t.TANGGAL || t.tanggal || '';
-      const timestamp = t.TIMESTAMP || t.timestamp || tanggal;
-      const idItem = t.ID_ITEM || t.idItem || '';
-      const namaItem = t.NAMA_ITEM || t.namaItem || idItem;
-      const jenis = t.JENIS_TRANSAKSI || t.jenisTransaksi || 'BARANG_KELUAR';
-      const noDok = t.NO_DOKUMEN || t.noDokumen || '-';
-      const jumlah = Number(t.JUMLAH ?? t.jumlah ?? 0);
-      const ket = t.KETERANGAN || t.keterangan || '-';
-      const satuan = t.SATUAN || t.satuan || 'UNIT';
+    const transactions: Transaksi[] = data.history.map((t) => {
+      const idTrx = t.ID_TRANSAKSI || '';
+      const tanggal = t.TANGGAL || '';
+      const timestamp = t.TIMESTAMP || tanggal;
+      const idItem = t.ID_ITEM || '';
+      const namaItem = t.NAMA_ITEM || idItem;
+      const jenis = t.JENIS_TRANSAKSI || 'BARANG_KELUAR';
+      const noDok = t.NO_DOKUMEN || '-';
+      const jumlah = Number(t.JUMLAH ?? 0);
+      const ket = t.KETERANGAN || '-';
+      const satuan = 'UNIT';
 
       totalQty += jumlah;
       if (tanggal.startsWith(currentMonthPrefix)) {
@@ -412,7 +396,7 @@ class ApiService {
     }));
 
     return {
-      member: typeof data.member === 'object' ? data.member : { ID_MEMBER: memberId, NAMA_MEMBER: data.member || memberId, JENIS_MEMBER: 'CREW' },
+      member: data.member,
       totalTransaksi: Number(data.count ?? transactions.length),
       totalQty,
       currentMonthQty,
@@ -430,22 +414,18 @@ class ApiService {
       throw new GasApiError('Member dan barang harus dipilih untuk validasi kelayakan.', 'INVALID_PARAM');
     }
 
-    const data: any = await this.get('pickupeligibility', {
+    const data = await this.get<GasPickupEligibilityResponse>('pickupeligibility', {
       id_member: memberId,
       id_item: itemId,
       jumlah: String(qty || 1),
     });
 
-    if (!data) {
-      return {
-        allowed: false,
-        early: false,
-        reason: 'Tidak ada respon validasi dari backend.',
-      };
+    if (!data || typeof data.allowed !== 'boolean') {
+      throw new GasApiError('Format response pickupeligibility dari GAS tidak valid.', 'MALFORMED_RESPONSE');
     }
 
     return {
-      allowed: Boolean(data.allowed),
+      allowed: data.allowed,
       early: Boolean(data.early),
       reason: data.reason || '',
       masaPakaiBulan: data.masaPakaiBulan !== undefined ? Number(data.masaPakaiBulan) : undefined,
@@ -459,22 +439,20 @@ class ApiService {
    * Debug transactions: GET action=debug_transactions
    */
   public async getDebugTransactions(): Promise<Transaksi[]> {
-    const data: any = await this.get('debug_transactions');
-    if (!data) return [];
-    if (Array.isArray(data.transactions)) return data.transactions;
-    if (Array.isArray(data)) return data;
-    return [];
+    const data = await this.get<GasTransactionsResponse>('debug_transactions');
+    if (!data || !Array.isArray(data.transactions)) return [];
+    return data.transactions;
   }
 
   // --- POST METHODS WITH CONTRACT MAPPING ---
 
   /**
    * Transaction: POST action=transaction
-   * Payload mapping per Step 4:
+   * Payload mapping:
    * { itemId, type, jumlah, memberId, keterangan, tanggal, noDokumen }
    * -> { ID_ITEM, JENIS_TRANSAKSI, JUMLAH, ID_MEMBER, KETERANGAN, TANGGAL, NO_DOKUMEN }
    */
-  public async submitTransaction(input: TransactionInput): Promise<any> {
+  public async submitTransaction(input: TransactionInput): Promise<TransactionResult> {
     const payload: GasTransactionPayload = {
       action: 'transaction',
       ID_ITEM: input.itemId,
@@ -486,16 +464,16 @@ class ApiService {
       NO_DOKUMEN: input.noDokumen || '',
     };
 
-    return this.post(payload);
+    return this.post<TransactionResult>(payload);
   }
 
   /**
    * Request: POST action=request
-   * Payload mapping per Step 4:
+   * Payload mapping:
    * { memberId, itemId, jumlah, alasan }
    * -> { ID_MEMBER, ID_ITEM, JUMLAH, ALASAN }
    */
-  public async submitRequest(input: PickupRequestInput): Promise<any> {
+  public async submitRequest(input: PickupRequestInput): Promise<PickupRequestResult> {
     const payload: GasRequestPayload = {
       action: 'request',
       ID_MEMBER: input.memberId,
@@ -504,16 +482,16 @@ class ApiService {
       ALASAN: input.alasan,
     };
 
-    return this.post(payload);
+    return this.post<PickupRequestResult>(payload);
   }
 
   /**
    * Approval: POST action=approve_request
-   * Payload mapping per Step 4:
+   * Payload mapping:
    * { requestId, approverId, note }
    * -> { ID_PENGAJUAN, ID_APPROVER, CATATAN_APPROVER }
    */
-  public async approveRequest(input: ApprovalInput): Promise<any> {
+  public async approveRequest(input: ApprovalInput): Promise<ActionResult> {
     const payload: GasApprovalPayload = {
       action: 'approve_request',
       ID_PENGAJUAN: input.requestId,
@@ -521,16 +499,16 @@ class ApiService {
       CATATAN_APPROVER: input.note || '',
     };
 
-    return this.post(payload);
+    return this.post<ActionResult>(payload);
   }
 
   /**
    * Rejection: POST action=reject_request
-   * Payload mapping per Step 4:
+   * Payload mapping:
    * { requestId, approverId, note }
    * -> { ID_PENGAJUAN, ID_APPROVER, CATATAN_APPROVER }
    */
-  public async rejectRequest(input: RejectionInput): Promise<any> {
+  public async rejectRequest(input: RejectionInput): Promise<ActionResult> {
     const payload: GasRejectionPayload = {
       action: 'reject_request',
       ID_PENGAJUAN: input.requestId,
@@ -538,7 +516,7 @@ class ApiService {
       CATATAN_APPROVER: input.note || '',
     };
 
-    return this.post(payload);
+    return this.post<ActionResult>(payload);
   }
 }
 

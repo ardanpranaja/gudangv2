@@ -244,6 +244,32 @@ export interface RejectionInput {
   note?: string;
 }
 
+export interface TransactionResult {
+  message?: string;
+  NO_DOKUMEN?: string;
+  transaction?: {
+    NO_DOKUMEN?: string;
+    [key: string]: unknown;
+  };
+  documentNo?: string;
+  [key: string]: unknown;
+}
+
+export interface PickupRequestResult {
+  message?: string;
+  ID_PENGAJUAN?: string;
+  request?: {
+    ID_PENGAJUAN?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface ActionResult {
+  message?: string;
+  [key: string]: unknown;
+}
+
 // --- GAS Backend Contract DTOs ---
 
 export interface GasEnvelope<T> {
@@ -285,4 +311,83 @@ export interface GasRejectionPayload {
   ID_PENGAJUAN: string;
   ID_APPROVER: string;
   CATATAN_APPROVER: string;
+}
+
+// --- GAS Response DTOs ---
+
+export interface GasStockItem {
+  ID_ITEM: string;
+  NAMA_ITEM: string;
+  KATEGORI: KategoriItem;
+  SATUAN: string;
+  STOK_SAAT_INI: number;
+  MIN_STOK: number;
+  LOKASI?: string;
+  STATUS: StatusItem;
+}
+
+export interface GasStockResponse {
+  stock: GasStockItem[];
+}
+
+export interface GasItemsResponse {
+  items: MasterItem[];
+}
+
+export interface GasMembersResponse {
+  members: MasterMember[];
+}
+
+export interface GasLimitsResponse {
+  limits: MemberLimit[];
+}
+
+export interface GasTransactionsResponse {
+  transactions: Transaksi[];
+}
+
+export interface GasBinCardRow {
+  TANGGAL: string;
+  TIMESTAMP?: string;
+  NO_DOKUMEN: string;
+  JENIS_TRANSAKSI: JenisTransaksi;
+  KETERANGAN: string;
+  MASUK: number;
+  KELUAR: number;
+  SALDO: number;
+  ID_MEMBER?: string;
+  NAMA_MEMBER?: string;
+}
+
+export interface GasBinCardResponse {
+  item: string | MasterItem;
+  saldoAwal: number;
+  saldoAkhir: number;
+  count: number;
+  rows: GasBinCardRow[];
+}
+
+export interface GasMemberHistoryResponse {
+  member: MasterMember | { ID_MEMBER: string; NAMA_MEMBER: string; JENIS_MEMBER?: string };
+  count: number;
+  history: Transaksi[];
+}
+
+export interface GasPickupEligibilityResponse {
+  allowed: boolean;
+  early: boolean;
+  reason?: string;
+  masaPakaiBulan?: number;
+  maxQty?: number;
+  lastPickupDate?: string;
+  dueDate?: string;
+}
+
+export interface GasHealthResponse {
+  status?: string;
+  spreadsheetId?: string;
+  ssId?: string;
+  sheets?: string[];
+  sheetsFound?: string[];
+  version?: string;
 }
