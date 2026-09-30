@@ -174,7 +174,7 @@ class ApiService {
     if (!this.gasUrl) {
       return {
         status: 'UNCONFIGURED',
-        version: '1.2.2',
+        version: '1.2.3',
         lastChecked: new Date().toISOString(),
         error: 'URL Google Apps Script belum dikonfigurasi di Pengaturan.',
       };
@@ -190,14 +190,14 @@ class ApiService {
         spreadsheetId: data?.spreadsheetId || data?.ssId || 'Connected',
         sheetsFound: Array.isArray(data?.sheets) ? data.sheets : Array.isArray(data?.sheetsFound) ? data.sheetsFound : [],
         latencyMs,
-        version: data?.version || '1.2.2',
+        version: data?.version || '1.2.3',
         lastChecked: new Date().toISOString(),
       };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Gagal menghubungi backend GAS';
       return {
         status: 'OFFLINE',
-        version: '1.2.2',
+        version: '1.2.3',
         lastChecked: new Date().toISOString(),
         error: msg,
       };
