@@ -1,6 +1,6 @@
 export type KategoriItem = 'MESIN' | 'CHEMICAL' | 'PERALATAN' | 'SERAGAM';
 
-export type JenisMember = 'SM' | 'SPV' | 'TL' | 'CREW' | 'VENDOR';
+export type JabatanMember = string;
 
 export type StatusMember = 'AKTIF' | 'NONAKTIF';
 
@@ -48,7 +48,7 @@ export interface MasterItem {
 export interface MasterMember {
   ID_MEMBER: string;
   NAMA_MEMBER: string;
-  JENIS_MEMBER: JenisMember;
+  JABATAN: JabatanMember;
   NO_HP?: string;
   STATUS: StatusMember;
   TANGGAL_MULAI?: string;
@@ -132,7 +132,7 @@ export interface MemberHistoryItem {
 }
 
 export interface MemberHistorySummary {
-  member: MasterMember | { ID_MEMBER: string; NAMA_MEMBER: string; JENIS_MEMBER?: string };
+  member: MasterMember | { ID_MEMBER: string; NAMA_MEMBER: string; JABATAN?: string };
   totalTransaksi: number;
   totalQty: number;
   items: MemberHistoryItem[];
