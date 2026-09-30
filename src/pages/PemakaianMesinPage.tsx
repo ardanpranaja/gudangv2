@@ -18,18 +18,18 @@ export const PemakaianMesinPage: React.FC = () => {
       <div className="p-4 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-700 space-y-2">
         <div className="flex items-center gap-2 font-semibold text-slate-900">
           <Info className="w-4 h-4 text-slate-600 shrink-0" />
-          <span>Status Modul Pemakaian Mesin di API GAS (v1.2.2)</span>
+          <span>Status Modul Pemakaian Mesin di API GAS (v1.2.4)</span>
         </div>
         <p className="leading-relaxed text-slate-600">
           Modul Pemakaian Mesin adalah modul tahap berikutnya dan belum diekspos sebagai endpoint aktif pada
-          GAS v1.2.2. Tidak ada data palsu atau simulasi lokal yang ditampilkan.
+          GAS v1.2.4. Tidak ada data palsu atau simulasi lokal yang ditampilkan.
         </p>
       </div>
 
       <div className="bg-white rounded-lg border border-slate-200 p-8">
         <EmptyState
           title="Belum terhubung ke API GAS."
-          description="Endpoint GET action=machine_usages belum diekspos di backend GAS v1.2.2. Modul ini disiapkan untuk integrasi tahap berikutnya."
+          description="Endpoint GET action=machine_usages belum diekspos di backend GAS v1.2.4. Modul ini disiapkan untuk integrasi tahap berikutnya."
           action={{
             label: 'Buka Riwayat Member',
             onClick: () => navigateTo('riwayat-member'),

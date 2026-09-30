@@ -52,7 +52,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [role, setRoleState] = useState<UserRole>('ADMIN');
   const [health, setHealth] = useState<SystemHealth>({
     status: 'ONLINE',
-    version: '1.2.3',
+    version: '1.2.4',
   });
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [refreshKey, setRefreshKey] = useState<number>(0);
@@ -65,7 +65,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {
       setHealth({
         status: 'OFFLINE',
-        version: '1.2.3',
+        version: '1.2.4',
         error: 'Tidak dapat menghubungi backend',
       });
     }

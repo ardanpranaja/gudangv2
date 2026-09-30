@@ -185,8 +185,8 @@ export const DashboardPage: React.FC = () => {
               </div>
             ) : (
               <div className="divide-y divide-slate-100 text-xs">
-                {lowStockItems.slice(0, 5).map((item) => (
-                  <div key={item.idItem} className="py-2.5 flex items-center justify-between">
+                {lowStockItems.slice(0, 5).map((item, idx) => (
+                  <div key={`${item.idItem}-${idx}`} className="py-2.5 flex items-center justify-between">
                     <div>
                       <div className="font-medium text-slate-900">{item.namaItem}</div>
                       <div className="text-slate-400 text-[11px] mt-0.5">
@@ -245,8 +245,8 @@ export const DashboardPage: React.FC = () => {
               </div>
             ) : (
               <div className="divide-y divide-slate-100 text-xs">
-                {recentTransactions.map((tx) => (
-                  <div key={tx.ID_TRANSAKSI || tx.NO_DOKUMEN} className="py-3 flex items-start justify-between gap-3">
+                {recentTransactions.map((tx, idx) => (
+                  <div key={`${tx.ID_TRANSAKSI || tx.NO_DOKUMEN || idx}-${idx}`} className="py-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-semibold text-slate-800">{tx.NO_DOKUMEN}</span>

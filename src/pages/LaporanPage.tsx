@@ -216,8 +216,8 @@ export const LaporanPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {filteredTxs.slice(0, 10).map((t) => (
-                    <tr key={t.ID_TRANSAKSI || t.NO_DOKUMEN} className="hover:bg-slate-50">
+                  {filteredTxs.slice(0, 10).map((t, idx) => (
+                    <tr key={`${t.ID_TRANSAKSI || t.NO_DOKUMEN || idx}-${idx}`} className="hover:bg-slate-50">
                       <td className="py-2 px-3 font-mono text-slate-600">{t.TANGGAL}</td>
                       <td className="py-2 px-3 font-mono font-medium text-slate-900">{t.NO_DOKUMEN}</td>
                       <td className="py-2 px-3">

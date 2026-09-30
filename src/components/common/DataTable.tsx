@@ -114,8 +114,11 @@ export function DataTable<T extends Record<string, any>>({
   };
 
   const getKey = (item: T, idx: number): string => {
-    if (typeof keyField === 'function') return keyField(item);
-    return item[keyField] !== undefined ? String(item[keyField]) : String(idx);
+    if (typeof keyField === 'function') {
+      const k = keyField(item);
+      return k ? `${k}-${idx}` : String(idx);
+    }
+    return item[keyField] !== undefined ? `${String(item[keyField])}-${idx}` : String(idx);
   };
 
   if (isError) {

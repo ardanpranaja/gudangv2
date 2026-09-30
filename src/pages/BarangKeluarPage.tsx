@@ -214,9 +214,9 @@ export const BarangKeluarPage: React.FC = () => {
                 onChange={(e) => setSelectedMemberId(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs"
               >
-                {members.map((m) => (
-                  <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                    [{m.ID_MEMBER}] {m.NAMA_MEMBER} ({m.JABATAN})
+                {members.map((m, idx) => (
+                  <option key={`${m.ID_MEMBER}-${idx}`} value={m.ID_MEMBER}>
+                    [{m.ID_MEMBER}] {m.NAMA_MEMBER} ({m.JABATAN || ''})
                   </option>
                 ))}
               </select>
@@ -233,8 +233,8 @@ export const BarangKeluarPage: React.FC = () => {
                 onChange={(e) => setSelectedItemId(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs"
               >
-                {items.map((i) => (
-                  <option key={i.ID_ITEM} value={i.ID_ITEM}>
+                {items.map((i, idx) => (
+                  <option key={`${i.ID_ITEM}-${idx}`} value={i.ID_ITEM}>
                     [{i.ID_ITEM}] {i.NAMA_ITEM} ({i.KATEGORI} - Masa Pakai: {i.MASA_PAKAI_BULAN} Bln)
                   </option>
                 ))}

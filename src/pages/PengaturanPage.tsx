@@ -229,7 +229,7 @@ export const PengaturanPage: React.FC = () => {
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2 text-slate-900">
             <Code2 className="w-4 h-4 text-slate-700" />
-            <h3 className="text-sm font-semibold">Referensi Kontrak Google Apps Script (GAS v1.2.2)</h3>
+            <h3 className="text-sm font-semibold">Referensi Kontrak Google Apps Script (GAS v1.2.4)</h3>
           </div>
           <button
             onClick={handleCopyCode}
@@ -243,7 +243,7 @@ export const PengaturanPage: React.FC = () => {
         <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
           <p className="font-semibold mb-0.5">Catatan Backend Source of Truth:</p>
           <p className="text-[11px] text-amber-800 leading-relaxed">
-            Backend production GudangPresisi aktif menggunakan Google Apps Script Version 1.2.2. Kode template di bawah disediakan sebagai referensi struktur skema sheet dan kontrak API v1.2.2.
+            Backend production GudangPresisi aktif menggunakan Google Apps Script Version 1.2.4 (debug_source: 1.2.4-DIAGNOSTIC). Kode template di bawah disediakan sebagai referensi struktur skema sheet dan kontrak API v1.2.4.
           </p>
         </div>
 
@@ -255,7 +255,7 @@ export const PengaturanPage: React.FC = () => {
             Klik menu <span className="font-semibold text-slate-800">Extensions &gt; Apps Script</span>.
           </li>
           <li>
-            Pastikan skema header sheet dan endpoint sesuai dengan kontrak v1.2.2.
+            Pastikan skema header sheet dan endpoint sesuai dengan kontrak v1.2.4.
           </li>
           <li>
             Jika menginisialisasi spreadsheet baru, fungsi <span className="font-mono text-slate-800">initSheets()</span> dapat dijalankan untuk membuat sheet database otomatis.
@@ -271,7 +271,7 @@ export const PengaturanPage: React.FC = () => {
         <div className="relative">
           <pre className="p-3 bg-slate-900 text-slate-300 rounded font-mono text-[11px] overflow-x-auto max-h-48">
             {GAS_CODE_TEMPLATE.slice(0, 800)}
-            {'\n... (klik tombol Salin untuk mengambil seluruh kode referensi kontrak GAS v1.2.2)'}
+            {'\n... (klik tombol Salin untuk mengambil seluruh kode referensi kontrak GAS v1.2.4)'}
           </pre>
         </div>
       </div>

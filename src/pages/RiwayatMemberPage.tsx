@@ -138,9 +138,9 @@ export const RiwayatMemberPage: React.FC = () => {
               onChange={(e) => setSelectedMemberId(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs font-medium"
             >
-              {members.map((m) => (
-                <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                  [{m.ID_MEMBER}] {m.NAMA_MEMBER} — {m.JABATAN} ({m.STATUS})
+              {members.map((m, idx) => (
+                <option key={`${m.ID_MEMBER}-${idx}`} value={m.ID_MEMBER}>
+                  [{m.ID_MEMBER}] {m.NAMA_MEMBER} — {m.JABATAN || ''} ({m.STATUS})
                 </option>
               ))}
             </select>
@@ -150,7 +150,7 @@ export const RiwayatMemberPage: React.FC = () => {
             <div className="flex items-center gap-4 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
               <div>
                 <div className="text-[11px] text-slate-500">Jabatan / Role</div>
-                <div className="font-semibold text-slate-900">{selectedMember.JABATAN}</div>
+                <div className="font-semibold text-slate-900">{selectedMember.JABATAN || '-'}</div>
               </div>
               <div className="h-8 w-px bg-slate-200" />
               <div>
@@ -214,9 +214,9 @@ export const RiwayatMemberPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {summary.items.map((item) => (
+            {summary.items.map((item, idx) => (
               <div
-                key={item.idItem}
+                key={`${item.idItem}-${idx}`}
                 className="p-3 bg-slate-50 rounded-lg border border-slate-200/80 flex items-center justify-between"
               >
                 <div>

@@ -170,9 +170,9 @@ export const MemberLimitsPage: React.FC = () => {
               className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 max-w-[200px]"
             >
               <option value="ALL">Semua Member</option>
-              {members.map((m) => (
-                <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                  {m.NAMA_MEMBER} ({m.JABATAN})
+              {members.map((m, idx) => (
+                <option key={`${m.ID_MEMBER}-${idx}`} value={m.ID_MEMBER}>
+                  {m.NAMA_MEMBER} ({m.JABATAN || ''})
                 </option>
               ))}
             </select>
@@ -183,8 +183,8 @@ export const MemberLimitsPage: React.FC = () => {
               className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 max-w-[200px]"
             >
               <option value="ALL">Semua Barang</option>
-              {items.map((i) => (
-                <option key={i.ID_ITEM} value={i.ID_ITEM}>
+              {items.map((i, idx) => (
+                <option key={`${i.ID_ITEM}-${idx}`} value={i.ID_ITEM}>
                   {i.NAMA_ITEM}
                 </option>
               ))}

@@ -153,8 +153,8 @@ export const BarangMasukPage: React.FC = () => {
                 onChange={(e) => setSelectedItemId(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs"
               >
-                {items.map((i) => (
-                  <option key={i.ID_ITEM} value={i.ID_ITEM}>
+                {items.map((i, idx) => (
+                  <option key={`${i.ID_ITEM}-${idx}`} value={i.ID_ITEM}>
                     [{i.ID_ITEM}] {i.NAMA_ITEM} ({i.KATEGORI} - {i.SATUAN})
                   </option>
                 ))}

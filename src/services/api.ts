@@ -45,6 +45,8 @@ export class GasApiError extends Error {
 }
 
 const STORAGE_KEY_GAS_URL = 'gudangpresisi_gas_url';
+const DEFAULT_GAS_URL =
+  'https://script.google.com/macros/s/AKfycbx46GlNDCej-Fy2Z9YH_3YG73WyUI5U2aHUHlV2MVnFIQAcPCquL1oaNv1dzjCaFl08/exec';
 
 class ApiService {
   private gasUrl: string = '';
@@ -59,8 +61,10 @@ class ApiService {
       this.gasUrl = saved.trim();
     } else {
       const envUrl = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_GAS_API_URL;
-      if (envUrl) {
+      if (envUrl && envUrl.trim()) {
         this.gasUrl = envUrl.trim();
+      } else {
+        this.gasUrl = DEFAULT_GAS_URL;
       }
     }
   }
@@ -174,7 +178,7 @@ class ApiService {
     if (!this.gasUrl) {
       return {
         status: 'UNCONFIGURED',
-        version: '1.2.3',
+        version: '1.2.4',
         lastChecked: new Date().toISOString(),
         error: 'URL Google Apps Script belum dikonfigurasi di Pengaturan.',
       };
@@ -190,14 +194,14 @@ class ApiService {
         spreadsheetId: data?.spreadsheetId || data?.ssId || 'Connected',
         sheetsFound: Array.isArray(data?.sheets) ? data.sheets : Array.isArray(data?.sheetsFound) ? data.sheetsFound : [],
         latencyMs,
-        version: data?.version || '1.2.3',
+        version: data?.version || '1.2.4',
         lastChecked: new Date().toISOString(),
       };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Gagal menghubungi backend GAS';
       return {
         status: 'OFFLINE',
-        version: '1.2.3',
+        version: '1.2.4',
         lastChecked: new Date().toISOString(),
         error: msg,
       };
@@ -223,7 +227,10 @@ class ApiService {
     if (!data || !Array.isArray(data.members)) {
       throw new GasApiError('Format response members dari GAS tidak valid.', 'MALFORMED_RESPONSE');
     }
-    return data.members;
+    return data.members.map((m: any) => ({
+      ...m,
+      JABATAN: m.JABATAN || m.JENIS_MEMBER || '',
+    }));
   }
 
   /**

@@ -178,8 +178,8 @@ export const BinCardPage: React.FC = () => {
               onChange={(e) => setSelectedItemId(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs font-medium"
             >
-              {items.map((i) => (
-                <option key={i.ID_ITEM} value={i.ID_ITEM}>
+              {items.map((i, idx) => (
+                <option key={`${i.ID_ITEM}-${idx}`} value={i.ID_ITEM}>
                   [{i.ID_ITEM}] {i.NAMA_ITEM} — ({i.KATEGORI})
                 </option>
               ))}

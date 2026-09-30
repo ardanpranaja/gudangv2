@@ -1,15 +1,15 @@
 /**
  * Template Referensi Kontrak Google Apps Script (GAS) untuk GudangPresisi
- * Sesuai dengan spesifikasi kontrak API GAS Backend Version 1.2.3.
+ * Sesuai dengan spesifikasi kontrak API GAS Backend Version 1.2.4.
  * Backend deployment aktif di Google Apps Script adalah Single Source of Truth.
  */
 export const GAS_CODE_TEMPLATE = `/**
  * GUDANGPRESISI - BACKEND GOOGLE APPS SCRIPT (GAS)
- * Version: 1.2.3 (Reference Contract Specification)
+ * Version: 1.2.4 (Reference Contract Specification)
  * Database: Google Spreadsheet
  *
  * PENTING:
- * File ini merupakan referensi struktur dan kontrak API v1.2.3.
+ * File ini merupakan referensi struktur dan kontrak API v1.2.4.
  * Backend production aktif dikelola langsung melalui Google Apps Script Deployment.
  */
 
@@ -109,13 +109,13 @@ function handleHealth() {
       status: 'ONLINE',
       spreadsheetId: ss.getId(),
       sheetsFound: sheets,
-      version: '1.2.3',
+      version: '1.2.4',
       timestamp: new Date().toISOString()
     }
   };
 }
 
-// Inisialisasi struktur sheet standar GudangPresisi v1.2.3
+// Inisialisasi struktur sheet standar GudangPresisi v1.2.4
 function initSheets() {
   var ss = getSS();
   var schemas = {

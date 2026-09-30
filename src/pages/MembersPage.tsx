@@ -168,8 +168,8 @@ export const MembersPage: React.FC = () => {
               className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700"
             >
               <option value="ALL">Semua Jabatan</option>
-              {Array.from(new Set(members.map((m) => m.JABATAN).filter(Boolean))).sort().map((jabatan) => (
-                <option key={jabatan} value={jabatan}>{jabatan}</option>
+              {Array.from(new Set(members.map((m) => m.JABATAN).filter(Boolean))).sort().map((jabatan, idx) => (
+                <option key={`${jabatan}-${idx}`} value={jabatan}>{jabatan}</option>
               ))}
             </select>
 
@@ -243,9 +243,9 @@ export const MembersPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  {memberLimits.slice(0, 3).map((l) => (
+                  {memberLimits.slice(0, 3).map((l, idx) => (
                     <div
-                      key={l.ID_LIMIT}
+                      key={`${l.ID_LIMIT}-${idx}`}
                       className="flex items-center justify-between p-2 bg-slate-50 rounded border border-slate-100 text-[11px]"
                     >
                       <span className="font-medium text-slate-800">
