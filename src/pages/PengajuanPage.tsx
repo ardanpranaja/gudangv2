@@ -6,7 +6,7 @@ import { MasterMember, MasterItem } from '../types';
 import { Plus, FileCheck2, Loader2, Info, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const PengajuanPage: React.FC = () => {
-  const { pageParams, addToast, refreshKey } = useApp();
+  const { pageParams, addToast, refreshKey, canPerformAction } = useApp();
 
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [items, setItems] = useState<MasterItem[]>([]);
@@ -67,6 +67,10 @@ export const PengajuanPage: React.FC = () => {
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canPerformAction('TRANSACTION')) {
+      addToast('error', 'Akses Ditolak', 'Peran Anda tidak memiliki izin membuat pengajuan.');
+      return;
+    }
     if (!formMemberId || !formItemId || formJumlah <= 0 || !formAlasan.trim()) {
       addToast('error', 'Validasi Gagal', 'Alasan pengajuan wajib diisi secara rinci.');
       return;
@@ -97,6 +101,10 @@ export const PengajuanPage: React.FC = () => {
   };
 
   const handleProcessApproval = async (type: 'APPROVE' | 'REJECT') => {
+    if (!canPerformAction('APPROVAL')) {
+      addToast('error', 'Akses Ditolak', 'Hanya ADMIN yang dapat memproses approval atau rejection pengajuan.');
+      return;
+    }
     if (!quickRequestId.trim()) {
       addToast('error', 'Validasi Gagal', 'Masukkan ID Pengajuan (misal: REQ-202609-0001).');
       return;
@@ -135,8 +143,9 @@ export const PengajuanPage: React.FC = () => {
         description="Layanan permohonan pengambilan barang sebelum masa pakai selesai atau melebihi limit. Terhubung langsung via POST action=request ke GAS."
         actions={
           <button
+            disabled={!canPerformAction('TRANSACTION')}
             onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Buat Pengajuan Baru</span>
@@ -148,10 +157,10 @@ export const PengajuanPage: React.FC = () => {
       <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-2">
         <div className="flex items-center gap-2 font-semibold">
           <Info className="w-4 h-4 text-amber-700 shrink-0" />
-          <span>Status Endpoint API GAS (v1.2.2)</span>
+          <span>Status Endpoint API GAS (v1.2.3)</span>
         </div>
         <p className="text-amber-800 leading-relaxed">
-          Sesuai spesifikasi GAS v1.2.2, endpoint daftar pengajuan (<code>GET action=requests</code>) belum
+          Sesuai spesifikasi GAS v1.2.3, endpoint daftar pengajuan (<code>GET action=requests</code>) belum
           disediakan oleh backend. Namun, pengiriman pengajuan baru (<code>POST action=request</code>) serta
           persetujuan/penolakan (<code>POST action=approve_request</code> & <code>POST action=reject_request</code>)
           sepenuhnya aktif dan terhubung.
@@ -186,6 +195,7 @@ export const PengajuanPage: React.FC = () => {
             <input
               type="text"
               value={quickApproverId}
+              disabled={!canPerformAction('APPROVAL') || isProcessingQuick}
               onChange={(e) => setQuickApproverId(e.target.value)}
               placeholder="ADMIN / MBR000001"
               className="w-full px-3 py-2 border border-slate-200 rounded font-mono text-xs focus:ring-1 focus:ring-slate-900 text-slate-800"
@@ -200,6 +210,7 @@ export const PengajuanPage: React.FC = () => {
           <textarea
             rows={2}
             value={quickNote}
+            disabled={!canPerformAction('APPROVAL') || isProcessingQuick}
             onChange={(e) => setQuickNote(e.target.value)}
             placeholder="Catatan persetujuan atau alasan penolakan..."
             className="w-full px-3 py-2 border border-slate-200 rounded text-xs focus:ring-1 focus:ring-slate-900 text-slate-800"
@@ -209,7 +220,7 @@ export const PengajuanPage: React.FC = () => {
         <div className="pt-2 flex items-center justify-end gap-2.5">
           <button
             type="button"
-            disabled={isProcessingQuick || !quickRequestId.trim()}
+            disabled={!canPerformAction('APPROVAL') || isProcessingQuick || !quickRequestId.trim()}
             onClick={() => handleProcessApproval('REJECT')}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded transition-colors disabled:opacity-50"
           >
@@ -218,7 +229,7 @@ export const PengajuanPage: React.FC = () => {
           </button>
           <button
             type="button"
-            disabled={isProcessingQuick || !quickRequestId.trim()}
+            disabled={!canPerformAction('APPROVAL') || isProcessingQuick || !quickRequestId.trim()}
             onClick={() => handleProcessApproval('APPROVE')}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded transition-colors disabled:opacity-50"
           >
