@@ -80,7 +80,7 @@ export const MemberLimitsPage: React.FC = () => {
               {l.NAMA_MEMBER || member?.NAMA_MEMBER || l.ID_MEMBER}
             </div>
             <div className="font-mono text-[11px] text-slate-400">
-              {l.ID_MEMBER} · {member?.JENIS_MEMBER || ''}
+              {l.ID_MEMBER} · {member?.JABATAN || ''}
             </div>
           </div>
         );
@@ -172,7 +172,7 @@ export const MemberLimitsPage: React.FC = () => {
               <option value="ALL">Semua Member</option>
               {members.map((m) => (
                 <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                  {m.NAMA_MEMBER} ({m.JENIS_MEMBER})
+                  {m.NAMA_MEMBER} ({m.JABATAN})
                 </option>
               ))}
             </select>
