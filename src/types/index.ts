@@ -369,7 +369,7 @@ export interface GasBinCardResponse {
 }
 
 export interface GasMemberHistoryResponse {
-  member: MasterMember | { ID_MEMBER: string; NAMA_MEMBER: string; JENIS_MEMBER?: string };
+  member: MasterMember | { ID_MEMBER: string; NAMA_MEMBER: string; JABATAN?: string };
   count: number;
   history: Transaksi[];
 }
