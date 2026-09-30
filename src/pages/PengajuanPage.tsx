@@ -6,7 +6,7 @@ import { MasterMember, MasterItem } from '../types';
 import { Plus, FileCheck2, Loader2, Info, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const PengajuanPage: React.FC = () => {
-  const { pageParams, addToast, refreshKey } = useApp();
+  const { pageParams, addToast, refreshKey, canPerformAction } = useApp();
 
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [items, setItems] = useState<MasterItem[]>([]);
@@ -55,18 +55,25 @@ export const PengajuanPage: React.FC = () => {
     loadData();
   }, [refreshKey]);
 
-  // If navigated with prefill params, auto open create modal
+  // If navigated with prefill params, auto open create modal if permitted
   useEffect(() => {
     if (pageParams.memberId && pageParams.itemId) {
       setFormMemberId(pageParams.memberId);
       setFormItemId(pageParams.itemId);
       if (pageParams.jumlah) setFormJumlah(pageParams.jumlah);
-      setIsCreateModalOpen(true);
+      if (canPerformAction('TRANSACTION')) {
+        setIsCreateModalOpen(true);
+      }
     }
   }, [pageParams]);
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canPerformAction('TRANSACTION')) {
+      addToast('error', 'Akses Ditolak', 'Peran Anda tidak memiliki izin untuk membuat pengajuan.');
+      return;
+    }
+
     if (!formMemberId || !formItemId || formJumlah <= 0 || !formAlasan.trim()) {
       addToast('error', 'Validasi Gagal', 'Alasan pengajuan wajib diisi secara rinci.');
       return;
@@ -97,6 +104,11 @@ export const PengajuanPage: React.FC = () => {
   };
 
   const handleProcessApproval = async (type: 'APPROVE' | 'REJECT') => {
+    if (!canPerformAction('APPROVAL')) {
+      addToast('error', 'Akses Ditolak', 'Hanya Admin yang memiliki hak akses persetujuan/penolakan pengajuan.');
+      return;
+    }
+
     if (!quickRequestId.trim()) {
       addToast('error', 'Validasi Gagal', 'Masukkan ID Pengajuan (misal: REQ-202609-0001).');
       return;
@@ -136,7 +148,9 @@ export const PengajuanPage: React.FC = () => {
         actions={
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors"
+            disabled={!canPerformAction('TRANSACTION')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title={!canPerformAction('TRANSACTION') ? 'Akses ditolak: Memerlukan izin transaksi' : undefined}
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Buat Pengajuan Baru</span>
@@ -209,18 +223,20 @@ export const PengajuanPage: React.FC = () => {
         <div className="pt-2 flex items-center justify-end gap-2.5">
           <button
             type="button"
-            disabled={isProcessingQuick || !quickRequestId.trim()}
+            disabled={isProcessingQuick || !quickRequestId.trim() || !canPerformAction('APPROVAL')}
             onClick={() => handleProcessApproval('REJECT')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title={!canPerformAction('APPROVAL') ? 'Akses ditolak: Memerlukan izin approval' : undefined}
           >
             {isProcessingQuick ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <AlertCircle className="w-3.5 h-3.5" />}
             <span>Tolak (POST reject_request)</span>
           </button>
           <button
             type="button"
-            disabled={isProcessingQuick || !quickRequestId.trim()}
+            disabled={isProcessingQuick || !quickRequestId.trim() || !canPerformAction('APPROVAL')}
             onClick={() => handleProcessApproval('APPROVE')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title={!canPerformAction('APPROVAL') ? 'Akses ditolak: Memerlukan izin approval' : undefined}
           >
             {isProcessingQuick ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
             <span>Setujui (POST approve_request)</span>
@@ -321,8 +337,9 @@ export const PengajuanPage: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-50"
+                    disabled={isSubmitting || !canPerformAction('TRANSACTION')}
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={!canPerformAction('TRANSACTION') ? 'Akses ditolak: Memerlukan izin transaksi' : undefined}
                   >
                     {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     <span>Kirim ke GAS (action=request)</span>

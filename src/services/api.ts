@@ -229,7 +229,7 @@ class ApiService {
     }
     return data.members.map((m: any) => ({
       ...m,
-      JABATAN: m.JABATAN || m.JENIS_MEMBER || '',
+      JABATAN: m.JABATAN || '',
     }));
   }
 
