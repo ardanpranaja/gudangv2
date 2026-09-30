@@ -140,7 +140,7 @@ export const RiwayatMemberPage: React.FC = () => {
             >
               {members.map((m) => (
                 <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                  [{m.ID_MEMBER}] {m.NAMA_MEMBER} — {m.JENIS_MEMBER} ({m.STATUS})
+                  [{m.ID_MEMBER}] {m.NAMA_MEMBER} — {m.JABATAN} ({m.STATUS})
                 </option>
               ))}
             </select>
@@ -150,7 +150,7 @@ export const RiwayatMemberPage: React.FC = () => {
             <div className="flex items-center gap-4 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
               <div>
                 <div className="text-[11px] text-slate-500">Jabatan / Role</div>
-                <div className="font-semibold text-slate-900">{selectedMember.JENIS_MEMBER}</div>
+                <div className="font-semibold text-slate-900">{selectedMember.JABATAN}</div>
               </div>
               <div className="h-8 w-px bg-slate-200" />
               <div>
