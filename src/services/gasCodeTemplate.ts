@@ -1,15 +1,15 @@
 /**
  * Template Referensi Kontrak Google Apps Script (GAS) untuk GudangPresisi
- * Sesuai dengan spesifikasi kontrak API GAS Backend Version 1.2.2.
+ * Sesuai dengan spesifikasi kontrak API GAS Backend Version 1.2.3.
  * Backend deployment aktif di Google Apps Script adalah Single Source of Truth.
  */
 export const GAS_CODE_TEMPLATE = `/**
  * GUDANGPRESISI - BACKEND GOOGLE APPS SCRIPT (GAS)
- * Version: 1.2.2 (Reference Contract Specification)
+ * Version: 1.2.3 (Reference Contract Specification)
  * Database: Google Spreadsheet
  *
  * PENTING:
- * File ini merupakan referensi struktur dan kontrak API v1.2.2.
+ * File ini merupakan referensi struktur dan kontrak API v1.2.3.
  * Backend production aktif dikelola langsung melalui Google Apps Script Deployment.
  */
 
@@ -109,18 +109,18 @@ function handleHealth() {
       status: 'ONLINE',
       spreadsheetId: ss.getId(),
       sheetsFound: sheets,
-      version: '1.2.2',
+      version: '1.2.3',
       timestamp: new Date().toISOString()
     }
   };
 }
 
-// Inisialisasi struktur sheet standar GudangPresisi v1.2.2
+// Inisialisasi struktur sheet standar GudangPresisi v1.2.3
 function initSheets() {
   var ss = getSS();
   var schemas = {
     MASTER_ITEM: ['ID_ITEM', 'NAMA_ITEM', 'KATEGORI', 'SATUAN', 'MASA_PAKAI_BULAN', 'STOK_AWAL', 'MIN_STOK', 'LOKASI', 'STATUS', 'CREATED_AT', 'UPDATED_AT'],
-    MASTER_MEMBER: ['ID_MEMBER', 'NAMA_MEMBER', 'JENIS_MEMBER', 'NO_HP', 'STATUS', 'TANGGAL_MULAI', 'CREATED_AT', 'UPDATED_AT'],
+    MASTER_MEMBER: ['ID_MEMBER', 'NAMA_MEMBER', 'JABATAN', 'NO_HP', 'STATUS', 'TANGGAL_MULAI', 'CREATED_AT', 'UPDATED_AT'],
     MEMBER_LIMIT: ['ID_LIMIT', 'ID_MEMBER', 'ID_ITEM', 'MAX_QTY', 'SATUAN', 'STATUS', 'CREATED_AT', 'UPDATED_AT'],
     TRANSAKSI: ['ID_TRANSAKSI', 'TIMESTAMP', 'TANGGAL', 'ID_ITEM', 'JENIS_TRANSAKSI', 'NO_DOKUMEN', 'JUMLAH', 'SATUAN', 'ID_MEMBER', 'NAMA_MEMBER', 'KETERANGAN', 'CREATED_AT'],
     PENGAJUAN_PENGAMBILAN: ['ID_PENGAJUAN', 'ID_MEMBER', 'NAMA_MEMBER', 'ID_ITEM', 'NAMA_ITEM', 'JUMLAH', 'ALASAN', 'STATUS', 'APPROVER', 'CATATAN', 'CREATED_AT', 'UPDATED_AT'],
