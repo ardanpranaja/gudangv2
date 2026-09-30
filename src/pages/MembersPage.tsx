@@ -18,7 +18,7 @@ export const MembersPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   // Filters
-  const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
+  const [selectedJabatan, setSelectedJabatan] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
 
   // Detail Drawer State
@@ -63,7 +63,7 @@ export const MembersPage: React.FC = () => {
   };
 
   const filteredMembers = members.filter((m) => {
-    if (selectedJenis !== 'ALL' && m.JENIS_MEMBER !== selectedJenis) return false;
+    if (selectedJabatan !== 'ALL' && m.JABATAN !== selectedJabatan) return false;
     if (selectedStatus !== 'ALL' && m.STATUS !== selectedStatus) return false;
     return true;
   });
@@ -87,11 +87,11 @@ export const MembersPage: React.FC = () => {
       ),
     },
     {
-      key: 'JENIS_MEMBER',
-      header: 'Jenis / Jabatan',
+      key: 'JABATAN',
+      header: 'Jabatan',
       sortable: true,
       align: 'center',
-      render: (m) => <StatusBadge status={m.JENIS_MEMBER} size="sm" />,
+      render: (m) => <StatusBadge status={m.JABATAN} size="sm" />,
     },
     {
       key: 'NO_HP',
@@ -138,7 +138,7 @@ export const MembersPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Master Member"
-        description="Data personil lapangan, level jabatan (SM, SPV, TL, CREW, VENDOR), dan status kepesertaan dari MASTER_MEMBER Spreadsheet."
+        description="Data personil lapangan, jabatan sesuai MASTER_MEMBER, dan status kepesertaan dari MASTER_MEMBER Spreadsheet."
       />
 
       <div className="p-3.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-2">
@@ -163,16 +163,14 @@ export const MembersPage: React.FC = () => {
         filterControls={
           <div className="flex items-center gap-2">
             <select
-              value={selectedJenis}
-              onChange={(e) => setSelectedJenis(e.target.value)}
+              value={selectedJabatan}
+              onChange={(e) => setSelectedJabatan(e.target.value)}
               className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700"
             >
-              <option value="ALL">Semua Jenis</option>
-              <option value="SM">SM (Site Manager)</option>
-              <option value="SPV">SPV (Supervisor)</option>
-              <option value="TL">TL (Team Leader)</option>
-              <option value="CREW">CREW</option>
-              <option value="VENDOR">VENDOR</option>
+              <option value="ALL">Semua Jabatan</option>
+              {Array.from(new Set(members.map((m) => m.JABATAN).filter(Boolean))).sort().map((jabatan) => (
+                <option key={jabatan} value={jabatan}>{jabatan}</option>
+              ))}
             </select>
 
             <select
@@ -204,8 +202,8 @@ export const MembersPage: React.FC = () => {
                 <StatusBadge status={selectedMember.STATUS} size="sm" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Jenis / Jabatan</span>
-                <StatusBadge status={selectedMember.JENIS_MEMBER} size="sm" />
+                <span className="text-slate-500 font-medium">Jabatan</span>
+                <StatusBadge status={selectedMember.JABATAN} size="sm" />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 font-medium">No. Handphone</span>
