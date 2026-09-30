@@ -216,7 +216,7 @@ export const BarangKeluarPage: React.FC = () => {
               >
                 {members.map((m) => (
                   <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                    [{m.ID_MEMBER}] {m.NAMA_MEMBER} ({m.JENIS_MEMBER})
+                    [{m.ID_MEMBER}] {m.NAMA_MEMBER} ({m.JABATAN})
                   </option>
                 ))}
               </select>
@@ -414,7 +414,7 @@ export const BarangKeluarPage: React.FC = () => {
               <div className="space-y-1.5 text-[11px]">
                 <div className="font-semibold text-slate-900">{selectedMember.NAMA_MEMBER}</div>
                 <div className="text-slate-500">
-                  Level: <span className="font-medium text-slate-700">{selectedMember.JENIS_MEMBER}</span> · ID:{' '}
+                  Level: <span className="font-medium text-slate-700">{selectedMember.JABATAN}</span> · ID:{' '}
                   <span className="font-mono">{selectedMember.ID_MEMBER}</span>
                 </div>
                 <button
