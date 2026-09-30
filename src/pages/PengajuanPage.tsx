@@ -269,7 +269,7 @@ export const PengajuanPage: React.FC = () => {
                   >
                     {members.map((m) => (
                       <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                        [{m.ID_MEMBER}] {m.NAMA_MEMBER} ({m.JENIS_MEMBER})
+                        [{m.ID_MEMBER}] {m.NAMA_MEMBER} ({m.JABATAN})
                       </option>
                     ))}
                   </select>
