@@ -154,17 +154,22 @@ export interface PickupEligibilityResult {
 // Request Models
 export interface PengajuanPengambilan {
   ID_PENGAJUAN: string;
+  TANGGAL: string;
   ID_MEMBER: string;
-  NAMA_MEMBER: string;
   ID_ITEM: string;
-  NAMA_ITEM: string;
   JUMLAH: number;
+  TANGGAL_TERAKHIR_AMBIL?: string;
+  TANGGAL_SEHARUSNYA?: string;
   ALASAN: string;
-  STATUS: StatusPengajuan;
-  APPROVER?: string;
-  CATATAN?: string;
-  CREATED_AT?: string;
-  UPDATED_AT?: string;
+  STATUS: StatusPengajuan | string;
+  ID_APPROVER?: string;
+  CATATAN_APPROVER?: string;
+  TIMESTAMP?: string;
+}
+
+export interface GasRequestsResponse {
+  count: number;
+  requests: PengajuanPengambilan[];
 }
 
 // Machine Models (Tahap Berikutnya)

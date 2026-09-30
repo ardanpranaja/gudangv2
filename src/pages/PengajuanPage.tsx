@@ -1,16 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
+import { DataTable, Column } from '../components/common/DataTable';
+import { StatusBadge } from '../components/common/StatusBadge';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { MasterMember, MasterItem } from '../types';
-import { Plus, FileCheck2, Loader2, Info, CheckCircle2, AlertCircle } from 'lucide-react';
+import { MasterMember, MasterItem, PengajuanPengambilan } from '../types';
+import {
+  Plus,
+  FileCheck2,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  RefreshCw,
+  ArrowRight,
+} from 'lucide-react';
 
 export const PengajuanPage: React.FC = () => {
   const { pageParams, addToast, refreshKey, canPerformAction } = useApp();
 
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [items, setItems] = useState<MasterItem[]>([]);
+  const [requests, setRequests] = useState<PengajuanPengambilan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRequestsLoading, setIsRequestsLoading] = useState(true);
+  const [requestsError, setRequestsError] = useState('');
+
+  // Filter
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   // Create Request Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -26,17 +43,50 @@ export const PengajuanPage: React.FC = () => {
   const [quickNote, setQuickNote] = useState('');
   const [isProcessingQuick, setIsProcessingQuick] = useState(false);
 
-  const loadData = async () => {
+  // Fast lookups for Member & Item names
+  const memberMap = useMemo(() => {
+    const map = new Map<string, MasterMember>();
+    members.forEach((m) => map.set(m.ID_MEMBER, m));
+    return map;
+  }, [members]);
+
+  const itemMap = useMemo(() => {
+    const map = new Map<string, MasterItem>();
+    items.forEach((i) => map.set(i.ID_ITEM, i));
+    return map;
+  }, [items]);
+
+  const loadRequests = async () => {
+    setIsRequestsLoading(true);
+    setRequestsError('');
+    try {
+      const data = await api.getRequests();
+      setRequests(data);
+    } catch (err: any) {
+      console.warn('Gagal memuat riwayat pengajuan dari GAS:', err);
+      setRequestsError(err.message || 'Gagal memuat data pengajuan dari Google Spreadsheet.');
+    } finally {
+      setIsRequestsLoading(false);
+    }
+  };
+
+  const loadAllData = async () => {
     setIsLoading(true);
     try {
-      const [memData, itmData] = await Promise.all([
+      const [memData, itmData, reqData] = await Promise.all([
         api.getMembers(),
         api.getItems(),
+        api.getRequests().catch((err) => {
+          console.warn('Gagal memuat riwayat pengajuan pada startup:', err);
+          return [] as PengajuanPengambilan[];
+        }),
       ]);
+
       const activeMembers = memData.filter((m) => m.STATUS === 'AKTIF');
       const activeItems = itmData.filter((i) => i.STATUS === 'AKTIF');
       setMembers(activeMembers);
       setItems(activeItems);
+      setRequests(reqData);
 
       if (activeMembers.length > 0 && !formMemberId) {
         setFormMemberId(activeMembers[0].ID_MEMBER);
@@ -46,13 +96,15 @@ export const PengajuanPage: React.FC = () => {
       }
     } catch (err: any) {
       console.warn('Gagal memuat master data untuk form pengajuan:', err);
+      addToast('warning', 'Peringatan Koneksi', 'Gagal memuat sebagian data dari Google Spreadsheet.');
     } finally {
       setIsLoading(false);
+      setIsRequestsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadAllData();
   }, [refreshKey]);
 
   // If navigated with prefill params, auto open create modal if permitted
@@ -90,12 +142,14 @@ export const PengajuanPage: React.FC = () => {
 
       addToast(
         'success',
-        'Pengajuan Terkirim ke GAS',
-        res?.message || 'Permintaan telah dikirim via POST action=request ke backend.'
+        'Pengajuan Berhasil Dibuat',
+        res?.message || 'Permintaan pengajuan pengambilan telah tersimpan di spreadsheet.'
       );
 
       setIsCreateModalOpen(false);
       setFormAlasan('');
+      // Reload requests to immediately display the new request in table
+      await loadRequests();
     } catch (err: any) {
       addToast('error', 'Gagal Mengirim Pengajuan', err.message || 'Terjadi kesalahan pada backend.');
     } finally {
@@ -122,17 +176,19 @@ export const PengajuanPage: React.FC = () => {
           approverId: quickApproverId.trim() || 'ADMIN',
           note: quickNote.trim() || 'Disetujui',
         });
-        addToast('success', 'Persetujuan Diproses di GAS', res?.message || 'Pengajuan disetujui.');
+        addToast('success', 'Pengajuan Disetujui', res?.message || 'Pengajuan telah disetujui di spreadsheet.');
       } else {
         const res = await api.rejectRequest({
           requestId: quickRequestId.trim(),
           approverId: quickApproverId.trim() || 'ADMIN',
           note: quickNote.trim() || 'Ditolak',
         });
-        addToast('info', 'Penolakan Diproses di GAS', res?.message || 'Pengajuan ditolak.');
+        addToast('info', 'Pengajuan Ditolak', res?.message || 'Pengajuan telah ditolak di spreadsheet.');
       }
       setQuickRequestId('');
       setQuickNote('');
+      // Reload requests to update status in the table without browser refresh
+      await loadRequests();
     } catch (err: any) {
       addToast('error', 'Gagal Memproses Permintaan', err.message);
     } finally {
@@ -140,43 +196,201 @@ export const PengajuanPage: React.FC = () => {
     }
   };
 
+  const handleSelectForApproval = (req: PengajuanPengambilan) => {
+    setQuickRequestId(req.ID_PENGAJUAN);
+    if (!quickNote) {
+      setQuickNote(`Proses untuk ${req.ID_MEMBER}`);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Filter requests
+  const filteredRequests = useMemo(() => {
+    if (statusFilter === 'ALL') return requests;
+    return requests.filter((r) => r.STATUS.toUpperCase() === statusFilter);
+  }, [requests, statusFilter]);
+
+  // Table Columns
+  const columns: Column<PengajuanPengambilan>[] = [
+    {
+      key: 'ID_PENGAJUAN',
+      header: 'ID Pengajuan',
+      sortable: true,
+      render: (r) => (
+        <div>
+          <div className="font-mono font-semibold text-slate-900">{r.ID_PENGAJUAN}</div>
+          {r.TIMESTAMP && (
+            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+              {r.TIMESTAMP.length > 10 ? r.TIMESTAMP.slice(0, 19).replace('T', ' ') : r.TIMESTAMP}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'TANGGAL',
+      header: 'Tanggal',
+      sortable: true,
+      render: (r) => (
+        <div>
+          <div className="font-mono text-slate-800 font-medium">{r.TANGGAL || '-'}</div>
+          {r.TANGGAL_SEHARUSNYA && (
+            <div className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded mt-0.5 inline-block border border-amber-200">
+              Jatuh Tempo: {r.TANGGAL_SEHARUSNYA}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'ID_MEMBER',
+      header: 'Member',
+      sortable: true,
+      searchValue: (r) => {
+        const member = memberMap.get(r.ID_MEMBER);
+        return `${r.ID_MEMBER} ${member?.NAMA_MEMBER || ''} ${member?.JABATAN || ''}`;
+      },
+      render: (r) => {
+        const member = memberMap.get(r.ID_MEMBER);
+        return (
+          <div>
+            <div className="font-medium text-slate-900">{member?.NAMA_MEMBER || r.ID_MEMBER}</div>
+            <div className="text-[11px] font-mono text-slate-500">
+              {r.ID_MEMBER} {member?.JABATAN ? `· ${member.JABATAN}` : ''}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'ID_ITEM',
+      header: 'Barang',
+      sortable: true,
+      searchValue: (r) => {
+        const item = itemMap.get(r.ID_ITEM);
+        return `${r.ID_ITEM} ${item?.NAMA_ITEM || ''} ${item?.KATEGORI || ''}`;
+      },
+      render: (r) => {
+        const item = itemMap.get(r.ID_ITEM);
+        return (
+          <div>
+            <div className="font-medium text-slate-900">{item?.NAMA_ITEM || r.ID_ITEM}</div>
+            <div className="text-[11px] text-slate-500">
+              <span className="font-mono">{r.ID_ITEM}</span> {item?.KATEGORI ? `· ${item.KATEGORI}` : ''}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'JUMLAH',
+      header: 'Jumlah',
+      sortable: true,
+      align: 'right',
+      render: (r) => {
+        const item = itemMap.get(r.ID_ITEM);
+        return (
+          <div className="text-right">
+            <span className="font-mono font-bold text-slate-900 tabular-nums">{r.JUMLAH}</span>
+            <span className="text-[11px] text-slate-500 ml-1">{item?.SATUAN || 'UNIT'}</span>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'ALASAN',
+      header: 'Alasan',
+      render: (r) => (
+        <div className="max-w-xs text-slate-700 text-xs leading-relaxed" title={r.ALASAN}>
+          {r.ALASAN || '-'}
+        </div>
+      ),
+    },
+    {
+      key: 'STATUS',
+      header: 'Status',
+      sortable: true,
+      align: 'center',
+      render: (r) => <StatusBadge status={r.STATUS} size="sm" />,
+    },
+    {
+      key: 'ID_APPROVER',
+      header: 'Approver',
+      render: (r) => {
+        if (!r.ID_APPROVER && !r.CATATAN_APPROVER) {
+          return <span className="text-slate-400 text-[11px] italic">-</span>;
+        }
+        return (
+          <div className="text-xs">
+            <div className="font-mono font-medium text-slate-800">{r.ID_APPROVER || '-'}</div>
+            {r.CATATAN_APPROVER && (
+              <div className="text-[11px] text-slate-500 mt-0.5 italic">
+                "{r.CATATAN_APPROVER}"
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'AKSI',
+      header: 'Aksi',
+      align: 'center',
+      render: (r) => {
+        if (r.STATUS.toUpperCase() === 'MENUNGGU' && canPerformAction('APPROVAL')) {
+          return (
+            <button
+              onClick={() => handleSelectForApproval(r)}
+              className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded transition-colors"
+              title="Pilih ID ini untuk diproses di Form Approval"
+            >
+              <span>Pilih ID</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          );
+        }
+        return null;
+      },
+    },
+  ];
+
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-5xl">
       <PageHeader
         title="Pengajuan Pengambilan Awal"
-        description="Layanan permohonan pengambilan barang sebelum masa pakai selesai atau melebihi limit. Terhubung langsung via POST action=request ke GAS."
+        description="Layanan permohonan pengambilan barang sebelum masa pakai selesai atau melebihi limit. Data tersimpan dan terbaca langsung dari Google Spreadsheet."
         actions={
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            disabled={!canPerformAction('TRANSACTION')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title={!canPerformAction('TRANSACTION') ? 'Akses ditolak: Memerlukan izin transaksi' : undefined}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Buat Pengajuan Baru</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={loadRequests}
+              disabled={isRequestsLoading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors disabled:opacity-50"
+              title="Perbarui data riwayat pengajuan dari spreadsheet"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRequestsLoading ? 'animate-spin' : ''}`} />
+              <span>Muat Ulang</span>
+            </button>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              disabled={!canPerformAction('TRANSACTION')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title={!canPerformAction('TRANSACTION') ? 'Akses ditolak: Memerlukan izin transaksi' : undefined}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Buat Pengajuan Baru</span>
+            </button>
+          </div>
         }
       />
 
-      {/* Backend API Status Banner per Step 11 */}
-      <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-2">
-        <div className="flex items-center gap-2 font-semibold">
-          <Info className="w-4 h-4 text-amber-700 shrink-0" />
-          <span>Status Endpoint API GAS (v1.2.4)</span>
-        </div>
-        <p className="text-amber-800 leading-relaxed">
-          Sesuai spesifikasi GAS v1.2.4, endpoint daftar pengajuan (<code>GET action=requests</code>) belum
-          disediakan oleh backend. Namun, pengiriman pengajuan baru (<code>POST action=request</code>) serta
-          persetujuan/penolakan (<code>POST action=approve_request</code> & <code>POST action=reject_request</code>)
-          sepenuhnya aktif dan terhubung.
-        </p>
-      </div>
-
       {/* Approval / Rejection Processor Form */}
       <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 text-slate-900">
-          <FileCheck2 className="w-4 h-4 text-slate-700" />
-          <h3 className="text-sm font-semibold">Proses Approval / Rejection Pengajuan (GAS Contract)</h3>
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3 text-slate-900">
+          <div className="flex items-center gap-2">
+            <FileCheck2 className="w-4 h-4 text-slate-700" />
+            <h3 className="text-sm font-semibold">Proses Approval / Rejection Pengajuan</h3>
+          </div>
+          <span className="text-[11px] text-slate-500 font-mono">POST action=approve_request / reject_request</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -244,6 +458,44 @@ export const PengajuanPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Riwayat Pengajuan Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-slate-600" />
+            <h3 className="text-sm font-semibold text-slate-900">Riwayat Pengajuan</h3>
+            <span className="px-2 py-0.5 text-[11px] font-mono bg-slate-100 text-slate-700 rounded-full border border-slate-200">
+              {filteredRequests.length} data
+            </span>
+          </div>
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={filteredRequests}
+          keyField={(r) => `${r.ID_PENGAJUAN}-${r.TIMESTAMP || r.TANGGAL}`}
+          isLoading={isRequestsLoading || isLoading}
+          isError={Boolean(requestsError)}
+          errorMessage={requestsError}
+          onRetry={loadRequests}
+          searchPlaceholder="Cari ID pengajuan, member, barang, atau alasan..."
+          emptyTitle="Belum ada riwayat pengajuan"
+          emptyDescription="Pengajuan pengambilan awal dari personil lapangan akan tercatat di sini setelah dibuat."
+          filterControls={
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="text-xs border border-slate-200 rounded px-2.5 py-1.5 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+            >
+              <option value="ALL">Semua Status</option>
+              <option value="MENUNGGU">Menunggu</option>
+              <option value="DISETUJUI">Disetujui</option>
+              <option value="DITOLAK">Ditolak</option>
+            </select>
+          }
+        />
+      </div>
+
       {/* Create Request Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -258,7 +510,7 @@ export const PengajuanPage: React.FC = () => {
                 <h3 className="text-base font-semibold">Form Pengajuan Pengambilan Awal</h3>
               </div>
               <p className="text-xs text-slate-500 mb-5">
-                Payload dikirim langsung ke backend GAS via <code>POST action=request</code>.
+                Payload dikirim langsung ke backend GAS via <code>POST action=request</code> dan disimpan di Spreadsheet.
               </p>
 
               <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">

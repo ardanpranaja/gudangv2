@@ -38,6 +38,8 @@ function doGet(e) {
         return jsonResponse(handleGetTransactions(e.parameter));
       case 'stock':
         return jsonResponse(handleGetStock());
+      case 'requests':
+        return jsonResponse(handleGetRequests());
       case 'bincard': {
         var bincardItemId = (e && e.parameter && (e.parameter.id_item || e.parameter.itemId)) || '';
         return jsonResponse(handleGetBinCard(bincardItemId));
@@ -115,6 +117,73 @@ function handleHealth() {
   };
 }
 
+// Handler GET action=requests
+function handleGetRequests() {
+  var ss = getSS();
+  var sheet = ss.getSheetByName(SHEETS.PENGAJUAN_PENGAMBILAN);
+  if (!sheet) {
+    return {
+      success: true,
+      action: 'requests',
+      data: { count: 0, requests: [] }
+    };
+  }
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) {
+    return {
+      success: true,
+      action: 'requests',
+      data: { count: 0, requests: [] }
+    };
+  }
+
+  var headers = data[0].map(function(h) { return String(h).trim(); });
+  var colMap = {};
+  for (var i = 0; i < headers.length; i++) {
+    colMap[headers[i]] = i;
+  }
+
+  var requests = [];
+  for (var r = 1; r < data.length; r++) {
+    var row = data[r];
+    var idReq = String(row[colMap['ID_PENGAJUAN']] || '').trim();
+    if (!idReq) continue;
+
+    var req = {
+      ID_PENGAJUAN: idReq,
+      TANGGAL: row[colMap['TANGGAL']] ? String(row[colMap['TANGGAL']]).trim() : '',
+      ID_MEMBER: String(row[colMap['ID_MEMBER']] || '').trim(),
+      ID_ITEM: String(row[colMap['ID_ITEM']] || '').trim(),
+      JUMLAH: Number(row[colMap['JUMLAH']] || 0),
+      TANGGAL_TERAKHIR_AMBIL: row[colMap['TANGGAL_TERAKHIR_AMBIL']] ? String(row[colMap['TANGGAL_TERAKHIR_AMBIL']]).trim() : '',
+      TANGGAL_SEHARUSNYA: row[colMap['TANGGAL_SEHARUSNYA']] ? String(row[colMap['TANGGAL_SEHARUSNYA']]).trim() : '',
+      ALASAN: String(row[colMap['ALASAN']] || '').trim(),
+      STATUS: String(row[colMap['STATUS']] || 'MENUNGGU').trim(),
+      ID_APPROVER: String(row[colMap['ID_APPROVER']] || '').trim(),
+      CATATAN_APPROVER: String(row[colMap['CATATAN_APPROVER']] || '').trim(),
+      TIMESTAMP: row[colMap['TIMESTAMP']] ? String(row[colMap['TIMESTAMP']]).trim() : ''
+    };
+    requests.push(req);
+  }
+
+  // Urutkan berdasarkan TIMESTAMP terbaru ke terlama; fallback ke TANGGAL
+  requests.sort(function(a, b) {
+    var keyA = a.TIMESTAMP || a.TANGGAL || '';
+    var keyB = b.TIMESTAMP || b.TANGGAL || '';
+    return keyB.localeCompare(keyA);
+  });
+
+  return {
+    success: true,
+    action: 'requests',
+    data: {
+      count: requests.length,
+      requests: requests
+    }
+  };
+}
+
 // Inisialisasi struktur sheet standar GudangPresisi v1.2.4
 function initSheets() {
   var ss = getSS();
@@ -123,7 +192,7 @@ function initSheets() {
     MASTER_MEMBER: ['ID_MEMBER', 'NAMA_MEMBER', 'JABATAN', 'NO_HP', 'STATUS', 'TANGGAL_MULAI', 'CREATED_AT', 'UPDATED_AT'],
     MEMBER_LIMIT: ['ID_LIMIT', 'ID_MEMBER', 'ID_ITEM', 'MAX_QTY', 'SATUAN', 'STATUS', 'CREATED_AT', 'UPDATED_AT'],
     TRANSAKSI: ['ID_TRANSAKSI', 'TIMESTAMP', 'TANGGAL', 'ID_ITEM', 'JENIS_TRANSAKSI', 'NO_DOKUMEN', 'JUMLAH', 'SATUAN', 'ID_MEMBER', 'NAMA_MEMBER', 'KETERANGAN', 'CREATED_AT'],
-    PENGAJUAN_PENGAMBILAN: ['ID_PENGAJUAN', 'ID_MEMBER', 'NAMA_MEMBER', 'ID_ITEM', 'NAMA_ITEM', 'JUMLAH', 'ALASAN', 'STATUS', 'APPROVER', 'CATATAN', 'CREATED_AT', 'UPDATED_AT'],
+    PENGAJUAN_PENGAMBILAN: ['ID_PENGAJUAN', 'TANGGAL', 'ID_MEMBER', 'ID_ITEM', 'JUMLAH', 'TANGGAL_TERAKHIR_AMBIL', 'TANGGAL_SEHARUSNYA', 'ALASAN', 'STATUS', 'ID_APPROVER', 'CATATAN_APPROVER', 'TIMESTAMP'],
     PENGATURAN: ['KUNCI', 'NILAI', 'DESKRIPSI', 'UPDATED_AT']
   };
 

@@ -30,6 +30,8 @@ import {
   GasMemberHistoryResponse,
   GasPickupEligibilityResponse,
   GasHealthResponse,
+  PengajuanPengambilan,
+  GasRequestsResponse,
 } from '../types';
 
 export class GasApiError extends Error {
@@ -444,6 +446,30 @@ class ApiService {
       lastPickupDate: data.lastPickupDate || '',
       dueDate: data.dueDate || '',
     };
+  }
+
+  /**
+   * Requests: GET action=requests -> normalized data.requests
+   */
+  public async getRequests(): Promise<PengajuanPengambilan[]> {
+    const data = await this.get<GasRequestsResponse>('requests');
+    if (!data || !Array.isArray(data.requests)) {
+      throw new GasApiError('Format response requests dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+    }
+    return data.requests.map((r: any) => ({
+      ID_PENGAJUAN: String(r.ID_PENGAJUAN || '').trim(),
+      TANGGAL: String(r.TANGGAL || '').trim(),
+      ID_MEMBER: String(r.ID_MEMBER || '').trim(),
+      ID_ITEM: String(r.ID_ITEM || '').trim(),
+      JUMLAH: Number(r.JUMLAH || 0),
+      TANGGAL_TERAKHIR_AMBIL: r.TANGGAL_TERAKHIR_AMBIL ? String(r.TANGGAL_TERAKHIR_AMBIL).trim() : '',
+      TANGGAL_SEHARUSNYA: r.TANGGAL_SEHARUSNYA ? String(r.TANGGAL_SEHARUSNYA).trim() : '',
+      ALASAN: String(r.ALASAN || '').trim(),
+      STATUS: String(r.STATUS || 'MENUNGGU').trim(),
+      ID_APPROVER: r.ID_APPROVER ? String(r.ID_APPROVER).trim() : '',
+      CATATAN_APPROVER: r.CATATAN_APPROVER ? String(r.CATATAN_APPROVER).trim() : '',
+      TIMESTAMP: r.TIMESTAMP ? String(r.TIMESTAMP).trim() : (r.TANGGAL ? String(r.TANGGAL).trim() : ''),
+    }));
   }
 
   /**
