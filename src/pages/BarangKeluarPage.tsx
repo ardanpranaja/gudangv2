@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
+import { SearchableSelect } from '../components/common/SearchableSelect';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { MasterItem, MasterMember, ItemStock, PickupEligibilityResult } from '../types';
@@ -160,6 +161,29 @@ export const BarangKeluarPage: React.FC = () => {
     }
   };
 
+  // Options for SearchableSelect
+  const memberOptions = useMemo(
+    () =>
+      members.map((m) => ({
+        value: m.ID_MEMBER,
+        label: m.NAMA_MEMBER,
+        badge: m.JABATAN || undefined,
+        extra: m.STATUS === 'AKTIF' ? undefined : `Status: ${m.STATUS}`,
+      })),
+    [members]
+  );
+
+  const itemOptions = useMemo(
+    () =>
+      items.map((i) => ({
+        value: i.ID_ITEM,
+        label: i.NAMA_ITEM,
+        badge: i.KATEGORI,
+        extra: `Masa Pakai: ${i.MASA_PAKAI_BULAN} Bln · ${i.SATUAN}`,
+      })),
+    [items]
+  );
+
   return (
     <div className="space-y-6 max-w-4xl">
       <PageHeader
@@ -207,38 +231,30 @@ export const BarangKeluarPage: React.FC = () => {
               <label className="block font-medium text-slate-700 mb-1">
                 Pilih Member Penerima <span className="text-rose-500">*</span>
               </label>
-              <select
+              <SearchableSelect
                 disabled={isLoading || isSubmitting}
                 required
                 value={selectedMemberId}
-                onChange={(e) => setSelectedMemberId(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs"
-              >
-                {members.map((m, idx) => (
-                  <option key={`${m.ID_MEMBER}-${idx}`} value={m.ID_MEMBER}>
-                    [{m.ID_MEMBER}] {m.NAMA_MEMBER} ({m.JABATAN || ''})
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedMemberId}
+                options={memberOptions}
+                placeholder="Cari atau pilih member..."
+                searchPlaceholder="Cari ID, nama member, atau jabatan..."
+              />
             </div>
 
             <div>
               <label className="block font-medium text-slate-700 mb-1">
                 Pilih Barang Keluar <span className="text-rose-500">*</span>
               </label>
-              <select
+              <SearchableSelect
                 disabled={isLoading || isSubmitting}
                 required
                 value={selectedItemId}
-                onChange={(e) => setSelectedItemId(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs"
-              >
-                {items.map((i, idx) => (
-                  <option key={`${i.ID_ITEM}-${idx}`} value={i.ID_ITEM}>
-                    [{i.ID_ITEM}] {i.NAMA_ITEM} ({i.KATEGORI} - Masa Pakai: {i.MASA_PAKAI_BULAN} Bln)
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedItemId}
+                options={itemOptions}
+                placeholder="Cari atau pilih barang..."
+                searchPlaceholder="Cari ID barang, nama barang, atau kategori..."
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

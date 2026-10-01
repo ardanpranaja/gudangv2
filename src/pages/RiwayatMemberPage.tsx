@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
 import { DataTable, Column } from '../components/common/DataTable';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { StatCard } from '../components/common/StatCard';
+import { SearchableSelect } from '../components/common/SearchableSelect';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { MasterMember, MemberHistorySummary, Transaksi } from '../types';
@@ -108,6 +109,18 @@ export const RiwayatMemberPage: React.FC = () => {
     },
   ];
 
+  // Member options for SearchableSelect
+  const memberOptions = useMemo(
+    () =>
+      members.map((m) => ({
+        value: m.ID_MEMBER,
+        label: m.NAMA_MEMBER,
+        badge: m.JABATAN || undefined,
+        extra: `Status: ${m.STATUS}${m.NO_HP ? ` · HP: ${m.NO_HP}` : ''}`,
+      })),
+    [members]
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -133,17 +146,13 @@ export const RiwayatMemberPage: React.FC = () => {
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Pilih Member:
             </label>
-            <select
+            <SearchableSelect
               value={selectedMemberId}
-              onChange={(e) => setSelectedMemberId(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs font-medium"
-            >
-              {members.map((m, idx) => (
-                <option key={`${m.ID_MEMBER}-${idx}`} value={m.ID_MEMBER}>
-                  [{m.ID_MEMBER}] {m.NAMA_MEMBER} — {m.JABATAN || ''} ({m.STATUS})
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedMemberId}
+              options={memberOptions}
+              placeholder="Cari dan pilih member..."
+              searchPlaceholder="Cari ID member, nama member, atau jabatan..."
+            />
           </div>
 
           {selectedMember && (

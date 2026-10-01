@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
 import { DataTable, Column } from '../components/common/DataTable';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { SearchableSelect } from '../components/common/SearchableSelect';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { MasterMember, MasterItem, PengajuanPengambilan } from '../types';
@@ -55,6 +56,28 @@ export const PengajuanPage: React.FC = () => {
     items.forEach((i) => map.set(i.ID_ITEM, i));
     return map;
   }, [items]);
+
+  const memberOptions = useMemo(
+    () =>
+      members.map((m) => ({
+        value: m.ID_MEMBER,
+        label: m.NAMA_MEMBER,
+        badge: m.JABATAN || undefined,
+        extra: m.STATUS === 'AKTIF' ? undefined : `Status: ${m.STATUS}`,
+      })),
+    [members]
+  );
+
+  const itemOptions = useMemo(
+    () =>
+      items.map((i) => ({
+        value: i.ID_ITEM,
+        label: i.NAMA_ITEM,
+        badge: i.KATEGORI,
+        extra: `Masa Pakai: ${i.MASA_PAKAI_BULAN} Bln`,
+      })),
+    [items]
+  );
 
   const loadRequests = async () => {
     setIsRequestsLoading(true);
@@ -518,36 +541,30 @@ export const PengajuanPage: React.FC = () => {
                   <label className="block font-medium text-slate-700 mb-1">
                     Member Pemohon (ID_MEMBER) <span className="text-rose-500">*</span>
                   </label>
-                  <select
+                  <SearchableSelect
+                    disabled={isSubmitting}
                     required
                     value={formMemberId}
-                    onChange={(e) => setFormMemberId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800"
-                  >
-                    {members.map((m, idx) => (
-                      <option key={`${m.ID_MEMBER}-${idx}`} value={m.ID_MEMBER}>
-                        [{m.ID_MEMBER}] {m.NAMA_MEMBER} ({m.JABATAN || ''})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setFormMemberId}
+                    options={memberOptions}
+                    placeholder="Cari atau pilih member..."
+                    searchPlaceholder="Cari ID, nama member, atau jabatan..."
+                  />
                 </div>
 
                 <div>
                   <label className="block font-medium text-slate-700 mb-1">
                     Barang yang Diajukan (ID_ITEM) <span className="text-rose-500">*</span>
                   </label>
-                  <select
+                  <SearchableSelect
+                    disabled={isSubmitting}
                     required
                     value={formItemId}
-                    onChange={(e) => setFormItemId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800"
-                  >
-                    {items.map((i, idx) => (
-                      <option key={`${i.ID_ITEM}-${idx}`} value={i.ID_ITEM}>
-                        [{i.ID_ITEM}] {i.NAMA_ITEM} ({i.KATEGORI} - Masa Pakai: {i.MASA_PAKAI_BULAN} Bln)
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setFormItemId}
+                    options={itemOptions}
+                    placeholder="Cari atau pilih barang..."
+                    searchPlaceholder="Cari ID barang, nama barang, atau kategori..."
+                  />
                 </div>
 
                 <div>

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
 import { DataTable, Column } from '../components/common/DataTable';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { SearchableSelect } from '../components/common/SearchableSelect';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { MasterItem, BinCardEntry, BinCardResult } from '../types';
@@ -150,6 +151,18 @@ export const BinCardPage: React.FC = () => {
     },
   ];
 
+  // Item options for SearchableSelect
+  const itemOptions = useMemo(
+    () =>
+      items.map((i) => ({
+        value: i.ID_ITEM,
+        label: i.NAMA_ITEM,
+        badge: i.KATEGORI,
+        extra: `Satuan: ${i.SATUAN} · Stok Min: ${i.MIN_STOK}`,
+      })),
+    [items]
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -173,17 +186,13 @@ export const BinCardPage: React.FC = () => {
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Pilih Item Barang untuk Kartu Stok:
             </label>
-            <select
+            <SearchableSelect
               value={selectedItemId}
-              onChange={(e) => setSelectedItemId(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs font-medium"
-            >
-              {items.map((i, idx) => (
-                <option key={`${i.ID_ITEM}-${idx}`} value={i.ID_ITEM}>
-                  [{i.ID_ITEM}] {i.NAMA_ITEM} — ({i.KATEGORI})
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedItemId}
+              options={itemOptions}
+              placeholder="Cari dan pilih barang untuk memuat Bin Card..."
+              searchPlaceholder="Cari ID barang, nama barang, atau kategori..."
+            />
           </div>
 
           {binCardData && (

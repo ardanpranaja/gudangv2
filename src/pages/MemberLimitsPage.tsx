@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
 import { DataTable, Column } from '../components/common/DataTable';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { SearchableSelect } from '../components/common/SearchableSelect';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { MemberLimit, MasterMember, MasterItem } from '../types';
@@ -137,6 +138,31 @@ export const MemberLimitsPage: React.FC = () => {
     },
   ];
 
+  // Filter options for SearchableSelect
+  const memberFilterOptions = useMemo(
+    () => [
+      { value: 'ALL', label: 'Semua Member' },
+      ...members.map((m) => ({
+        value: m.ID_MEMBER,
+        label: m.NAMA_MEMBER,
+        badge: m.JABATAN || undefined,
+      })),
+    ],
+    [members]
+  );
+
+  const itemFilterOptions = useMemo(
+    () => [
+      { value: 'ALL', label: 'Semua Barang' },
+      ...items.map((i) => ({
+        value: i.ID_ITEM,
+        label: i.NAMA_ITEM,
+        badge: i.KATEGORI,
+      })),
+    ],
+    [items]
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -164,36 +190,32 @@ export const MemberLimitsPage: React.FC = () => {
         emptyDescription="Tidak ada data limit yang tercatat di Google Spreadsheet."
         filterControls={
           <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={selectedMemberId}
-              onChange={(e) => setSelectedMemberId(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 max-w-[200px]"
-            >
-              <option value="ALL">Semua Member</option>
-              {members.map((m, idx) => (
-                <option key={`${m.ID_MEMBER}-${idx}`} value={m.ID_MEMBER}>
-                  {m.NAMA_MEMBER} ({m.JABATAN || ''})
-                </option>
-              ))}
-            </select>
+            <div className="w-48">
+              <SearchableSelect
+                size="sm"
+                value={selectedMemberId}
+                onChange={setSelectedMemberId}
+                options={memberFilterOptions}
+                placeholder="Filter Member..."
+                searchPlaceholder="Cari member..."
+              />
+            </div>
 
-            <select
-              value={selectedItemId}
-              onChange={(e) => setSelectedItemId(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 max-w-[200px]"
-            >
-              <option value="ALL">Semua Barang</option>
-              {items.map((i, idx) => (
-                <option key={`${i.ID_ITEM}-${idx}`} value={i.ID_ITEM}>
-                  {i.NAMA_ITEM}
-                </option>
-              ))}
-            </select>
+            <div className="w-48">
+              <SearchableSelect
+                size="sm"
+                value={selectedItemId}
+                onChange={setSelectedItemId}
+                options={itemFilterOptions}
+                placeholder="Filter Barang..."
+                searchPlaceholder="Cari barang..."
+              />
+            </div>
 
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700"
+              className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 h-[32px]"
             >
               <option value="ALL">Semua Status</option>
               <option value="AKTIF">AKTIF</option>
