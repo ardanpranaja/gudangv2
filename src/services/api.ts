@@ -160,6 +160,7 @@ class ApiService {
     }
 
     try {
+      console.log(`[GAS API] GET -> action: "${action}" | endpoint: "${this.gasUrl}"`);
       const queryParams = new URLSearchParams({ action, ...params }).toString();
       const separator = this.gasUrl.includes('?') ? '&' : '?';
       const endpoint = `${this.gasUrl}${separator}${queryParams}`;
@@ -202,6 +203,10 @@ class ApiService {
     }
 
     try {
+      const actionName = (bodyPayload as any)?.action || 'unknown';
+      const opName = (bodyPayload as any)?.operation ? ` (operation: ${(bodyPayload as any).operation})` : '';
+      console.log(`[GAS API] POST -> action: "${actionName}"${opName} | endpoint: "${this.gasUrl}"`);
+
       // Send as text/plain to avoid preflight CORS redirection failures on GAS Web App
       const res = await fetch(this.gasUrl, {
         method: 'POST',
@@ -635,9 +640,11 @@ class ApiService {
       ID_MEMBER: input.memberId,
       ID_ITEM: input.itemId,
       MAX_QTY: Number(input.maxQty),
-      SATUAN: input.satuan || '',
       STATUS: input.status || 'AKTIF',
     };
+    if (input.satuan) {
+      payload.SATUAN = input.satuan;
+    }
 
     return this.post<MemberLimitResult>(payload);
   }
