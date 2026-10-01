@@ -282,7 +282,7 @@ export interface GasEnvelope<T> {
   success: boolean;
   action: string;
   data: T;
-  error?: string;
+  error?: string | { message?: string; type?: string; [key: string]: unknown };
   message?: string;
 }
 

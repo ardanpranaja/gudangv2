@@ -34,12 +34,67 @@ import {
   GasRequestsResponse,
 } from '../types';
 
+/**
+ * Normalizes error responses from Google Apps Script.
+ * Priority:
+ * 1. error.message if error is an object
+ * 2. error if error is a string
+ * 3. message if available
+ * 4. clear fallback message
+ */
+export function normalizeGasErrorMessage(
+  rawError: unknown,
+  rawMessage?: unknown,
+  fallbackMessage: string = 'Operasi GAS gagal.'
+): string {
+  // 1. If error is an object with message property
+  if (typeof rawError === 'object' && rawError !== null) {
+    const errObj = rawError as Record<string, unknown>;
+    if (typeof errObj.message === 'string' && errObj.message.trim() && errObj.message !== '[object Object]') {
+      return errObj.message.trim();
+    }
+    // Nested error object: { error: { message: ... } }
+    if (typeof errObj.error === 'string' && errObj.error.trim() && errObj.error !== '[object Object]') {
+      return errObj.error.trim();
+    }
+    if (typeof errObj.error === 'object' && errObj.error !== null) {
+      const nested = errObj.error as Record<string, unknown>;
+      if (typeof nested.message === 'string' && nested.message.trim() && nested.message !== '[object Object]') {
+        return nested.message.trim();
+      }
+    }
+  }
+
+  // 2. If error is a string
+  if (typeof rawError === 'string' && rawError.trim() && rawError !== '[object Object]') {
+    return rawError.trim();
+  }
+
+  // 3. If rawMessage is available
+  if (typeof rawMessage === 'string' && rawMessage.trim() && rawMessage !== '[object Object]') {
+    return rawMessage.trim();
+  }
+  if (typeof rawMessage === 'object' && rawMessage !== null) {
+    const msgObj = rawMessage as Record<string, unknown>;
+    if (typeof msgObj.message === 'string' && msgObj.message.trim() && msgObj.message !== '[object Object]') {
+      return msgObj.message.trim();
+    }
+  }
+
+  // 4. Fallback message
+  return fallbackMessage;
+}
+
 export class GasApiError extends Error {
   public code?: string;
   public details?: unknown;
 
-  constructor(message: string, code?: string, details?: unknown) {
-    super(message);
+  constructor(message: string | unknown, code?: string, details?: unknown) {
+    const normalizedMessage =
+      typeof message === 'string' && message !== '[object Object]'
+        ? message
+        : normalizeGasErrorMessage(message, undefined, 'Operasi GAS gagal.');
+    super(normalizedMessage);
     this.name = 'GasApiError';
     this.code = code;
     this.details = details;
@@ -58,7 +113,10 @@ class ApiService {
   }
 
   private loadConfig() {
-    const saved = localStorage.getItem(STORAGE_KEY_GAS_URL);
+    const saved =
+      typeof window !== 'undefined' && typeof localStorage !== 'undefined'
+        ? localStorage.getItem(STORAGE_KEY_GAS_URL)
+        : null;
     if (saved) {
       this.gasUrl = saved.trim();
     } else {
@@ -77,10 +135,12 @@ class ApiService {
 
   public setGasUrl(url: string) {
     this.gasUrl = url.trim();
-    if (this.gasUrl) {
-      localStorage.setItem(STORAGE_KEY_GAS_URL, this.gasUrl);
-    } else {
-      localStorage.removeItem(STORAGE_KEY_GAS_URL);
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      if (this.gasUrl) {
+        localStorage.setItem(STORAGE_KEY_GAS_URL, this.gasUrl);
+      } else {
+        localStorage.removeItem(STORAGE_KEY_GAS_URL);
+      }
     }
   }
 
@@ -112,7 +172,8 @@ class ApiService {
       const json: GasEnvelope<T> = await res.json();
 
       if (json.success === false) {
-        throw new GasApiError(json.error || json.message || 'Operasi GAS gagal.', 'GAS_ERROR');
+        const errorMsg = normalizeGasErrorMessage(json.error, json.message, 'Operasi GAS gagal.');
+        throw new GasApiError(errorMsg, 'GAS_ERROR', json.error ?? json);
       }
 
       return json.data;
@@ -120,7 +181,7 @@ class ApiService {
       if (err instanceof GasApiError) {
         throw err;
       }
-      const msg = err instanceof Error ? err.message : 'Gagal terhubung ke backend Google Apps Script.';
+      const msg = normalizeGasErrorMessage(err, undefined, 'Gagal terhubung ke backend Google Apps Script.');
       throw new GasApiError(msg, 'NETWORK_ERROR', err);
     }
   }
@@ -154,10 +215,12 @@ class ApiService {
       const json: GasEnvelope<T> = await res.json();
 
       if (json.success === false) {
-        throw new GasApiError(
-          json.error || json.message || 'Operasi POST gagal di backend GAS.',
-          'GAS_POST_ERROR'
+        const errorMsg = normalizeGasErrorMessage(
+          json.error,
+          json.message,
+          'Operasi POST gagal di backend GAS.'
         );
+        throw new GasApiError(errorMsg, 'GAS_POST_ERROR', json.error ?? json);
       }
 
       return json.data;
@@ -165,7 +228,7 @@ class ApiService {
       if (err instanceof GasApiError) {
         throw err;
       }
-      const msg = err instanceof Error ? err.message : 'Gagal mengirim transaksi ke Google Apps Script.';
+      const msg = normalizeGasErrorMessage(err, undefined, 'Gagal mengirim transaksi ke Google Apps Script.');
       throw new GasApiError(msg, 'NETWORK_POST_ERROR', err);
     }
   }

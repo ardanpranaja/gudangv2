@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
 import { SearchableSelect } from '../components/common/SearchableSelect';
 import { useApp } from '../context/AppContext';
-import { api } from '../services/api';
+import { api, normalizeGasErrorMessage } from '../services/api';
 import { MasterItem, MasterMember, ItemStock, PickupEligibilityResult } from '../types';
 import {
   ArrowUpRight,
@@ -34,6 +34,7 @@ export const BarangKeluarPage: React.FC = () => {
   // Eligibility Preview State from Backend
   const [eligibility, setEligibility] = useState<PickupEligibilityResult | null>(null);
   const [checkingEligibility, setCheckingEligibility] = useState(false);
+  const [eligibilityError, setEligibilityError] = useState<string | null>(null);
 
   // Result state
   const [lastSubmittedTx, setLastSubmittedTx] = useState<any>(null);
@@ -58,8 +59,9 @@ export const BarangKeluarPage: React.FC = () => {
       if (activeItems.length > 0 && !selectedItemId) {
         setSelectedItemId(activeItems[0].ID_ITEM);
       }
-    } catch (err: any) {
-      addToast('error', 'Gagal Memuat Data', err.message);
+    } catch (err: unknown) {
+      const msg = normalizeGasErrorMessage(err, undefined, 'Gagal memuat data master dari backend.');
+      addToast('error', 'Gagal Memuat Data', msg);
     } finally {
       setIsLoading(false);
     }
@@ -73,18 +75,40 @@ export const BarangKeluarPage: React.FC = () => {
   useEffect(() => {
     if (!selectedMemberId || !selectedItemId) {
       setEligibility(null);
+      setEligibilityError(null);
+      return;
+    }
+
+    const parsedQty = Number(jumlah);
+    if (!parsedQty || parsedQty <= 0) {
+      setEligibility(null);
+      setEligibilityError('Jumlah barang harus lebih besar dari 0.');
       return;
     }
 
     let active = true;
     setCheckingEligibility(true);
+    setEligibilityError(null);
+
     api
-      .getPickupEligibility(selectedMemberId, selectedItemId, Number(jumlah) || 1)
+      .getPickupEligibility(selectedMemberId, selectedItemId, parsedQty)
       .then((res) => {
-        if (active) setEligibility(res);
+        if (active) {
+          setEligibility(res);
+          setEligibilityError(null);
+        }
       })
       .catch((err) => {
-        console.warn('Backend eligibility check failed:', err);
+        if (active) {
+          setEligibility(null);
+          const errorMsg = normalizeGasErrorMessage(
+            err,
+            undefined,
+            'Gagal memeriksa kelayakan pengambilan dari backend GAS.'
+          );
+          setEligibilityError(errorMsg);
+          console.warn('Backend eligibility check failed:', err);
+        }
       })
       .finally(() => {
         if (active) setCheckingEligibility(false);
@@ -102,27 +126,61 @@ export const BarangKeluarPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     if (!canPerformAction('TRANSACTION')) {
       addToast('error', 'Akses Ditolak', 'Peran Anda tidak memiliki izin untuk mencatat transaksi.');
       return;
     }
 
-    if (!selectedMemberId || !selectedItemId || jumlah <= 0) {
-      addToast('error', 'Validasi Gagal', 'Lengkapi member, barang, dan jumlah valid.');
+    if (!selectedMemberId || !selectedItemId || Number(jumlah) <= 0 || !tanggal) {
+      addToast('error', 'Validasi Gagal', 'Lengkapi member, barang, tanggal, dan jumlah valid (> 0).');
+      return;
+    }
+
+    if (checkingEligibility) {
+      addToast(
+        'warning',
+        'Pemeriksaan Berlangsung',
+        'Harap tunggu proses pemeriksaan kelayakan pengambilan oleh backend selesai.'
+      );
+      return;
+    }
+
+    if (eligibilityError) {
+      addToast(
+        'error',
+        'Pemeriksaan Kelayakan Gagal',
+        `Gagal memeriksa kelayakan pengambilan: ${eligibilityError}`
+      );
+      return;
+    }
+
+    if (!eligibility) {
+      addToast('error', 'Validasi Kelayakan Diperlukan', 'Kelayakan pengambilan belum diverifikasi backend.');
+      return;
+    }
+
+    if (!eligibility.allowed) {
+      if (eligibility.early) {
+        addToast(
+          'warning',
+          'Memerlukan Pengajuan Approval',
+          eligibility.reason ||
+            'Pengambilan sebelum masa pakai selesai atau melebihi limit harus melalui Pengajuan Pengambilan.'
+        );
+      } else {
+        addToast(
+          'error',
+          'Pengambilan Tidak Diizinkan',
+          `Pengambilan tidak dapat dilakukan. Alasan: ${eligibility.reason || 'Jumlah melebihi batas maksimum member.'}`
+        );
+      }
       return;
     }
 
     if (isOutOfStock) {
       addToast('error', 'Stok Tidak Cukup', `Sisa stok di backend: ${currentStock} ${selectedItem?.SATUAN || 'UNIT'}.`);
-      return;
-    }
-
-    if (eligibility && !eligibility.allowed && eligibility.early) {
-      addToast(
-        'warning',
-        'Memerlukan Pengajuan Approval',
-        'Pengambilan sebelum masa pakai selesai atau melebihi limit harus melalui Pengajuan Pengambilan.'
-      );
       return;
     }
 
@@ -154,8 +212,9 @@ export const BarangKeluarPage: React.FC = () => {
       setJumlah(1);
       setKeterangan('');
       triggerRefresh();
-    } catch (err: any) {
-      addToast('error', 'Gagal Mencatat Barang Keluar', err.message || 'Terjadi kesalahan pada backend.');
+    } catch (err: unknown) {
+      const errorMsg = normalizeGasErrorMessage(err, undefined, 'Terjadi kesalahan pada backend.');
+      addToast('error', 'Gagal Mencatat Barang Keluar', errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -310,48 +369,78 @@ export const BarangKeluarPage: React.FC = () => {
             {/* Backend Eligibility Preview Banner */}
             {checkingEligibility ? (
               <div className="p-3 bg-slate-50 border border-slate-200 rounded text-slate-500 flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-slate-600" />
+                <Loader2 className="w-4 h-4 animate-spin text-slate-600 shrink-0" />
                 <span>Memvalidasi aturan limit member & masa pakai via API GAS...</span>
               </div>
-            ) : eligibility && !eligibility.allowed ? (
-              <div className="p-4 bg-amber-50 border border-amber-300 rounded-lg space-y-2.5">
-                <div className="flex items-start gap-2 text-amber-900">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            ) : eligibilityError ? (
+              <div className="p-4 bg-rose-50 border border-rose-300 rounded-lg space-y-1.5 text-rose-900">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <div className="font-semibold text-xs">
-                      Hasil Evaluasi Backend: Memerlukan Pengajuan Approval
+                      Gagal Memeriksa Kelayakan Pengambilan
                     </div>
-                    <div className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
-                      {eligibility.reason || 'Pengambilan di luar batas kuota / masa pakai belum selesai.'}
+                    <div className="text-[11px] text-rose-800 mt-0.5 leading-relaxed">
+                      {eligibilityError}
                     </div>
-                    {eligibility.dueDate && (
-                      <div className="text-[11px] font-mono text-amber-900 mt-1">
-                        Jadwal Pengambilan Berikutnya: {eligibility.dueDate}
-                      </div>
-                    )}
                   </div>
                 </div>
-
-                <div className="pt-2 border-t border-amber-200 flex items-center justify-between">
-                  <span className="text-[11px] text-amber-800">
-                    Sesuai Blueprint: Pengambilan awal harus diajukan melalui form pengajuan.
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigateTo('pengajuan', {
-                        memberId: selectedMemberId,
-                        itemId: selectedItemId,
-                        jumlah,
-                      })
-                    }
-                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-white rounded font-medium hover:bg-amber-700 transition-colors shrink-0 ml-3"
-                  >
-                    <FileCheck2 className="w-3.5 h-3.5" />
-                    <span>Buat Pengajuan</span>
-                  </button>
-                </div>
               </div>
+            ) : eligibility && !eligibility.allowed ? (
+              eligibility.early ? (
+                <div className="p-4 bg-amber-50 border border-amber-300 rounded-lg space-y-2.5">
+                  <div className="flex items-start gap-2 text-amber-900">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="font-semibold text-xs">
+                        Hasil Evaluasi Backend: Memerlukan Pengajuan Approval
+                      </div>
+                      <div className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                        {eligibility.reason || 'Pengambilan di luar batas kuota / masa pakai belum selesai.'}
+                      </div>
+                      {eligibility.dueDate && (
+                        <div className="text-[11px] font-mono text-amber-900 mt-1">
+                          Jadwal Pengambilan Berikutnya: {eligibility.dueDate}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-amber-200 flex items-center justify-between">
+                    <span className="text-[11px] text-amber-800">
+                      Sesuai Blueprint: Pengambilan awal harus diajukan melalui form pengajuan.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigateTo('pengajuan', {
+                          memberId: selectedMemberId,
+                          itemId: selectedItemId,
+                          jumlah,
+                        })
+                      }
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-white rounded font-medium hover:bg-amber-700 transition-colors shrink-0 ml-3"
+                    >
+                      <FileCheck2 className="w-3.5 h-3.5" />
+                      <span>Buat Pengajuan</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-rose-50 border border-rose-300 rounded-lg space-y-1.5 text-rose-900">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="font-semibold text-xs">
+                        Pengambilan Tidak Dapat Dilakukan
+                      </div>
+                      <div className="text-[11px] text-rose-800 mt-0.5 leading-relaxed">
+                        Alasan: {eligibility.reason || 'Jumlah melebihi batas maksimum member.'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
             ) : eligibility && eligibility.allowed ? (
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-emerald-900 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -370,8 +459,15 @@ export const BarangKeluarPage: React.FC = () => {
                 disabled={
                   isSubmitting ||
                   isLoading ||
+                  checkingEligibility ||
+                  !selectedMemberId ||
+                  !selectedItemId ||
+                  Number(jumlah) <= 0 ||
+                  !tanggal ||
                   isOutOfStock ||
-                  (eligibility !== null && !eligibility.allowed)
+                  Boolean(eligibilityError) ||
+                  eligibility === null ||
+                  eligibility.allowed !== true
                 }
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >

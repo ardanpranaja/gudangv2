@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { UserRole, SystemHealth } from '../types';
-import { api } from '../services/api';
+import { api, normalizeGasErrorMessage } from '../services/api';
 
 export type PageId =
   | 'dashboard'
@@ -36,7 +36,11 @@ interface AppContextType {
   health: SystemHealth;
   refreshHealth: () => Promise<void>;
   toasts: ToastMessage[];
-  addToast: (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string) => void;
+  addToast: (
+    type: 'success' | 'error' | 'info' | 'warning',
+    title: string,
+    message?: string | Error | Record<string, unknown> | unknown
+  ) => void;
   removeToast: (id: string) => void;
   refreshKey: number;
   triggerRefresh: () => void;
@@ -95,9 +99,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRefreshKey((prev) => prev + 1);
   };
 
-  const addToast = (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string) => {
+  const addToast = (
+    type: 'success' | 'error' | 'info' | 'warning',
+    title: string,
+    message?: string | Error | Record<string, unknown> | unknown
+  ) => {
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, type, title, message }]);
+    let resolvedMessage: string | undefined = undefined;
+
+    if (message !== undefined && message !== null) {
+      if (typeof message === 'string') {
+        const trimmed = message.trim();
+        resolvedMessage = trimmed === '[object Object]' ? 'Terjadi kesalahan pada sistem.' : trimmed;
+      } else if (message instanceof Error) {
+        resolvedMessage =
+          message.message && message.message !== '[object Object]'
+            ? message.message
+            : 'Terjadi kesalahan pada sistem.';
+      } else if (typeof message === 'object') {
+        resolvedMessage = normalizeGasErrorMessage(
+          message,
+          undefined,
+          type === 'error' ? 'Operasi gagal diproses oleh sistem backend.' : undefined
+        );
+      } else {
+        const str = String(message);
+        resolvedMessage = str === '[object Object]' ? 'Terjadi kesalahan pada sistem.' : str;
+      }
+    }
+
+    setToasts((prev) => [...prev, { id, type, title, message: resolvedMessage }]);
     setTimeout(() => {
       removeToast(id);
     }, 4500);
