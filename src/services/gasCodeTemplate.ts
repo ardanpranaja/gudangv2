@@ -83,6 +83,8 @@ function doPost(e) {
         return jsonResponse(handleApproveRequest(body));
       case 'reject_request':
         return jsonResponse(handleRejectRequest(body));
+      case 'limit':
+        return jsonResponse(handlePostLimit(body));
       case 'init_sheets':
         return jsonResponse(initSheets());
       default:
@@ -182,6 +184,365 @@ function handleGetRequests() {
       requests: requests
     }
   };
+}
+
+// Handler GET action=limits
+function handleGetLimits() {
+  var ss = getSS();
+  var sheet = ss.getSheetByName(SHEETS.MEMBER_LIMIT);
+  if (!sheet) {
+    return {
+      success: true,
+      action: 'limits',
+      data: { count: 0, limits: [] }
+    };
+  }
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) {
+    return {
+      success: true,
+      action: 'limits',
+      data: { count: 0, limits: [] }
+    };
+  }
+
+  var headers = data[0].map(function(h) { return String(h).trim(); });
+  var colMap = {};
+  for (var i = 0; i < headers.length; i++) {
+    colMap[headers[i]] = i;
+  }
+
+  var limits = [];
+  for (var r = 1; r < data.length; r++) {
+    var row = data[r];
+    var idLimit = String(row[colMap['ID_LIMIT']] || '').trim();
+    if (!idLimit) continue;
+
+    limits.push({
+      ID_LIMIT: idLimit,
+      ID_MEMBER: String(row[colMap['ID_MEMBER']] || '').trim(),
+      ID_ITEM: String(row[colMap['ID_ITEM']] || '').trim(),
+      MAX_QTY: Number(row[colMap['MAX_QTY']] || 0),
+      SATUAN: String(row[colMap['SATUAN']] || '').trim(),
+      STATUS: String(row[colMap['STATUS']] || 'AKTIF').trim(),
+      CREATED_AT: row[colMap['CREATED_AT']] ? String(row[colMap['CREATED_AT']]).trim() : '',
+      UPDATED_AT: row[colMap['UPDATED_AT']] ? String(row[colMap['UPDATED_AT']]).trim() : ''
+    });
+  }
+
+  return {
+    success: true,
+    action: 'limits',
+    data: {
+      count: limits.length,
+      limits: limits
+    }
+  };
+}
+
+// Handler POST action=limit (operations: create, update, deactivate, activate)
+function handlePostLimit(body) {
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(15000);
+  } catch (e) {
+    return {
+      success: false,
+      error: { message: 'Server backend sibuk (lock timeout). Silakan coba lagi beberapa saat.' }
+    };
+  }
+
+  try {
+    var operation = String(body.operation || body.op || '').trim().toLowerCase();
+    var ss = getSS();
+    var limitSheet = ss.getSheetByName(SHEETS.MEMBER_LIMIT);
+    var memberSheet = ss.getSheetByName(SHEETS.MASTER_MEMBER);
+    var itemSheet = ss.getSheetByName(SHEETS.MASTER_ITEM);
+
+    if (!limitSheet) {
+      return { success: false, error: { message: 'Sheet MEMBER_LIMIT tidak ditemukan di Spreadsheet.' } };
+    }
+
+    var limitData = limitSheet.getDataRange().getValues();
+    var limitHeaders = limitData[0].map(function(h) { return String(h).trim(); });
+    var colMap = {};
+    for (var i = 0; i < limitHeaders.length; i++) {
+      colMap[limitHeaders[i]] = i;
+    }
+
+    var now = new Date().toISOString();
+
+    function getItemInfo(targetIdItem) {
+      if (!itemSheet) return null;
+      var iData = itemSheet.getDataRange().getValues();
+      var iHeaders = iData[0].map(function(h) { return String(h).trim(); });
+      var idIdx = iHeaders.indexOf('ID_ITEM');
+      var satIdx = iHeaders.indexOf('SATUAN');
+      var statusIdx = iHeaders.indexOf('STATUS');
+      for (var r = 1; r < iData.length; r++) {
+        if (String(iData[r][idIdx] || '').trim() === targetIdItem) {
+          return {
+            SATUAN: satIdx >= 0 ? String(iData[r][satIdx] || '').trim() : 'UNIT',
+            STATUS: statusIdx >= 0 ? String(iData[r][statusIdx] || 'AKTIF').trim().toUpperCase() : 'AKTIF'
+          };
+        }
+      }
+      return null;
+    }
+
+    function getMemberInfo(targetIdMember) {
+      if (!memberSheet) return null;
+      var mData = memberSheet.getDataRange().getValues();
+      var mHeaders = mData[0].map(function(h) { return String(h).trim(); });
+      var idIdx = mHeaders.indexOf('ID_MEMBER');
+      var statusIdx = mHeaders.indexOf('STATUS');
+      for (var r = 1; r < mData.length; r++) {
+        if (String(mData[r][idIdx] || '').trim() === targetIdMember) {
+          return {
+            STATUS: statusIdx >= 0 ? String(mData[r][statusIdx] || 'AKTIF').trim().toUpperCase() : 'AKTIF'
+          };
+        }
+      }
+      return null;
+    }
+
+    if (operation === 'create') {
+      var idMember = String(body.ID_MEMBER || body.idMember || '').trim();
+      var idItem = String(body.ID_ITEM || body.idItem || '').trim();
+      var maxQty = Number(body.MAX_QTY || body.maxQty);
+      var status = String(body.STATUS || body.status || 'AKTIF').trim().toUpperCase();
+
+      if (!idMember) {
+        return { success: false, error: { message: 'ID_MEMBER wajib diisi.' } };
+      }
+      if (!idItem) {
+        return { success: false, error: { message: 'ID_ITEM wajib diisi.' } };
+      }
+      if (isNaN(maxQty) || maxQty <= 0) {
+        return { success: false, error: { message: 'MAX_QTY harus berupa angka lebih besar dari 0.' } };
+      }
+
+      var memberInfo = getMemberInfo(idMember);
+      if (!memberInfo) {
+        return { success: false, error: { message: 'Member dengan ID ' + idMember + ' tidak ditemukan di MASTER_MEMBER.' } };
+      }
+      if (memberInfo.STATUS !== 'AKTIF') {
+        return { success: false, error: { message: 'Member ' + idMember + ' berstatus NONAKTIF dan tidak dapat diberi limit.' } };
+      }
+
+      var itemInfo = getItemInfo(idItem);
+      if (!itemInfo) {
+        return { success: false, error: { message: 'Barang dengan ID ' + idItem + ' tidak ditemukan di MASTER_ITEM.' } };
+      }
+      if (itemInfo.STATUS !== 'AKTIF') {
+        return { success: false, error: { message: 'Barang ' + idItem + ' berstatus NONAKTIF dan tidak dapat dikonfigurasi limit.' } };
+      }
+
+      // SATUAN strictly from MASTER_ITEM
+      var satuan = itemInfo.SATUAN || 'UNIT';
+
+      // Duplicate prevention: check if active limit already exists for (ID_MEMBER + ID_ITEM)
+      for (var r = 1; r < limitData.length; r++) {
+        var rowM = String(limitData[r][colMap['ID_MEMBER']] || '').trim();
+        var rowI = String(limitData[r][colMap['ID_ITEM']] || '').trim();
+        var rowS = String(limitData[r][colMap['STATUS']] || '').trim().toUpperCase();
+        if (rowM === idMember && rowI === idItem && rowS === 'AKTIF') {
+          return {
+            success: false,
+            error: { message: 'MEMBER_LIMIT aktif untuk ' + idMember + ' / ' + idItem + ' sudah ada.' }
+          };
+        }
+      }
+
+      // Generate ID_LIMIT (LIM000001 format)
+      var maxSeq = 0;
+      for (var r = 1; r < limitData.length; r++) {
+        var rawId = String(limitData[r][colMap['ID_LIMIT']] || '').trim();
+        var match = rawId.match(/^LIM(\d+)$/i);
+        if (match) {
+          var seq = parseInt(match[1], 10);
+          if (seq > maxSeq) maxSeq = seq;
+        }
+      }
+      var nextSeq = maxSeq + 1;
+      var idLimit = 'LIM' + ('000000' + nextSeq).slice(-6);
+
+      var newRow = [];
+      newRow[colMap['ID_LIMIT']] = idLimit;
+      newRow[colMap['ID_MEMBER']] = idMember;
+      newRow[colMap['ID_ITEM']] = idItem;
+      newRow[colMap['MAX_QTY']] = maxQty;
+      newRow[colMap['SATUAN']] = satuan;
+      newRow[colMap['STATUS']] = status || 'AKTIF';
+      newRow[colMap['CREATED_AT']] = now;
+      newRow[colMap['UPDATED_AT']] = now;
+
+      limitSheet.appendRow(newRow);
+
+      return {
+        success: true,
+        action: 'limit',
+        data: {
+          message: 'Limit member ' + idLimit + ' berhasil dibuat.',
+          ID_LIMIT: idLimit
+        }
+      };
+
+    } else if (operation === 'update') {
+      var idLimit = String(body.ID_LIMIT || body.idLimit || '').trim();
+      var maxQty = Number(body.MAX_QTY || body.maxQty);
+      var status = body.STATUS ? String(body.STATUS).trim().toUpperCase() : undefined;
+
+      if (!idLimit) {
+        return { success: false, error: { message: 'ID_LIMIT wajib diisi untuk update.' } };
+      }
+      if (isNaN(maxQty) || maxQty <= 0) {
+        return { success: false, error: { message: 'MAX_QTY harus berupa angka lebih besar dari 0.' } };
+      }
+
+      var rowIndex = -1;
+      var existingRow = null;
+      for (var r = 1; r < limitData.length; r++) {
+        if (String(limitData[r][colMap['ID_LIMIT']] || '').trim() === idLimit) {
+          rowIndex = r + 1;
+          existingRow = limitData[r];
+          break;
+        }
+      }
+
+      if (rowIndex === -1 || !existingRow) {
+        return { success: false, error: { message: 'ID_LIMIT ' + idLimit + ' tidak ditemukan di Spreadsheet.' } };
+      }
+
+      var idMember = String(existingRow[colMap['ID_MEMBER']] || '').trim();
+      var idItem = String(existingRow[colMap['ID_ITEM']] || '').trim();
+
+      if (status === 'AKTIF') {
+        for (var r = 1; r < limitData.length; r++) {
+          var otherId = String(limitData[r][colMap['ID_LIMIT']] || '').trim();
+          var otherM = String(limitData[r][colMap['ID_MEMBER']] || '').trim();
+          var otherI = String(limitData[r][colMap['ID_ITEM']] || '').trim();
+          var otherS = String(limitData[r][colMap['STATUS']] || '').trim().toUpperCase();
+          if (otherId !== idLimit && otherM === idMember && otherI === idItem && otherS === 'AKTIF') {
+            return {
+              success: false,
+              error: { message: 'Gagal mengubah status: sudah ada MEMBER_LIMIT aktif untuk ' + idMember + ' / ' + idItem + '.' }
+            };
+          }
+        }
+      }
+
+      var itemInfo = getItemInfo(idItem);
+      var satuan = itemInfo ? itemInfo.SATUAN : String(existingRow[colMap['SATUAN']] || 'UNIT');
+
+      limitSheet.getRange(rowIndex, colMap['MAX_QTY'] + 1).setValue(maxQty);
+      limitSheet.getRange(rowIndex, colMap['SATUAN'] + 1).setValue(satuan);
+      if (status) {
+        limitSheet.getRange(rowIndex, colMap['STATUS'] + 1).setValue(status);
+      }
+      limitSheet.getRange(rowIndex, colMap['UPDATED_AT'] + 1).setValue(now);
+
+      return {
+        success: true,
+        action: 'limit',
+        data: {
+          message: 'Limit member ' + idLimit + ' berhasil diperbarui.',
+          ID_LIMIT: idLimit
+        }
+      };
+
+    } else if (operation === 'deactivate') {
+      var idLimit = String(body.ID_LIMIT || body.idLimit || '').trim();
+      if (!idLimit) {
+        return { success: false, error: { message: 'ID_LIMIT wajib diisi untuk nonaktifkan limit.' } };
+      }
+
+      var rowIndex = -1;
+      for (var r = 1; r < limitData.length; r++) {
+        if (String(limitData[r][colMap['ID_LIMIT']] || '').trim() === idLimit) {
+          rowIndex = r + 1;
+          break;
+        }
+      }
+
+      if (rowIndex === -1) {
+        return { success: false, error: { message: 'ID_LIMIT ' + idLimit + ' tidak ditemukan di Spreadsheet.' } };
+      }
+
+      limitSheet.getRange(rowIndex, colMap['STATUS'] + 1).setValue('NONAKTIF');
+      limitSheet.getRange(rowIndex, colMap['UPDATED_AT'] + 1).setValue(now);
+
+      return {
+        success: true,
+        action: 'limit',
+        data: {
+          message: 'Limit member ' + idLimit + ' berhasil dinonaktifkan.',
+          ID_LIMIT: idLimit
+        }
+      };
+
+    } else if (operation === 'activate') {
+      var idLimit = String(body.ID_LIMIT || body.idLimit || '').trim();
+      if (!idLimit) {
+        return { success: false, error: { message: 'ID_LIMIT wajib diisi untuk mengaktifkan kembali limit.' } };
+      }
+
+      var rowIndex = -1;
+      var existingRow = null;
+      for (var r = 1; r < limitData.length; r++) {
+        if (String(limitData[r][colMap['ID_LIMIT']] || '').trim() === idLimit) {
+          rowIndex = r + 1;
+          existingRow = limitData[r];
+          break;
+        }
+      }
+
+      if (rowIndex === -1 || !existingRow) {
+        return { success: false, error: { message: 'ID_LIMIT ' + idLimit + ' tidak ditemukan di Spreadsheet.' } };
+      }
+
+      var idMember = String(existingRow[colMap['ID_MEMBER']] || '').trim();
+      var idItem = String(existingRow[colMap['ID_ITEM']] || '').trim();
+
+      // Check duplicate active limit
+      for (var r = 1; r < limitData.length; r++) {
+        var otherId = String(limitData[r][colMap['ID_LIMIT']] || '').trim();
+        var otherM = String(limitData[r][colMap['ID_MEMBER']] || '').trim();
+        var otherI = String(limitData[r][colMap['ID_ITEM']] || '').trim();
+        var otherS = String(limitData[r][colMap['STATUS']] || '').trim().toUpperCase();
+        if (otherId !== idLimit && otherM === idMember && otherI === idItem && otherS === 'AKTIF') {
+          return {
+            success: false,
+            error: { message: 'Gagal mengaktifkan: sudah ada MEMBER_LIMIT aktif untuk ' + idMember + ' / ' + idItem + '.' }
+          };
+        }
+      }
+
+      limitSheet.getRange(rowIndex, colMap['STATUS'] + 1).setValue('AKTIF');
+      limitSheet.getRange(rowIndex, colMap['UPDATED_AT'] + 1).setValue(now);
+
+      return {
+        success: true,
+        action: 'limit',
+        data: {
+          message: 'Limit member ' + idLimit + ' berhasil diaktifkan kembali.',
+          ID_LIMIT: idLimit
+        }
+      };
+
+    } else {
+      return { success: false, error: { message: 'Operasi limit tidak dikenal: ' + operation } };
+    }
+
+  } catch (err) {
+    return {
+      success: false,
+      error: { message: err.toString() }
+    };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // Inisialisasi struktur sheet standar GudangPresisi v1.2.4

@@ -32,6 +32,10 @@ import {
   GasHealthResponse,
   PengajuanPengambilan,
   GasRequestsResponse,
+  CreateMemberLimitInput,
+  UpdateMemberLimitInput,
+  MemberLimitResult,
+  GasLimitPayload,
 } from '../types';
 
 /**
@@ -619,6 +623,65 @@ class ApiService {
     };
 
     return this.post<ActionResult>(payload);
+  }
+
+  /**
+   * Create Member Limit: POST action=limit, operation=create
+   */
+  public async createLimit(input: CreateMemberLimitInput): Promise<MemberLimitResult> {
+    const payload: GasLimitPayload = {
+      action: 'limit',
+      operation: 'create',
+      ID_MEMBER: input.memberId,
+      ID_ITEM: input.itemId,
+      MAX_QTY: Number(input.maxQty),
+      SATUAN: input.satuan || '',
+      STATUS: input.status || 'AKTIF',
+    };
+
+    return this.post<MemberLimitResult>(payload);
+  }
+
+  /**
+   * Update Member Limit: POST action=limit, operation=update
+   */
+  public async updateLimit(input: UpdateMemberLimitInput): Promise<MemberLimitResult> {
+    const payload: GasLimitPayload = {
+      action: 'limit',
+      operation: 'update',
+      ID_LIMIT: input.limitId,
+      MAX_QTY: Number(input.maxQty),
+      SATUAN: input.satuan || '',
+      STATUS: input.status || 'AKTIF',
+    };
+
+    return this.post<MemberLimitResult>(payload);
+  }
+
+  /**
+   * Deactivate Member Limit: POST action=limit, operation=deactivate
+   */
+  public async deactivateLimit(limitId: string): Promise<MemberLimitResult> {
+    const payload: GasLimitPayload = {
+      action: 'limit',
+      operation: 'deactivate',
+      ID_LIMIT: limitId,
+    };
+
+    return this.post<MemberLimitResult>(payload);
+  }
+
+  /**
+   * Reactivate Member Limit: POST action=limit, operation=activate
+   */
+  public async activateLimit(limitId: string): Promise<MemberLimitResult> {
+    const payload: GasLimitPayload = {
+      action: 'limit',
+      operation: 'activate',
+      ID_LIMIT: limitId,
+    };
+
+    return this.post<MemberLimitResult>(payload);
   }
 }
 

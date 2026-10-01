@@ -276,6 +276,28 @@ export interface ActionResult {
   [key: string]: unknown;
 }
 
+export interface CreateMemberLimitInput {
+  memberId: string;
+  itemId: string;
+  maxQty: number;
+  satuan?: string;
+  status?: 'AKTIF' | 'NONAKTIF';
+}
+
+export interface UpdateMemberLimitInput {
+  limitId: string;
+  maxQty: number;
+  satuan?: string;
+  status?: 'AKTIF' | 'NONAKTIF';
+}
+
+export interface MemberLimitResult {
+  message?: string;
+  ID_LIMIT?: string;
+  limit?: MemberLimit;
+  [key: string]: unknown;
+}
+
 // --- GAS Backend Contract DTOs ---
 
 export interface GasEnvelope<T> {
@@ -284,6 +306,17 @@ export interface GasEnvelope<T> {
   data: T;
   error?: string | { message?: string; type?: string; [key: string]: unknown };
   message?: string;
+}
+
+export interface GasLimitPayload {
+  action: 'limit';
+  operation: 'create' | 'update' | 'deactivate' | 'activate';
+  ID_LIMIT?: string;
+  ID_MEMBER?: string;
+  ID_ITEM?: string;
+  MAX_QTY?: number;
+  SATUAN?: string;
+  STATUS?: 'AKTIF' | 'NONAKTIF';
 }
 
 export interface GasTransactionPayload {
