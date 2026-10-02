@@ -3,6 +3,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { AppShell } from './components/layout/AppShell';
 
 import { DashboardPage } from './pages/DashboardPage';
+import { AIAssistantPage } from './pages/AIAssistantPage';
 import { ItemsPage } from './pages/ItemsPage';
 import { MembersPage } from './pages/MembersPage';
 import { MemberLimitsPage } from './pages/MemberLimitsPage';
@@ -25,6 +26,8 @@ const AppRouter: React.FC = () => {
   switch (currentPage) {
     case 'dashboard':
       return <DashboardPage />;
+    case 'ai-assistant':
+      return <AIAssistantPage />;
     case 'items':
       return <ItemsPage />;
     case 'members':

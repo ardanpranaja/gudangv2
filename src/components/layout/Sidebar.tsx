@@ -16,6 +16,7 @@ import {
   Settings,
   Cog,
   Wrench,
+  Bot,
   X,
 } from 'lucide-react';
 import { useApp, PageId } from '../../context/AppContext';
@@ -42,7 +43,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const navGroups: NavGroup[] = [
     {
-      items: [{ id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }],
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'ai-assistant', label: 'AI Assistant', icon: Bot, badge: 'AI' },
+      ],
     },
     {
       groupName: 'Master Data',

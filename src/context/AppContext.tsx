@@ -4,6 +4,7 @@ import { api, normalizeGasErrorMessage } from '../services/api';
 
 export type PageId =
   | 'dashboard'
+  | 'ai-assistant'
   | 'items'
   | 'members'
   | 'limits'
@@ -146,6 +147,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Not allowed: Master Barang (edit), Master Member (edit), Limit (edit), Pengaturan, Admin approvals
       const operatorAllowed: PageId[] = [
         'dashboard',
+        'ai-assistant',
         'items',
         'members',
         'limits',
@@ -164,9 +166,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return operatorAllowed.includes(page);
     }
     if (role === 'VIEWER') {
-      // Viewer: Dashboard, Stok, Laporan, Bin Card (read only), Riwayat Member (read only)
+      // Viewer: Dashboard, Stok, Laporan, Bin Card (read only), Riwayat Member (read only), AI Assistant
       const viewerAllowed: PageId[] = [
         'dashboard',
+        'ai-assistant',
         'stok',
         'bincard',
         'riwayat-member',

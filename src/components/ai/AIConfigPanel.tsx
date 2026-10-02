@@ -1,0 +1,149 @@
+import React, { useState, useEffect } from 'react';
+import { aiService } from '../../services/aiService';
+import { useApp } from '../../context/AppContext';
+import { Bot, Sparkles, Key, CheckCircle2, AlertCircle, RefreshCw, Eye, EyeOff } from 'lucide-react';
+
+export const AIConfigPanel: React.FC = () => {
+  const { addToast } = useApp();
+  const [apiKeyInput, setApiKeyInput] = useState(aiService.getApiKey());
+  const [showKey, setShowKey] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [selectedModel, setSelectedModel] = useState(aiService.getModel());
+
+  useEffect(() => {
+    setApiKeyInput(aiService.getApiKey());
+    setSelectedModel(aiService.getModel());
+  }, []);
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    aiService.setApiKey(apiKeyInput);
+    aiService.setModel(selectedModel);
+    addToast('success', 'Konfigurasi Disimpan', 'Konfigurasi AI Assistant telah diperbarui.');
+  };
+
+  const handleTestConnection = async () => {
+    // Save state first before testing
+    aiService.setApiKey(apiKeyInput);
+    aiService.setModel(selectedModel);
+
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      const res = await aiService.testConnection();
+      setTestResult(res);
+      if (res.success) {
+        addToast('success', 'Koneksi Berhasil', res.message);
+      } else {
+        addToast('error', 'Koneksi Gagal', res.message);
+      }
+    } catch (err: any) {
+      const msg = err?.message || 'Gagal menguji koneksi.';
+      setTestResult({ success: false, message: msg });
+      addToast('error', 'Koneksi Gagal', msg);
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="flex items-center gap-2 text-slate-900">
+          <Bot className="w-4 h-4 text-emerald-600" />
+          <h3 className="text-sm font-semibold">Konfigurasi AI Assistant (Gemini API)</h3>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+          <span>Chat &amp; Voice Engine</span>
+        </div>
+      </div>
+
+      <form onSubmit={handleSave} className="space-y-4 text-xs">
+        <div>
+          <label className="block font-medium text-slate-700 mb-1">
+            Gemini API Key:
+          </label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type={showKey ? 'text' : 'password'}
+                value={apiKeyInput}
+                onChange={(e) => setApiKeyInput(e.target.value)}
+                placeholder="AIzaSy... (atau kosongkan untuk menggunakan server environment key)"
+                className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 font-mono text-xs"
+              />
+              <button
+                type="button"
+                onClick={() => setShowKey(!showKey)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                title={showKey ? 'Sembunyikan' : 'Tampilkan'}
+              >
+                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-slate-900 text-white rounded font-medium hover:bg-slate-800 transition-colors"
+            >
+              Simpan
+            </button>
+            <button
+              type="button"
+              onClick={handleTestConnection}
+              disabled={isTesting}
+              className="px-3.5 py-2 bg-white border border-slate-300 text-slate-700 rounded font-medium hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
+              <span>Test Connection</span>
+            </button>
+          </div>
+          <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+            Kunci API digunakan oleh server untuk berkomunikasi dengan model Gemini (default: <code>gemini-3.8-flash</code>).
+            Jika lingkungan server telah menyediakan <code>GEMINI_API_KEY</code>, Anda dapat mengosongkan kolom ini.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+          <div>
+            <label className="block font-medium text-slate-700 mb-1">
+              Model Gemini:
+            </label>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs bg-white"
+            >
+              <option value="gemini-3.8-flash">gemini-3.8-flash (Rekomendasi Cepat &amp; Akurat)</option>
+              <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (Penalaran Kompleks)</option>
+            </select>
+          </div>
+        </div>
+      </form>
+
+      {/* Test Connection Result Box */}
+      {testResult && (
+        <div
+          className={`p-3.5 rounded border text-xs flex items-start gap-2.5 ${
+            testResult.success
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              : 'bg-rose-50 border-rose-200 text-rose-900'
+          }`}
+        >
+          {testResult.success ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          )}
+          <div>
+            <div className="font-semibold">
+              {testResult.success ? 'Koneksi Gemini API Aktif' : 'Koneksi Gemini API Gagal'}
+            </div>
+            <div className="text-[11px] opacity-90 mt-0.5">{testResult.message}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

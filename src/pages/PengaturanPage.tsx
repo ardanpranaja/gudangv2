@@ -3,6 +3,7 @@ import { PageHeader } from '../components/common/PageHeader';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { GAS_CODE_TEMPLATE } from '../services/gasCodeTemplate';
+import { AIConfigPanel } from '../components/ai/AIConfigPanel';
 import {
   Settings,
   CheckCircle2,
@@ -165,6 +166,9 @@ export const PengaturanPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Configuration Card */}
+      <AIConfigPanel />
 
       {/* Role Management Info */}
       <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
