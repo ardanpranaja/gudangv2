@@ -35,8 +35,12 @@ import {
 export const PengajuanPage: React.FC = () => {
   const { pageParams, addToast, refreshKey, canPerformAction, role } = useApp();
 
-  // Active Tab: 'crew' (Form Permintaan Crew) | 'admin' (Penyiapan & Kelola Admin)
-  const [activeTab, setActiveTab] = useState<'crew' | 'admin'>('crew');
+  // Active Tab: default 'admin' if ADMIN, 'crew' if MEMBER
+  const [activeTab, setActiveTab] = useState<'crew' | 'admin'>(role === 'ADMIN' ? 'admin' : 'crew');
+
+  useEffect(() => {
+    setActiveTab(role === 'ADMIN' ? 'admin' : 'crew');
+  }, [role]);
 
   // Master & Operational Data
   const [members, setMembers] = useState<MasterMember[]>([]);
@@ -698,8 +702,12 @@ export const PengajuanPage: React.FC = () => {
     <div className="space-y-6 max-w-6xl">
       {/* Header & Tabs */}
       <PageHeader
-        title="Permintaan & Penyiapan Barang"
-        description="Layanan terpadu permohonan pengambilan barang untuk personil lapangan dan alur penyiapan barang gudang."
+        title={role === 'MEMBER' ? 'Form Permintaan Barang' : 'Kelola Permintaan Barang'}
+        description={
+          role === 'MEMBER'
+            ? 'Layanan permohonan pengambilan barang untuk personil lapangan.'
+            : 'Layanan terpadu kelola permohonan pengambilan, alur penyiapan barang gudang, dan persetujuan.'
+        }
         actions={
           <div className="flex items-center gap-2">
             <button
@@ -715,39 +723,41 @@ export const PengajuanPage: React.FC = () => {
         }
       />
 
-      {/* Navigation Mode Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('crew')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
-            activeTab === 'crew'
-              ? 'bg-slate-900 text-white shadow-xs'
-              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-          }`}
-        >
-          <User className="w-3.5 h-3.5" />
-          <span>Form Permintaan (Crew)</span>
-        </button>
+      {/* Navigation Mode Tabs (Admin Mode Only) */}
+      {role === 'ADMIN' && (
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab('admin')}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'admin'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <Boxes className="w-3.5 h-3.5" />
+            <span>Penyiapan &amp; Kelola</span>
+            {pickingList.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-orange-500 text-white text-[10px] font-bold">
+                {pickingList.length}
+              </span>
+            )}
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('admin')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
-            activeTab === 'admin'
-              ? 'bg-slate-900 text-white shadow-xs'
-              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-          }`}
-        >
-          <Boxes className="w-3.5 h-3.5" />
-          <span>Penyiapan &amp; Kelola (Admin/Gudang)</span>
-          {pickingList.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-orange-500 text-white text-[10px] font-bold">
-              {pickingList.length}
-            </span>
-          )}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab('crew')}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'crew'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>Form Permintaan (Crew)</span>
+          </button>
+        </div>
+      )}
 
       {/* ===================================================================== */}
       {/* VIEW A: CREW REQUEST FORM & RIWAYAT SAYA */}

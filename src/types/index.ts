@@ -30,7 +30,7 @@ export type StatusMesin =
   | 'RUSAK'
   | 'TIDAK_AKTIF';
 
-export type UserRole = 'ADMIN' | 'OPERATOR' | 'VIEWER';
+export type UserRole = 'ADMIN' | 'MEMBER';
 
 // Master Data Models
 export interface MasterItem {

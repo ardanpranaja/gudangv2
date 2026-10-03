@@ -171,58 +171,37 @@ export const PengaturanPage: React.FC = () => {
       <AIConfigPanel />
 
       {/* Role Management Info */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+      <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2 text-slate-900">
             <ShieldCheck className="w-4 h-4 text-slate-700" />
-            <h3 className="text-sm font-semibold">Matriks Hak Akses & Peran Pengguna (RBAC)</h3>
+            <h3 className="text-sm font-semibold">Mode Akses &amp; Keamanan Sistem</h3>
           </div>
-          <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 rounded text-slate-800">
-            Peran Saat Ini: {role}
+          <span className="text-xs font-semibold px-2.5 py-1 bg-slate-900 text-white rounded-full">
+            Mode Saat Ini: {role}
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-          <div
-            onClick={() => setRole('ADMIN')}
-            className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
-              role === 'ADMIN'
-                ? 'border-slate-900 bg-slate-50 ring-1 ring-slate-900'
-                : 'border-slate-200 hover:border-slate-300'
-            }`}
-          >
-            <div className="font-semibold text-slate-900">ADMIN</div>
-            <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">
-              Akses penuh ke seluruh modul, monitoring stok, riwayat member, kartu stok, dan approval pengajuan.
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div className="p-3.5 rounded-lg border border-emerald-200 bg-emerald-50/60">
+            <div className="font-semibold text-emerald-950 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>Mode ADMIN (Aktif)</span>
+            </div>
+            <p className="text-emerald-800 text-[11px] mt-1 leading-relaxed">
+              Akses penuh ke seluruh modul gudang: Ringkasan, Master Barang, Member, Limit, Transaksi Masuk/Keluar,
+              Stok, Bin Card, Approval Pengajuan, Laporan, dan Pengaturan.
             </p>
           </div>
 
-          <div
-            onClick={() => setRole('OPERATOR')}
-            className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
-              role === 'OPERATOR'
-                ? 'border-slate-900 bg-slate-50 ring-1 ring-slate-900'
-                : 'border-slate-200 hover:border-slate-300'
-            }`}
-          >
-            <div className="font-semibold text-slate-900">OPERATOR</div>
-            <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">
-              Operasional gudang harian: mencatat Barang Masuk, Barang Keluar, Pinjam, Kembali, dan
-              membuat pengajuan.
-            </p>
-          </div>
-
-          <div
-            onClick={() => setRole('VIEWER')}
-            className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
-              role === 'VIEWER'
-                ? 'border-slate-900 bg-slate-50 ring-1 ring-slate-900'
-                : 'border-slate-200 hover:border-slate-300'
-            }`}
-          >
-            <div className="font-semibold text-slate-900">VIEWER</div>
-            <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">
-              Hanya melihat posisi stok, ringkasan dashboard, dan laporan. Tidak dapat melakukan transaksi.
+          <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50">
+            <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-slate-400" />
+              <span>Mode MEMBER (Standar)</span>
+            </div>
+            <p className="text-slate-600 text-[11px] mt-1 leading-relaxed">
+              Mode mandiri personil lapangan tanpa perlu login untuk mengajukan permintaan barang dan memantau riwayat
+              permohonan sendiri.
             </p>
           </div>
         </div>

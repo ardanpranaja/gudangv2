@@ -655,6 +655,13 @@ class ApiService {
   }
 
   /**
+   * Verify Admin PIN: POST action=verify_admin_pin, PIN=...
+   */
+  public async verifyAdminPin(pin: string): Promise<{ ok: boolean }> {
+    return this.post<{ ok: boolean }>({ action: 'verify_admin_pin', PIN: pin });
+  }
+
+  /**
    * Create Member Limit: POST action=limit, operation=create
    */
   public async createLimit(input: CreateMemberLimitInput): Promise<MemberLimitResult> {

@@ -31,7 +31,7 @@ export const MemberLimitsPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   // Role access check
-  const canManageLimit = role !== 'VIEWER';
+  const canManageLimit = role === 'ADMIN';
 
   // Filters
   const [selectedMemberId, setSelectedMemberId] = useState<string>(

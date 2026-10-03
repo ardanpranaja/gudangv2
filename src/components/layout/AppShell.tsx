@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TopBar } from './TopBar';
 import { Sidebar } from './Sidebar';
 import { useApp } from '../../context/AppContext';
+import { AdminLoginModal } from '../auth/AdminLoginModal';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 
 interface AppShellProps {
@@ -10,21 +11,32 @@ interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { toasts, removeToast } = useApp();
+  const { toasts, removeToast, role } = useApp();
+
+  const isMemberMode = role === 'MEMBER';
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex">
-      {/* Sidebar Navigation */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col">
+      {/* Sidebar Navigation (Admin Mode Only) */}
+      {!isMemberMode && (
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      )}
 
       {/* Main Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
+      <div className={`flex-1 flex flex-col min-w-0 ${!isMemberMode ? 'lg:pl-64' : ''}`}>
         <TopBar onToggleSidebar={() => setSidebarOpen(true)} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main
+          className={`flex-1 p-4 sm:p-6 lg:p-8 w-full mx-auto ${
+            isMemberMode ? 'max-w-4xl' : 'max-w-7xl'
+          }`}
+        >
           {children}
         </main>
       </div>
+
+      {/* Admin Login Modal (Triggerable from TopBar link) */}
+      <AdminLoginModal />
 
       {/* Toast notifications container */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">

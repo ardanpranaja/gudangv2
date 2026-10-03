@@ -34,6 +34,10 @@ interface AppContextType {
   pageParams: Record<string, any>;
   role: UserRole;
   setRole: (role: UserRole) => void;
+  loginAdmin: (pin: string) => Promise<void>;
+  logoutAdmin: () => void;
+  isAdminLoginOpen: boolean;
+  setIsAdminLoginOpen: (open: boolean) => void;
   health: SystemHealth;
   refreshHealth: () => Promise<void>;
   toasts: ToastMessage[];
@@ -52,9 +56,14 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentPage, setCurrentPage] = useState<PageId>('dashboard');
+  // Check persisted session flag for admin
+  const hasAdminSession = typeof window !== 'undefined' && sessionStorage.getItem('gp_admin') === '1';
+
+  const [role, setRoleState] = useState<UserRole>(hasAdminSession ? 'ADMIN' : 'MEMBER');
+  const [currentPage, setCurrentPage] = useState<PageId>(hasAdminSession ? 'dashboard' : 'pengajuan');
   const [pageParams, setPageParams] = useState<Record<string, any>>({});
-  const [role, setRoleState] = useState<UserRole>('ADMIN');
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+
   const [health, setHealth] = useState<SystemHealth>({
     status: 'ONLINE',
     version: '1.2.4',
@@ -80,15 +89,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     refreshHealth();
   }, [refreshHealth]);
 
+  const canAccessPage = (page: PageId): boolean => {
+    if (role === 'ADMIN') return true;
+    // MEMBER role only has access to form pengajuan
+    return page === 'pengajuan';
+  };
+
+  const canPerformAction = (
+    actionType: 'TRANSACTION' | 'MASTER_MUTATION' | 'APPROVAL' | 'SETTINGS' | 'REQUEST'
+  ): boolean => {
+    if (role === 'ADMIN') return true;
+    if (role === 'MEMBER') {
+      return actionType === 'REQUEST';
+    }
+    return false;
+  };
+
   const setRole = (newRole: UserRole) => {
     setRoleState(newRole);
-    addToast('info', `Peran diubah ke ${newRole}`, `Akses disesuaikan dengan aturan peran ${newRole}.`);
+    if (newRole === 'ADMIN') {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('gp_admin', '1');
+      }
+    } else {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('gp_admin');
+      }
+      if (currentPage !== 'pengajuan') {
+        setCurrentPage('pengajuan');
+      }
+    }
+  };
+
+  const loginAdmin = async (pin: string): Promise<void> => {
+    const res = await api.verifyAdminPin(pin);
+    if (res && res.ok) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('gp_admin', '1');
+      }
+      setRoleState('ADMIN');
+      setCurrentPage('dashboard');
+      setIsAdminLoginOpen(false);
+      addToast('success', 'Login Admin Berhasil', 'Akses penuh administrasi gudang aktif.');
+    } else {
+      throw new Error('Verifikasi PIN gagal.');
+    }
+  };
+
+  const logoutAdmin = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('gp_admin');
+    }
+    setRoleState('MEMBER');
+    setCurrentPage('pengajuan');
+    addToast('info', 'Keluar dari Mode Admin', 'Anda kini berada di Mode Member (Permintaan Barang).');
   };
 
   const navigateTo = (page: PageId, params: Record<string, any> = {}) => {
-    // Check permission before navigation
     if (!canAccessPage(page)) {
-      addToast('error', 'Akses Ditolak', `Peran ${role} tidak memiliki hak akses ke halaman tersebut.`);
+      addToast('error', 'Akses Ditolak', 'Halaman ini hanya dapat diakses oleh Admin Gudang.');
       return;
     }
     setPageParams(params);
@@ -139,65 +198,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Section 27: ROLE & PERMISSION
-  const canAccessPage = (page: PageId): boolean => {
-    if (role === 'ADMIN') return true;
-    if (role === 'OPERATOR') {
-      // Operator: Dashboard, Barang Masuk, Barang Keluar, Pinjam, Kembali, Stok, Bin Card, Pengajuan, Riwayat Member
-      // Not allowed: Master Barang (edit), Master Member (edit), Limit (edit), Pengaturan, Admin approvals
-      const operatorAllowed: PageId[] = [
-        'dashboard',
-        'ai-assistant',
-        'items',
-        'members',
-        'limits',
-        'masuk',
-        'keluar',
-        'pinjam',
-        'kembali',
-        'pengajuan',
-        'stok',
-        'bincard',
-        'riwayat-member',
-        'laporan',
-        'mesin',
-        'pemakaian-mesin',
-      ];
-      return operatorAllowed.includes(page);
-    }
-    if (role === 'VIEWER') {
-      // Viewer: Dashboard, Stok, Laporan, Bin Card (read only), Riwayat Member (read only), AI Assistant
-      const viewerAllowed: PageId[] = [
-        'dashboard',
-        'ai-assistant',
-        'stok',
-        'bincard',
-        'riwayat-member',
-        'laporan',
-        'items',
-        'members',
-        'limits',
-        'mesin',
-      ];
-      return viewerAllowed.includes(page);
-    }
-    return false;
-  };
-
-  const canPerformAction = (
-    actionType: 'TRANSACTION' | 'MASTER_MUTATION' | 'APPROVAL' | 'SETTINGS' | 'REQUEST'
-  ): boolean => {
-    if (role === 'ADMIN') return true;
-    if (role === 'OPERATOR') {
-      if (actionType === 'TRANSACTION' || actionType === 'REQUEST') return true;
-      return false; // Cannot master mutation, cannot approve, cannot settings
-    }
-    if (role === 'VIEWER') {
-      return false; // Read-only
-    }
-    return false;
-  };
-
   return (
     <AppContext.Provider
       value={{
@@ -206,6 +206,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         pageParams,
         role,
         setRole,
+        loginAdmin,
+        logoutAdmin,
+        isAdminLoginOpen,
+        setIsAdminLoginOpen,
         health,
         refreshHealth,
         toasts,

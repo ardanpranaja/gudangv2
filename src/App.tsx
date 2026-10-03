@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { AppShell } from './components/layout/AppShell';
+import { SplashScreen } from './components/common/SplashScreen';
 
 import { DashboardPage } from './pages/DashboardPage';
 import { AIAssistantPage } from './pages/AIAssistantPage';
@@ -59,16 +60,29 @@ const AppRouter: React.FC = () => {
     case 'pemakaian-mesin':
       return <PemakaianMesinPage />;
     default:
-      return <DashboardPage />;
+      return <PengajuanPage />;
   }
+};
+
+const AppContent: React.FC = () => {
+  const [splashFinished, setSplashFinished] = useState(false);
+
+  return (
+    <>
+      {!splashFinished && (
+        <SplashScreen onFinish={() => setSplashFinished(true)} />
+      )}
+      <AppShell>
+        <AppRouter />
+      </AppShell>
+    </>
+  );
 };
 
 export default function App() {
   return (
     <AppProvider>
-      <AppShell>
-        <AppRouter />
-      </AppShell>
+      <AppContent />
     </AppProvider>
   );
 }
