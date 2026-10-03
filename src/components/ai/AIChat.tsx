@@ -31,6 +31,7 @@ export const AIChat: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [retryStatus, setRetryStatus] = useState<string | null>(null);
+  const [currentRuntimeModel, setCurrentRuntimeModel] = useState<string>(aiService.getModel());
 
   // Live Assistant state
   const [liveStatus, setLiveStatus] = useState<LiveAssistantStatus>('DISCONNECTED');
@@ -41,6 +42,20 @@ export const AIChat: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sync runtime model state
+  useEffect(() => {
+    const syncModel = () => {
+      setCurrentRuntimeModel(aiService.getModel());
+    };
+    syncModel();
+    window.addEventListener('storage', syncModel);
+    window.addEventListener('focus', syncModel);
+    return () => {
+      window.removeEventListener('storage', syncModel);
+      window.removeEventListener('focus', syncModel);
+    };
+  }, []);
 
   // Auto scroll to bottom
   const scrollToBottom = () => {
@@ -323,6 +338,10 @@ export const AIChat: React.FC = () => {
     setMessages([]);
   };
 
+  const availableModels = aiService.getAvailableModels();
+  const matchedModelObj = availableModels.find((m) => m.id === currentRuntimeModel);
+  const runtimeModelDisplayName = matchedModelObj ? matchedModelObj.displayName : currentRuntimeModel;
+
   return (
     <div className="flex flex-col h-[calc(100vh-14rem)] min-h-[500px] bg-slate-50/50 rounded-xl border border-slate-200 overflow-hidden shadow-xs">
       {/* Chat Top Subheader */}
@@ -340,7 +359,9 @@ export const AIChat: React.FC = () => {
           <span className="text-xs font-semibold text-slate-800">
             {liveStatus !== 'DISCONNECTED'
               ? `Gemini Live Voice (${liveStatus})`
-              : 'AI Assistant Terhubung (Gemini 3.8 Flash)'}
+              : currentRuntimeModel
+              ? `AI Assistant Terhubung (${runtimeModelDisplayName})`
+              : 'AI Assistant — Model belum dipilih'}
           </span>
         </div>
         {messages.length > 0 && (

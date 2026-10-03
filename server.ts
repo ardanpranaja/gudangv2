@@ -31,69 +31,55 @@ function calculateBackoffDelay(attempt: number): number {
 }
 
 /**
- * Executes a Gemini operation with retry and model fallback for transient errors (503, 429, 500, 504)
+ * Executes a Gemini operation strictly with the user's selected model with exponential backoff on transient errors (503, 429, 500, 504).
+ * No hardcoded fallback models are used.
  */
-async function generateWithFallback(
+async function executeGeminiGenerate(
   client: GoogleGenAI,
-  primaryModel: string,
+  selectedModel: string,
   contents: unknown,
   config: unknown,
   maxRetries = 2
 ): Promise<any> {
-  const modelsToTry = [
-    primaryModel || 'gemini-3.7-flash',
-    primaryModel === 'gemini-3.8-flash' ? 'gemini-3.7-flash' : 'gemini-3.8-flash',
-  ].filter((v, i, a) => Boolean(v) && a.indexOf(v) === i);
-
-  let lastError: unknown;
-
-  for (const model of modelsToTry) {
-    let attempt = 0;
-    while (attempt <= maxRetries) {
-      attempt++;
-      try {
-        return await client.models.generateContent({
-          model,
-          contents: contents as any,
-          config: config as any,
-        });
-      } catch (err: unknown) {
-        lastError = err;
-        const classified = classifyError(err);
-
-        // If QUOTA (429), immediately break to try fallback model instead of waiting
-        if (classified.category === 'QUOTA') {
-          console.log(`[AI Server Info] Model ${model} mencapai limit kuota (429). Beralih ke model alternatif...`);
-          break;
-        }
-
-        if (classified.isTransient && attempt <= maxRetries) {
-          const delay = calculateBackoffDelay(attempt);
-          console.log(
-            `[AI Server Info] Layanan ${model} (${classified.category} - ${classified.statusCode}). Mencoba kembali attempt ${attempt}/${maxRetries} dalam ${delay}ms...`
-          );
-          await sleep(delay);
-          continue;
-        }
-
-        // If transient error after retries, switch to fallback model
-        if (classified.isTransient) {
-          break;
-        }
-        throw err;
-      }
-    }
+  const targetModel = (selectedModel && selectedModel.trim()) || '';
+  if (!targetModel) {
+    throw new Error('Model belum dipilih. Silakan pilih model di Pengaturan > AI Assistant.');
   }
 
-  throw lastError;
+  let attempt = 0;
+  while (attempt <= maxRetries) {
+    attempt++;
+    try {
+      return await client.models.generateContent({
+        model: targetModel,
+        contents: contents as any,
+        config: config as any,
+      });
+    } catch (err: unknown) {
+      const classified = classifyError(err);
+      if (classified.isTransient && attempt <= maxRetries) {
+        const delay = calculateBackoffDelay(attempt);
+        console.log(
+          `[AI Server Info] Percobaan ${attempt}/${maxRetries} untuk model ${targetModel} (${classified.category} - ${classified.statusCode}). Menunggu ${delay}ms...`
+        );
+        await sleep(delay);
+        continue;
+      }
+      // Re-throw without changing target model
+      throw err;
+    }
+  }
 }
 
-// Helper to get Gemini Client safely
+// Helper to get Gemini Client safely from request headers
 function getGeminiClient(req: express.Request): GoogleGenAI {
   const headerKey = req.headers['x-gemini-api-key'] as string | undefined;
-  const apiKey = (headerKey && headerKey.trim()) || process.env.GEMINI_API_KEY || '';
+  const apiKey = (headerKey && headerKey.trim()) || '';
   if (!apiKey) {
-    throw new Error('Gemini API Key belum dikonfigurasi. Atur API key di Pengaturan > AI Assistant atau environment server.');
+    const err: any = new Error('API Key belum dipilih atau tidak tersedia. Silakan pilih atau masukkan API Key di Pengaturan > AI Assistant.');
+    err.status = 401;
+    err.statusCode = 401;
+    throw err;
   }
   return new GoogleGenAI({ apiKey });
 }
@@ -159,7 +145,7 @@ app.post('/api/ai/test', async (req, res) => {
   try {
     const client = getGeminiClient(req);
     const requestedModel = req.body?.model || (req.query?.model as string) || 'gemini-3.7-flash';
-    const result = await generateWithFallback(
+    const result = await executeGeminiGenerate(
       client,
       requestedModel,
       'Ping test. Jawab "OK".',
@@ -192,7 +178,16 @@ app.post('/api/ai/test', async (req, res) => {
 app.post('/api/ai/chat', async (req, res) => {
   try {
     const client = getGeminiClient(req);
-    const { contents, tools, systemInstruction, model = 'gemini-3.7-flash' } = req.body;
+    const { contents, tools, systemInstruction, model } = req.body;
+
+    if (!model) {
+      return res.status(400).json({
+        success: false,
+        category: 'INVALID_REQUEST',
+        statusCode: 400,
+        error: 'Model Gemini belum ditentukan dalam permintaan.',
+      });
+    }
 
     const config: any = {};
     if (systemInstruction) {
@@ -202,7 +197,7 @@ app.post('/api/ai/chat', async (req, res) => {
       config.tools = tools;
     }
 
-    const response = await generateWithFallback(
+    const response = await executeGeminiGenerate(
       client,
       model,
       contents,
