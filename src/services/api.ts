@@ -304,6 +304,7 @@ class ApiService {
     return data.members.map((m: any) => ({
       ...m,
       JABATAN: m.JABATAN || '',
+      LANTAI: m.LANTAI ? String(m.LANTAI).trim() : '',
     }));
   }
 
@@ -523,8 +524,16 @@ class ApiService {
   /**
    * Requests: GET action=requests -> normalized data.requests
    */
-  public async getRequests(): Promise<PengajuanPengambilan[]> {
-    const data = await this.get<GasRequestsResponse>('requests');
+  public async getRequests(params?: { memberId?: string; status?: string }): Promise<PengajuanPengambilan[]> {
+    const queryParams: Record<string, string> = {};
+    if (params?.memberId) {
+      queryParams.id_member = params.memberId;
+    }
+    if (params?.status && params.status !== 'ALL') {
+      queryParams.status = params.status;
+    }
+
+    const data = await this.get<GasRequestsResponse>('requests', queryParams);
     if (!data || !Array.isArray(data.requests)) {
       throw new GasApiError('Format response requests dari GAS tidak valid.', 'MALFORMED_RESPONSE');
     }
@@ -625,6 +634,21 @@ class ApiService {
       ID_PENGAJUAN: input.requestId,
       ID_APPROVER: input.approverId || 'ADMIN',
       CATATAN_APPROVER: input.note || '',
+    };
+
+    return this.post<ActionResult>(payload);
+  }
+
+  /**
+   * Update Request Status: POST action=update_request_status
+   * Valid workflow transitions: DISETUJUI -> DIPROSES -> SELESAI
+   * Payload: { action: 'update_request_status', ID_PENGAJUAN, STATUS }
+   */
+  public async updateRequestStatus(requestId: string, status: 'DIPROSES' | 'SELESAI'): Promise<ActionResult> {
+    const payload = {
+      action: 'update_request_status',
+      ID_PENGAJUAN: requestId,
+      STATUS: status,
     };
 
     return this.post<ActionResult>(payload);

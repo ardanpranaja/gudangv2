@@ -232,6 +232,46 @@ export class AIService {
     return this.selectedModel;
   }
 
+  /**
+   * Returns a friendly display name for a given modelId from available models,
+   * cached models, or a fallback formatted name. Never returns an empty string.
+   */
+  public getModelDisplayName(modelId?: string): string {
+    const targetId = (modelId || this.selectedModel || '').trim();
+    if (!targetId) return 'Gemini Model';
+
+    const found = this.availableModels.find((m) => m.id === targetId);
+    if (found && found.displayName && found.displayName.trim()) {
+      return found.displayName.trim();
+    }
+
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(STORAGE_KEY_GEMINI_CACHED_MODELS);
+        if (cached) {
+          const parsed: AIModelInfo[] = JSON.parse(cached);
+          if (Array.isArray(parsed)) {
+            const cachedFound = parsed.find((m) => m.id === targetId);
+            if (cachedFound && cachedFound.displayName && cachedFound.displayName.trim()) {
+              return cachedFound.displayName.trim();
+            }
+          }
+        }
+      } catch {
+        // Ignore cache lookup errors
+      }
+    }
+
+    if (targetId.startsWith('gemini-')) {
+      return targetId
+        .split('-')
+        .map((part) => (part === 'gemini' ? 'Gemini' : part.charAt(0).toUpperCase() + part.slice(1)))
+        .join(' ');
+    }
+
+    return targetId;
+  }
+
   public setModel(model: string) {
     const cleanModel = (model || '').trim();
     if (!cleanModel) return;

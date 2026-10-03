@@ -19,6 +19,8 @@ export type StatusPengajuan =
   | 'MENUNGGU'
   | 'DISETUJUI'
   | 'DITOLAK'
+  | 'DIPROSES'
+  | 'SELESAI'
   | 'DIBATALKAN';
 
 export type StatusMesin =
@@ -49,6 +51,7 @@ export interface MasterMember {
   ID_MEMBER: string;
   NAMA_MEMBER: string;
   JABATAN: JabatanMember;
+  LANTAI?: string;
   NO_HP?: string;
   STATUS: StatusMember;
   TANGGAL_MULAI?: string;

@@ -84,10 +84,12 @@ export const AIChat: React.FC = () => {
     window.addEventListener('storage', syncModel);
     window.addEventListener('focus', syncModel);
     window.addEventListener('gemini-model-changed', syncModel);
+    window.addEventListener('gemini-key-changed', syncModel);
     return () => {
       window.removeEventListener('storage', syncModel);
       window.removeEventListener('focus', syncModel);
       window.removeEventListener('gemini-model-changed', syncModel);
+      window.removeEventListener('gemini-key-changed', syncModel);
     };
   }, []);
 
@@ -685,7 +687,7 @@ export const AIChat: React.FC = () => {
                 {liveStatus !== 'DISCONNECTED'
                   ? `Gemini Live Voice (${liveStatus})`
                   : activeModelId
-                  ? `AI Assistant Terhubung (${activeModelId})`
+                  ? `AI Assistant Terhubung (${aiService.getModelDisplayName(activeModelId)})`
                   : 'AI Assistant — Model belum dipilih'}
               </span>
               <span className="text-[10px] text-slate-400 block truncate">

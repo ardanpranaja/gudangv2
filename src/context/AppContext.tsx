@@ -46,7 +46,7 @@ interface AppContextType {
   refreshKey: number;
   triggerRefresh: () => void;
   canAccessPage: (page: PageId) => boolean;
-  canPerformAction: (actionType: 'TRANSACTION' | 'MASTER_MUTATION' | 'APPROVAL' | 'SETTINGS') => boolean;
+  canPerformAction: (actionType: 'TRANSACTION' | 'MASTER_MUTATION' | 'APPROVAL' | 'SETTINGS' | 'REQUEST') => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -184,10 +184,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return false;
   };
 
-  const canPerformAction = (actionType: 'TRANSACTION' | 'MASTER_MUTATION' | 'APPROVAL' | 'SETTINGS'): boolean => {
+  const canPerformAction = (
+    actionType: 'TRANSACTION' | 'MASTER_MUTATION' | 'APPROVAL' | 'SETTINGS' | 'REQUEST'
+  ): boolean => {
     if (role === 'ADMIN') return true;
     if (role === 'OPERATOR') {
-      if (actionType === 'TRANSACTION') return true;
+      if (actionType === 'TRANSACTION' || actionType === 'REQUEST') return true;
       return false; // Cannot master mutation, cannot approve, cannot settings
     }
     if (role === 'VIEWER') {

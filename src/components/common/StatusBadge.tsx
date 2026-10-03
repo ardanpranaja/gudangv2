@@ -16,12 +16,19 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
 
   switch (normalized) {
     case 'AKTIF':
-    case 'DISETUJUI':
     case 'SELESAI':
     case 'TERSEDIA':
     case 'BAIK':
       colorClasses = 'text-emerald-700 bg-emerald-50 border-emerald-200';
       Icon = CheckCircle2;
+      break;
+    case 'DISETUJUI':
+      colorClasses = 'text-blue-700 bg-blue-50 border-blue-200';
+      Icon = CheckCircle2;
+      break;
+    case 'DIPROSES':
+      colorClasses = 'text-orange-700 bg-orange-50 border-orange-200';
+      Icon = Clock;
       break;
     case 'MENUNGGU':
     case 'SEDANG_DIGUNAKAN':
