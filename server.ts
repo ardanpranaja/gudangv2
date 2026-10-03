@@ -105,11 +105,12 @@ app.get('/api/ai/models', async (req, res) => {
     const client = getGeminiClient(req);
     const models: any[] = [];
     for await (const model of client.models.list()) {
-      const id = String(model.baseModelId || model.name || '').replace(/^models\//, '');
-      const actions = Array.isArray(model.supportedActions)
-        ? model.supportedActions
-        : Array.isArray(model.supportedGenerationMethods)
-        ? model.supportedGenerationMethods
+      const modelInfo = model as any;
+      const id = String(modelInfo.baseModelId || modelInfo.name || '').replace(/^models\//, '');
+      const actions = Array.isArray(modelInfo.supportedActions)
+        ? modelInfo.supportedActions
+        : Array.isArray(modelInfo.supportedGenerationMethods)
+        ? modelInfo.supportedGenerationMethods
         : [];
       const lower = id.toLowerCase();
       const excluded = /(image|tts|live|transcribe|embedding|robotics|veo|lyria|computer-use|deep-research|antigravity)/i.test(lower);
@@ -119,11 +120,11 @@ app.get('/api/ai/models', async (req, res) => {
 
       models.push({
         id,
-        name: model.displayName || id,
-        description: model.description || '',
-        version: model.version || '',
-        inputTokenLimit: model.inputTokenLimit || null,
-        outputTokenLimit: model.outputTokenLimit || null,
+        name: modelInfo.displayName || id,
+        description: modelInfo.description || '',
+        version: modelInfo.version || '',
+        inputTokenLimit: modelInfo.inputTokenLimit || null,
+        outputTokenLimit: modelInfo.outputTokenLimit || null,
         supportedActions: actions,
       });
     }
