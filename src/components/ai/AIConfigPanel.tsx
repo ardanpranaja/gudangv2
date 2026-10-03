@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { aiService } from '../../services/aiService';
 import { useApp } from '../../context/AppContext';
 import { GeminiErrorCategory } from '../../types/ai';
-import { Bot, Sparkles, CheckCircle2, AlertCircle, AlertTriangle, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Bot, Sparkles, CheckCircle2, AlertCircle, AlertTriangle, RefreshCw, Eye, EyeOff, KeyRound, Trash2 } from 'lucide-react';
 
 export const AIConfigPanel: React.FC = () => {
   const { addToast } = useApp();
@@ -17,16 +17,21 @@ export const AIConfigPanel: React.FC = () => {
     statusCode?: number;
   } | null>(null);
   const [selectedModel, setSelectedModel] = useState(aiService.getModel());
+  const [savedKeys, setSavedKeys] = useState(aiService.getSavedApiKeys());
+  const [selectedSavedKeyId, setSelectedSavedKeyId] = useState('');
 
   useEffect(() => {
     setApiKeyInput(aiService.getApiKey());
     setSelectedModel(aiService.getModel());
+    setSavedKeys(aiService.getSavedApiKeys());
   }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     aiService.setApiKey(apiKeyInput);
+    aiService.saveApiKey(apiKeyInput);
     aiService.setModel(selectedModel);
+    setSavedKeys(aiService.getSavedApiKeys());
     addToast('success', 'Konfigurasi Disimpan', 'Konfigurasi AI Assistant telah diperbarui.');
   };
 
@@ -82,6 +87,47 @@ export const AIConfigPanel: React.FC = () => {
           <label className="block font-medium text-slate-700 mb-1">
             Gemini API Key:
           </label>
+
+          {savedKeys.length > 0 && (
+            <div className="mb-2 flex items-center gap-2">
+              <div className="relative flex-1">
+                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                <select
+                  value={selectedSavedKeyId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setSelectedSavedKeyId(id);
+                    if (id) {
+                      const key = aiService.useSavedApiKey(id);
+                      setApiKeyInput(key);
+                    }
+                  }}
+                  className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded bg-slate-50 text-slate-700 text-xs"
+                >
+                  <option value="">Pilih API Key yang pernah disimpan...</option>
+                  {savedKeys.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.label} — {item.key.slice(0, 4)}••••{item.key.slice(-4)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedSavedKeyId && (
+                <button
+                  type="button"
+                  title="Hapus API Key tersimpan"
+                  onClick={() => {
+                    aiService.removeSavedApiKey(selectedSavedKeyId);
+                    setSavedKeys(aiService.getSavedApiKeys());
+                    setSelectedSavedKeyId('');
+                  }}
+                  className="p-2 text-slate-400 hover:text-rose-600 border border-slate-200 rounded"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
           <div className="flex gap-2">
             <div className="relative flex-1">
               <input
@@ -132,8 +178,14 @@ export const AIConfigPanel: React.FC = () => {
               onChange={(e) => setSelectedModel(e.target.value)}
               className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs bg-white"
             >
-              <option value="gemini-3.7-flash">gemini-3.7-flash (Default — Cepat, Akurat &amp; Responsif)</option>
-              <option value="gemini-3.8-flash">gemini-3.8-flash (Rekomendasi Cepat)</option>
+              <option value="gemini-3.8-flash">gemini-3.8-flash (Default)</option>
+              <option value="gemini-3.7-flash">gemini-3.7-flash</option>
+              <option value="gemini-3.6-flash">gemini-3.6-flash</option>
+              <option value="gemini-3.5-flash">gemini-3.5-flash</option>
+              <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite</option>
+              <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite</option>
+              <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview</option>
+              <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
             </select>
           </div>
         </div>
