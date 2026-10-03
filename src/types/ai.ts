@@ -48,10 +48,23 @@ export interface AIMessage {
   error?: string;
 }
 
+export type GeminiErrorCategory =
+  | 'CONNECTED'
+  | 'UNAVAILABLE'
+  | 'QUOTA'
+  | 'TIMEOUT'
+  | 'SERVER_ERROR'
+  | 'INVALID_API_KEY'
+  | 'PERMISSION_DENIED'
+  | 'INVALID_REQUEST'
+  | 'NETWORK_ERROR'
+  | 'UNKNOWN';
+
 export interface AIConfig {
   apiKey?: string;
   model: string;
   isConnected: boolean;
+  category?: GeminiErrorCategory;
   lastChecked?: string;
   errorMessage?: string;
 }

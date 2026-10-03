@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { aiService } from '../../services/aiService';
 import { useApp } from '../../context/AppContext';
-import { Bot, Sparkles, Key, CheckCircle2, AlertCircle, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { GeminiErrorCategory } from '../../types/ai';
+import { Bot, Sparkles, CheckCircle2, AlertCircle, AlertTriangle, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 export const AIConfigPanel: React.FC = () => {
   const { addToast } = useApp();
   const [apiKeyInput, setApiKeyInput] = useState(aiService.getApiKey());
   const [showKey, setShowKey] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testingProgressText, setTestingProgressText] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<{
+    success: boolean;
+    category: GeminiErrorCategory;
+    message: string;
+    statusCode?: number;
+  } | null>(null);
   const [selectedModel, setSelectedModel] = useState(aiService.getModel());
 
   useEffect(() => {
@@ -29,21 +36,31 @@ export const AIConfigPanel: React.FC = () => {
     aiService.setModel(selectedModel);
 
     setIsTesting(true);
+    setTestingProgressText(null);
     setTestResult(null);
+
     try {
-      const res = await aiService.testConnection();
+      const res = await aiService.testConnection((_attempt, _max, text) => {
+        setTestingProgressText(text);
+      });
       setTestResult(res);
+
       if (res.success) {
         addToast('success', 'Koneksi Berhasil', res.message);
+      } else if (res.category === 'UNAVAILABLE') {
+        addToast('warning', 'Layanan Gemini Sedang Padat (503)', res.message);
+      } else if (res.category === 'QUOTA') {
+        addToast('warning', 'Batas Kuota Penggunaan (429)', res.message);
       } else {
         addToast('error', 'Koneksi Gagal', res.message);
       }
-    } catch (err: any) {
-      const msg = err?.message || 'Gagal menguji koneksi.';
-      setTestResult({ success: false, message: msg });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal menguji koneksi.';
+      setTestResult({ success: false, category: 'UNKNOWN', message: msg });
       addToast('error', 'Koneksi Gagal', msg);
     } finally {
       setIsTesting(false);
+      setTestingProgressText(null);
     }
   };
 
@@ -96,7 +113,7 @@ export const AIConfigPanel: React.FC = () => {
               className="px-3.5 py-2 bg-white border border-slate-300 text-slate-700 rounded font-medium hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
-              <span>Test Connection</span>
+              <span>{testingProgressText ? 'Mencoba...' : 'Test Connection'}</span>
             </button>
           </div>
           <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
@@ -122,25 +139,45 @@ export const AIConfigPanel: React.FC = () => {
         </div>
       </form>
 
+      {/* Progress feedback while testing */}
+      {isTesting && testingProgressText && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs flex items-center gap-2">
+          <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 shrink-0" />
+          <span>{testingProgressText}</span>
+        </div>
+      )}
+
       {/* Test Connection Result Box */}
       {testResult && (
         <div
           className={`p-3.5 rounded border text-xs flex items-start gap-2.5 ${
             testResult.success
               ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              : testResult.category === 'UNAVAILABLE' || testResult.category === 'QUOTA'
+              ? 'bg-amber-50 border-amber-200 text-amber-900'
               : 'bg-rose-50 border-rose-200 text-rose-900'
           }`}
         >
           {testResult.success ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          ) : testResult.category === 'UNAVAILABLE' || testResult.category === 'QUOTA' ? (
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           ) : (
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
           )}
-          <div>
+          <div className="space-y-0.5">
             <div className="font-semibold">
-              {testResult.success ? 'Koneksi Gemini API Aktif' : 'Koneksi Gemini API Gagal'}
+              {testResult.success
+                ? 'Koneksi Gemini API Aktif'
+                : testResult.category === 'UNAVAILABLE'
+                ? 'Layanan Gemini Sementara Sibuk (HTTP 503)'
+                : testResult.category === 'QUOTA'
+                ? 'Batas Kuota Penggunaan Terlampaui (HTTP 429)'
+                : testResult.category === 'INVALID_API_KEY'
+                ? 'Kunci API Tidak Valid'
+                : 'Koneksi Gemini API Gagal'}
             </div>
-            <div className="text-[11px] opacity-90 mt-0.5">{testResult.message}</div>
+            <div className="text-[11px] opacity-90 leading-relaxed">{testResult.message}</div>
           </div>
         </div>
       )}

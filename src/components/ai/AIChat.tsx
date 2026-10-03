@@ -19,6 +19,7 @@ export const AIChat: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
+  const [retryStatus, setRetryStatus] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -29,7 +30,7 @@ export const AIChat: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading, activeTool]);
+  }, [messages, isLoading, activeTool, retryStatus]);
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
@@ -48,13 +49,20 @@ export const AIChat: React.FC = () => {
     setMessages(newHistory);
     setIsLoading(true);
     setActiveTool(null);
+    setRetryStatus(null);
 
     try {
       const response = await aiService.sendMessage(
         text,
         newHistory,
-        (toolInfo: AIToolCallInfo) => {
-          setActiveTool(toolInfo.name);
+        {
+          onToolStatus: (toolInfo: AIToolCallInfo) => {
+            setActiveTool(toolInfo.name);
+            setRetryStatus(null);
+          },
+          onRetryProgress: (_attempt: number, _maxAttempts: number, statusText: string) => {
+            setRetryStatus(statusText);
+          },
         }
       );
 
@@ -72,14 +80,15 @@ export const AIChat: React.FC = () => {
       const errorMsg: AIMessageType = {
         id: `err-${Date.now()}`,
         role: 'assistant',
-        content: 'Terjadi kendala saat memproses permintaan Anda.',
-        error: err?.message || 'Gagal berkomunikasi dengan model AI.',
+        content: err?.message || 'Gemini sedang tidak tersedia sementara. Silakan coba kembali beberapa saat lagi.',
+        error: err?.message,
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
       setActiveTool(null);
+      setRetryStatus(null);
     }
   };
 
@@ -178,9 +187,9 @@ export const AIChat: React.FC = () => {
               <Bot className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="bg-white border border-slate-200 rounded-xl rounded-tl-none p-3.5 shadow-xs flex items-center gap-2.5 text-xs text-slate-600">
-              <Loader2 className="w-4 h-4 animate-spin text-slate-800" />
-              <span>
-                {activeTool ? `Memeriksa data ${activeTool}...` : 'Sedang berpikir...'}
+              <Loader2 className={`w-4 h-4 animate-spin ${retryStatus ? 'text-amber-500' : 'text-slate-800'}`} />
+              <span className={retryStatus ? 'text-amber-700 font-medium' : ''}>
+                {retryStatus || (activeTool ? `Memeriksa data ${activeTool}...` : 'Sedang berpikir...')}
               </span>
             </div>
           </div>
