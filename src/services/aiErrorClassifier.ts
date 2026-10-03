@@ -19,6 +19,9 @@ export function classifyError(err: unknown): ClassifiedError {
 
   if (err instanceof Error) {
     msg = err.message || '';
+    if (typeof (err as any).status === 'number') status = (err as any).status;
+    else if (typeof (err as any).statusCode === 'number') status = (err as any).statusCode;
+    else if (typeof (err as any).code === 'number') status = (err as any).code;
   } else if (typeof err === 'string') {
     msg = err;
   } else if (typeof err === 'object' && err !== null) {
@@ -28,7 +31,23 @@ export function classifyError(err: unknown): ClassifiedError {
       (typeof errObj.error === 'string' ? errObj.error : '') ||
       JSON.stringify(err);
     if (typeof errObj.status === 'number') status = errObj.status;
-    if (typeof errObj.statusCode === 'number') status = errObj.statusCode;
+    else if (typeof errObj.statusCode === 'number') status = errObj.statusCode;
+    else if (typeof errObj.code === 'number') status = errObj.code;
+  }
+
+  // Try parsing inner JSON error message if present (common in @google/genai ApiError)
+  if (msg.startsWith('{') && msg.includes('"error"')) {
+    try {
+      const parsed = JSON.parse(msg);
+      if (parsed?.error?.code && typeof parsed.error.code === 'number') {
+        status = parsed.error.code;
+      }
+      if (parsed?.error?.message && typeof parsed.error.message === 'string') {
+        msg = parsed.error.message;
+      }
+    } catch {
+      // Ignore JSON parse failure
+    }
   }
 
   // Mask any potential key occurrences in technicalDetails

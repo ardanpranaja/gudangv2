@@ -31,27 +31,61 @@ function calculateBackoffDelay(attempt: number): number {
 }
 
 /**
- * Executes a Gemini operation with retry for transient errors (503, 429, 408, 500, 502, 504)
+ * Executes a Gemini operation with retry and model fallback for transient errors (503, 429, 500, 504)
  */
-async function executeWithRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
-  let attempt = 0;
-  while (true) {
-    attempt++;
-    try {
-      return await fn();
-    } catch (err: unknown) {
-      const classified = classifyError(err);
-      if (classified.isTransient && attempt <= maxRetries) {
-        const delay = calculateBackoffDelay(attempt);
-        console.log(
-          `[AI Server Info] Layanan sibuk (${classified.category} - ${classified.statusCode}). Mencoba kembali attempt ${attempt}/${maxRetries} dalam ${delay}ms...`
-        );
-        await sleep(delay);
-        continue;
+async function generateWithFallback(
+  client: GoogleGenAI,
+  primaryModel: string,
+  contents: unknown,
+  config: unknown,
+  maxRetries = 2
+): Promise<any> {
+  const modelsToTry = [
+    primaryModel || 'gemini-3.7-flash',
+    primaryModel === 'gemini-3.8-flash' ? 'gemini-3.7-flash' : 'gemini-3.8-flash',
+  ].filter((v, i, a) => Boolean(v) && a.indexOf(v) === i);
+
+  let lastError: unknown;
+
+  for (const model of modelsToTry) {
+    let attempt = 0;
+    while (attempt <= maxRetries) {
+      attempt++;
+      try {
+        return await client.models.generateContent({
+          model,
+          contents: contents as any,
+          config: config as any,
+        });
+      } catch (err: unknown) {
+        lastError = err;
+        const classified = classifyError(err);
+
+        // If QUOTA (429), immediately break to try fallback model instead of waiting
+        if (classified.category === 'QUOTA') {
+          console.log(`[AI Server Info] Model ${model} mencapai limit kuota (429). Beralih ke model alternatif...`);
+          break;
+        }
+
+        if (classified.isTransient && attempt <= maxRetries) {
+          const delay = calculateBackoffDelay(attempt);
+          console.log(
+            `[AI Server Info] Layanan ${model} (${classified.category} - ${classified.statusCode}). Mencoba kembali attempt ${attempt}/${maxRetries} dalam ${delay}ms...`
+          );
+          await sleep(delay);
+          continue;
+        }
+
+        // If transient error after retries, switch to fallback model
+        if (classified.isTransient) {
+          break;
+        }
+        throw err;
       }
-      throw err;
     }
   }
+
+  throw lastError;
 }
 
 // Helper to get Gemini Client safely
@@ -68,12 +102,13 @@ function getGeminiClient(req: express.Request): GoogleGenAI {
 app.post('/api/ai/test', async (req, res) => {
   try {
     const client = getGeminiClient(req);
-    const result = await executeWithRetry(async () => {
-      return await client.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: 'Ping test. Jawab "OK".',
-      });
-    }, 2);
+    const result = await generateWithFallback(
+      client,
+      'gemini-3.7-flash',
+      'Ping test. Jawab "OK".',
+      undefined,
+      1
+    );
 
     res.json({
       success: true,
@@ -100,7 +135,7 @@ app.post('/api/ai/test', async (req, res) => {
 app.post('/api/ai/chat', async (req, res) => {
   try {
     const client = getGeminiClient(req);
-    const { contents, tools, systemInstruction, model = 'gemini-3.8-flash' } = req.body;
+    const { contents, tools, systemInstruction, model = 'gemini-3.7-flash' } = req.body;
 
     const config: any = {};
     if (systemInstruction) {
@@ -110,13 +145,13 @@ app.post('/api/ai/chat', async (req, res) => {
       config.tools = tools;
     }
 
-    const response = await executeWithRetry(async () => {
-      return await client.models.generateContent({
-        model,
-        contents,
-        config,
-      });
-    }, 2);
+    const response = await generateWithFallback(
+      client,
+      model,
+      contents,
+      config,
+      2
+    );
 
     const functionCalls = response.functionCalls || [];
     const text = response.text || '';

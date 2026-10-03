@@ -54,7 +54,7 @@ function calculateBackoffDelay(attempt: number): number {
 
 export class AIService {
   private customApiKey: string = '';
-  private selectedModel: string = 'gemini-3.8-flash';
+  private selectedModel: string = 'gemini-3.7-flash';
 
   constructor() {
     this.loadConfig();

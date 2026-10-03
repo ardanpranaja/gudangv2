@@ -132,9 +132,8 @@ export const AIConfigPanel: React.FC = () => {
               onChange={(e) => setSelectedModel(e.target.value)}
               className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs bg-white"
             >
-              <option value="gemini-3.8-flash">gemini-3.8-flash (Default — Rekomendasi Cepat &amp; Akurat)</option>
-              <option value="gemini-2.5-flash">gemini-2.5-flash (Fallback Stabil &amp; Cepat)</option>
-              <option value="gemini-2.5-pro">gemini-2.5-pro (Penalaran Kompleks)</option>
+              <option value="gemini-3.7-flash">gemini-3.7-flash (Default — Cepat, Akurat &amp; Responsif)</option>
+              <option value="gemini-3.8-flash">gemini-3.8-flash (Rekomendasi Cepat)</option>
             </select>
           </div>
         </div>
