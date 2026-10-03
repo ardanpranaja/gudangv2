@@ -62,6 +62,31 @@ ATURAN TRANSAKSI PERGERAKAN FISIK BARANG:
    - Sampaikan kepada user bahwa draf konfirmasi telah disiapkan di antarmuka dan menunggu persetujuan.
    - Jika pengguna membalas dengan persetujuan melalui pesan (misal: "Setuju", "Ya", "Eksekusi", "Lanjutkan", "Silakan"), sistem frontend akan langsung mengeksekusi konfirmasi pending ke backend GAS.`;
 
+export const MEMBER_SYSTEM_INSTRUCTION = `Anda adalah Asisten Panduan AI untuk sistem Gudang Presisi khusus personil lapangan / crew.
+Peran Anda adalah membantu personil memahami dan mengisi Form Permintaan Barang dengan mudah, ramah, dan ringkas.
+
+ATURAN UTAMA & BATASAN KETAT:
+1. PANDUAN PENGISIAN FORM PERMINTAAN:
+   - Langkah 1 (Pilih Nama): Pilih nama Anda pada pilihan nama pemohon. Perhatikan penanda lokasi tugas/lantai (misal "Lantai 2") untuk memastikan tidak tertukar dengan rekan bernama sama.
+   - Langkah 2 (Pilih Barang): Pilih barang yang ingin diajukan. Status ketersediaan adalah biner:
+     * [READY]: Stok barang ada di gudang dan dapat diajukan.
+     * [KOSONG]: Stok barang saat ini habis di gudang, sehingga tidak dapat diajukan.
+   - Langkah 3 (Jumlah & Kelayakan): Isi jumlah barang yang dibutuhkan. Anda dapat mengklik tombol "Cek Kelayakan Pengambilan" untuk mengetahui apakah pengajuan memenuhi jadwal masa pakai atau tergolong Early Pickup.
+   - Langkah 4 (Alasan): Tuliskan alasan permintaan dengan jelas. Kolom alasan wajib diisi minimal 10 karakter (misal: "Kebutuhan pembersihan harian lantai 3").
+   - Langkah 5 (Kirim): Klik "Ajukan Permintaan".
+
+2. ALUR STATUS PENGAJUAN:
+   - MENUNGGU: Permintaan telah masuk antrean sistem dan sedang menunggu review admin gudang.
+   - DISETUJUI: Admin gudang telah menyetujui permintaan Anda.
+   - DIPROSES: Tim logistik gudang sedang mengambil & menyiapkan fisik barang (picking list).
+   - SELESAI: Barang telah diserahkan dan otomatis tercatat sebagai mutasi barang keluar.
+   - DITOLAK: Permintaan ditolak (alasan/catatan penolakan dapat dilihat di tabel riwayat).
+
+3. KEAMANAN & PRIVASI DATA:
+   - JANGAN PERNAH menyebutkan angka saldo stok fisik gudang (misal "stok sisa 42"). Selalu gunakan istilah [READY] atau [KOSONG].
+   - JANGAN mengarang data transaksi masa lalu atau ID pengajuan fiktif.
+   - Gunakan Bahasa Indonesia yang sopan, ramah, ringkas, dan memotivasi.`;
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function calculateBackoffDelay(attempt: number): number {
@@ -146,6 +171,10 @@ export class AIService {
 
   public getApiKey(): string {
     return this.customApiKey;
+  }
+
+  public hasKey(): boolean {
+    return Boolean(this.customApiKey && this.customApiKey.trim());
   }
 
   public setApiKey(key: string) {
@@ -553,6 +582,8 @@ export class AIService {
     callbacks?: {
       onToolStatus?: (toolInfo: AIToolCallInfo) => void;
       onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void;
+      systemInstruction?: string;
+      disableTools?: boolean;
     }
   ): Promise<{
     text: string;
@@ -649,8 +680,8 @@ export class AIService {
       const res = await this.callChatWithRetry(
         {
           contents,
-          tools: [{ functionDeclarations: AI_TOOL_DECLARATIONS }],
-          systemInstruction: SYSTEM_INSTRUCTION,
+          tools: callbacks?.disableTools ? undefined : [{ functionDeclarations: AI_TOOL_DECLARATIONS }],
+          systemInstruction: callbacks?.systemInstruction || SYSTEM_INSTRUCTION,
         },
         callbacks?.onRetryProgress
       );

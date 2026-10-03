@@ -22,7 +22,11 @@ import { MasterMesinPage } from './pages/MasterMesinPage';
 import { PemakaianMesinPage } from './pages/PemakaianMesinPage';
 
 const AppRouter: React.FC = () => {
-  const { currentPage } = useApp();
+  const { currentPage, canAccessPage } = useApp();
+
+  if (!canAccessPage(currentPage)) {
+    return <PengajuanPage />;
+  }
 
   switch (currentPage) {
     case 'dashboard':

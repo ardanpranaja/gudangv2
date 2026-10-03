@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
 import { DataTable, Column } from '../components/common/DataTable';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { AIAssistantBubble } from '../components/ai/AIAssistantBubble';
 import { useApp } from '../context/AppContext';
 import { api, normalizeGasErrorMessage } from '../services/api';
 import {
@@ -1257,6 +1258,15 @@ export const PengajuanPage: React.FC = () => {
             />
           </div>
         </div>
+      )}
+
+      {/* Floating AI Assistant Bubble (Member Mode Only) */}
+      {role === 'MEMBER' && (
+        <AIAssistantBubble
+          selectedMember={selectedMemberObj}
+          selectedItem={selectedItemObj}
+          isItemReady={isSelectedItemReady}
+        />
       )}
     </div>
   );
