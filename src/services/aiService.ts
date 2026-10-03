@@ -1,47 +1,66 @@
-import { AIMessage, AIToolCallInfo, AIConfirmationData, GeminiErrorCategory, SavedApiKey, AIModelInfo } from '../types/ai';
-import { AI_TOOL_DECLARATIONS, executeAITool } from './aiTools';
+import {
+  AIMessage,
+  AIToolCallInfo,
+  AIConfirmationData,
+  GeminiErrorCategory,
+  SavedApiKey,
+  AIModelInfo,
+  AIConversationContext,
+  StructuredToolResult,
+} from '../types/ai';
+import { AI_TOOL_DECLARATIONS, executeAITool, extractEntitiesFromToolResult } from './aiTools';
 
 const STORAGE_KEY_GEMINI_KEY = 'GP_GEMINI_API_KEY';
 const STORAGE_KEY_GEMINI_SAVED_KEYS = 'GP_GEMINI_SAVED_KEYS';
 const STORAGE_KEY_GEMINI_MODEL = 'GP_GEMINI_MODEL';
 const STORAGE_KEY_GEMINI_CACHED_MODELS = 'GP_GEMINI_CACHED_MODELS';
 
-export const SYSTEM_INSTRUCTION = `Anda adalah asisten AI operasional cerdas untuk GudangPresisi (Sistem Pengelolaan Gudang Presisi).
+export const SYSTEM_INSTRUCTION = `Anda adalah asisten AI operasional cerdas untuk GudangV2 (Sistem Pengelolaan Gudang V2).
 Peran Anda adalah membantu operator dan admin gudang secara proaktif menjalankan pekerjaan operasional gudang selama fungsinya tersedia melalui tools aplikasi.
 
+PRINSIP SUMBER KEBENARAN & IDENTITAS:
+- Identitas sistem Anda adalah GudangV2.
+- Backend adalah Google Apps Script (GAS) dan Google Spreadsheet melalui tools. JANGAN mengarang data, stok, member, atau ID transaksi sendiri.
+- Gunakan Bahasa Indonesia yang profesional, ringkas, jelas, dan ramah.
+
+RESOLUSI ENTITAS & KONTEKS PERCAKAPAN:
+1. Pahami rujukan percakapan sebelumnya secara cerdas:
+   - "member tadi" / "atas nama tersebut" -> Merujuk ke activeMember dari konteks atau tool result terakhir.
+   - "barang tadi" / "item tersebut" -> Merujuk ke activeItem dari konteks atau tool result terakhir.
+   - "limitnya" / "ubah menjadi 3" -> Merujuk ke limit, member, dan barang yang baru saja dibahas. Hanya ubah parameter yang diminta (misal maxQty berubah dari 2 menjadi 3) tanpa meminta user mengulang semua info.
+2. Urutan Prioritas Konteks (Context Priority):
+   a. ID atau nama eksplisit pada pesan pengguna saat ini.
+   b. Entitas yang secara spesifik disebut pada pesan saat ini.
+   c. Entitas aktif pada konteks percakapan (activeMember, activeItem, activeLimit).
+   d. Entitas terkini dari hasil tool sebelumnya (recentEntities).
+   e. Jika ambigu (misal ada 2 member dengan nama yang sama), TANYAKAN klarifikasi secara sopan kepada pengguna, JANGAN memilih secara acak.
+3. Kelengkapan Parameter Sebelum Operasi Tulis (Write Operation):
+   - Jika pengguna meminta "buatkan limit untuk member Armin", cari member Armin terlebih dahulu. Jika ditemukan tetapi barang dan maxQty belum ada, tanyakan: "Untuk Armin Gandi (MBR000123), barang apa yang ingin diberi limit dan berapa kuota MAX_QTY-nya?".
+   - JANGAN memanggil tool create_member_limit dengan parameter kosong.
+
 KEMAMPUAN & OPERASI ADMINISTRATIF LANGSUNG:
-1. Anda boleh dan dianjurkan melakukan operasi administratif langsung tanpa meminta konfirmasi tambahan:
+4. Anda boleh dan dianjurkan melakukan operasi administratif langsung tanpa meminta konfirmasi tambahan:
    - Membaca dan mencari data barang (get_items), stok (check_stock), member (get_members), limit (get_member_limits), kartu stok (get_bincard), riwayat member (get_member_history), antrean pengajuan (get_pending_requests), dan status koneksi backend (get_system_health).
    - Validasi kelayakan pengambilan barang (check_pickup_eligibility).
    - Mengelola kuota limit member langsung:
      * create_member_limit: Buat limit baru jika member belum memiliki limit untuk item tersebut.
      * update_member_limit: Ubah limit yang sudah ada jika diminta mengubah kuota.
      * activate_member_limit / deactivate_member_limit: Mengaktifkan atau menonaktifkan limit.
-     * Flow setting limit (misal: "Set limit Armin Gandi tissue roll 10 box"):
+     * Flow setting limit:
        1. Cari member (get_members) untuk mendapatkan ID_MEMBER.
        2. Cari barang (get_items) untuk mendapatkan ID_ITEM.
        3. Cek apakah limit sudah ada (get_member_limits).
        4. Jika belum ada: panggil create_member_limit.
        5. Jika sudah ada: JANGAN buat duplikat, gunakan update_member_limit dengan ID_LIMIT yang ditemukan.
+     * Jika tool mengembalikan LIMIT_ALREADY_EXISTS, jelaskan bahwa limit sudah ada dan jangan mengaku berhasil membuat baru.
 
-ATURAN TRANSAKSI PERGERAKAN BARANG:
-2. Transaksi pergerakan fisik barang (BARANG_MASUK, BARANG_KELUAR, PINJAM, KEMBALI) dan pengajuan early pickup (propose_request) MEMERLUKAN konfirmasi:
+ATURAN TRANSAKSI PERGERAKAN FISIK BARANG:
+5. Transaksi pergerakan fisik barang (BARANG_MASUK, BARANG_KELUAR, PINJAM, KEMBALI) dan pengajuan early pickup (propose_request) MEMERLUKAN konfirmasi:
    - Gunakan tool propose_transaction untuk menyiapkan draft transaksi (cek stok, member, dan kelayakan terlebih dahulu).
    - Gunakan tool propose_request jika pengambilan belum memenuhi masa pakai / early pickup.
    - AI TIDAK BOLEH mengeksekusi transaksi pergerakan barang langsung ke backend tanpa draf konfirmasi.
    - Sampaikan kepada user bahwa draf konfirmasi telah disiapkan di antarmuka dan menunggu persetujuan.
-
-PERSETUJUAN & KONTEKS PERCAKAPAN (CONTEXTUAL FOLLOW-UP):
-3. Pahami konteks percakapan sebelumnya secara utuh:
-   - Contoh: User meminta pengambilan barang untuk member (misal 4 box), namun limit belum ada. Setelah itu user berkata "Set 10 box", maka:
-     a. Buat limit 10 box dengan create_member_limit.
-     b. Lanjutkan konteks transaksi sebelumnya dengan langsung memanggil propose_transaction untuk pengambilan 4 box yang diminta awal tadi.
-     c. Jelaskan ke user: "Limit 10 box sudah berhasil dibuat. Saya juga telah menyiapkan draf transaksi pengambilan 4 box. Silakan konfirmasi."
-   - Jika pengguna membalas dengan persetujuan melalui pesan (misal: "Setuju", "Ya", "Eksekusi", "Lanjutkan", "Silakan"), sistem frontend akan langsung mengeksekusi konfirmasi pending ke backend GAS.
-
-SUMBER KEBENARAN & KEAMANAN:
-- Sumber kebenaran backend adalah Google Apps Script (GAS) dan Spreadsheet via tools. JANGAN mengarang data atau ID transaksi sendiri.
-- Gunakan Bahasa Indonesia yang profesional, ringkas, jelas, dan ramah.`;
+   - Jika pengguna membalas dengan persetujuan melalui pesan (misal: "Setuju", "Ya", "Eksekusi", "Lanjutkan", "Silakan"), sistem frontend akan langsung mengeksekusi konfirmasi pending ke backend GAS.`;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -271,24 +290,6 @@ export class AIService {
       if (this.availableModels.length > 0) {
         return this.availableModels;
       }
-      // Provide basic fallback if network fails
-      const fallbackModels: AIModelInfo[] = [
-        {
-          id: 'gemini-3.7-flash',
-          name: 'models/gemini-3.7-flash',
-          displayName: 'Gemini 3.7 Flash',
-          description: 'Model standar cepat & responsif',
-          supportedActions: ['generateContent'],
-        },
-        {
-          id: 'gemini-3.8-flash',
-          name: 'models/gemini-3.8-flash',
-          displayName: 'Gemini 3.8 Flash',
-          description: 'Model generasi mutakhir',
-          supportedActions: ['generateContent'],
-        },
-      ];
-      this.availableModels = fallbackModels;
       throw err;
     }
 
@@ -392,7 +393,7 @@ export class AIService {
       }
       if (data.category === 'INVALID_API_KEY' || res.status === 401) {
         throw new Error(
-          'Kunci API Gemini tidak valid. Silakan periksa di menu Pengaturan > AI Assistant.'
+          'Kunci API Gemini tidak valid atau belum diatur. Silakan periksa di menu Pengaturan > AI Assistant.'
         );
       }
 
@@ -482,7 +483,7 @@ export class AIService {
           category: 'INVALID_API_KEY',
           statusCode: 401,
           message:
-            'Kunci API Gemini tidak valid. Silakan periksa kembali API key yang dimasukkan.',
+            'Kunci API Gemini tidak valid atau belum diatur. Silakan periksa kembali API key yang dimasukkan.',
         };
       }
 
@@ -496,11 +497,12 @@ export class AIService {
   }
 
   /**
-   * Main AI Chat messaging method with multi-turn tool execution loop
+   * Main AI Chat messaging method with multi-turn tool execution loop and structured entity context resolution
    */
   public async sendMessage(
     userMessageText: string,
     history: AIMessage[],
+    context?: AIConversationContext,
     callbacks?: {
       onToolStatus?: (toolInfo: AIToolCallInfo) => void;
       onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void;
@@ -509,12 +511,52 @@ export class AIService {
     text: string;
     toolCalls: AIToolCallInfo[];
     confirmation?: AIConfirmationData;
+    updatedContext: AIConversationContext;
   }> {
     const contents: any[] = [];
+    let activeContext: AIConversationContext = context ? { ...context } : {};
+
+    // Build structured context header for high-accuracy reference resolution
+    const contextItems: string[] = [];
+    if (activeContext.activeMember) {
+      contextItems.push(
+        `Member Aktif: ${activeContext.activeMember.name} (ID: ${activeContext.activeMember.id}${
+          activeContext.activeMember.jabatan ? `, Jabatan: ${activeContext.activeMember.jabatan}` : ''
+        })`
+      );
+    }
+    if (activeContext.activeItem) {
+      contextItems.push(
+        `Barang Aktif: ${activeContext.activeItem.name} (ID: ${activeContext.activeItem.id}${
+          activeContext.activeItem.satuan ? `, Satuan: ${activeContext.activeItem.satuan}` : ''
+        }${activeContext.activeItem.stok !== undefined ? `, Stok: ${activeContext.activeItem.stok}` : ''})`
+      );
+    }
+    if (activeContext.activeLimit) {
+      contextItems.push(
+        `Limit Terakhir: Member ${activeContext.activeLimit.memberId}, Item ${activeContext.activeLimit.itemId}, Max: ${activeContext.activeLimit.maxQty} ${activeContext.activeLimit.satuan || ''}`
+      );
+    }
+    if (activeContext.recentEntities?.members && activeContext.recentEntities.members.length > 0) {
+      contextItems.push(
+        `Member Terkait: ${activeContext.recentEntities.members.map((m) => `${m.name} [${m.id}]`).join(', ')}`
+      );
+    }
+    if (activeContext.recentEntities?.items && activeContext.recentEntities.items.length > 0) {
+      contextItems.push(
+        `Barang Terkait: ${activeContext.recentEntities.items.map((i) => `${i.name} [${i.id}]`).join(', ')}`
+      );
+    }
+
+    const contextContextPrompt =
+      contextItems.length > 0
+        ? `\n[KONTEKS ENTITAS AKTIF SAAT INI DARI PERCAKAPAN/TOOL SEBELUMNYA]:\n${contextItems.join('\n')}\n`
+        : '';
 
     // Map conversation history
-    const recentHistory = history.slice(-10);
-    for (const msg of recentHistory) {
+    const recentHistory = history.slice(-12);
+    for (let i = 0; i < recentHistory.length; i++) {
+      const msg = recentHistory[i];
       if (msg.role === 'user' && msg.content) {
         contents.push({
           role: 'user',
@@ -525,6 +567,12 @@ export class AIService {
         if (msg.confirmation) {
           contentWithContext += `\n[Status Kartu Konfirmasi: ${msg.confirmation.title} | Status: ${msg.confirmation.status}]`;
         }
+        if (msg.toolCalls && msg.toolCalls.length > 0) {
+          const toolSummary = msg.toolCalls
+            .map((t) => `Tool: ${t.name}, Status: ${t.status}`)
+            .join('; ');
+          contentWithContext += `\n[Rekam Eksekusi Tool: ${toolSummary}]`;
+        }
         contents.push({
           role: 'model',
           parts: [{ text: contentWithContext }],
@@ -532,10 +580,14 @@ export class AIService {
       }
     }
 
-    // Add current user prompt
+    // Add current user prompt enriched with active context if present
+    const userPromptWithContext = contextContextPrompt
+      ? `${contextContextPrompt}\nUser: ${userMessageText}`
+      : userMessageText;
+
     contents.push({
       role: 'user',
-      parts: [{ text: userMessageText }],
+      parts: [{ text: userPromptWithContext }],
     });
 
     const executedTools: AIToolCallInfo[] = [];
@@ -602,26 +654,27 @@ export class AIService {
         if (callbacks?.onToolStatus) callbacks.onToolStatus(toolInfo);
 
         try {
-          const toolExec = await executeAITool(call.name, call.args || {});
-          toolInfo.status = 'done';
+          const toolExec: StructuredToolResult = await executeAITool(call.name, call.args || {});
+          toolInfo.status = toolExec.success ? 'done' : 'error';
           toolInfo.result = toolExec.data;
+          if (!toolExec.success) {
+            toolInfo.errorMessage = toolExec.message || 'Gagal mengeksekusi operasi';
+          }
           executedTools.push(toolInfo);
 
           if (toolExec.confirmation) {
             pendingConfirmation = toolExec.confirmation;
           }
 
-          if (callbacks?.onToolStatus) callbacks.onToolStatus(toolInfo);
+          // Update active entity context progressively from tool results
+          activeContext = extractEntitiesFromToolResult(call.name, call.args || {}, toolExec, activeContext);
 
-          const responseObj =
-            typeof toolExec.data === 'object' && toolExec.data !== null && !Array.isArray(toolExec.data)
-              ? (toolExec.data as Record<string, unknown>)
-              : { result: toolExec.data };
+          if (callbacks?.onToolStatus) callbacks.onToolStatus(toolInfo);
 
           functionResponseParts.push({
             functionResponse: {
               name: call.name,
-              response: responseObj,
+              response: toolExec,
               id: call.id,
             },
           });
@@ -635,7 +688,11 @@ export class AIService {
           functionResponseParts.push({
             functionResponse: {
               name: call.name,
-              response: { error: toolInfo.errorMessage },
+              response: {
+                success: false,
+                errorCode: 'API_ERROR',
+                message: toolInfo.errorMessage,
+              },
               id: call.id,
             },
           });
@@ -657,6 +714,7 @@ export class AIService {
       text: finalText || 'Permintaan telah diproses.',
       toolCalls: executedTools,
       confirmation: pendingConfirmation,
+      updatedContext: activeContext,
     };
   }
 }

@@ -113,9 +113,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="h-14 px-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 bg-white text-slate-900 font-bold text-xs rounded flex items-center justify-center font-mono">
-              GP
+              GV2
             </div>
-            <span className="font-semibold text-sm tracking-tight text-white">GudangPresisi</span>
+            <span className="font-semibold text-sm tracking-tight text-white">GudangV2</span>
           </div>
           <button
             onClick={onClose}

@@ -33,7 +33,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
           onClick={() => navigateTo('dashboard')}
           className="text-base font-bold tracking-tight text-slate-900 hover:text-slate-800 flex items-center gap-2"
         >
-          <span>GudangPresisi</span>
+          <span>GudangV2</span>
         </button>
       </div>
 

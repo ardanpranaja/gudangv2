@@ -93,10 +93,71 @@ export type LiveAssistantStatus =
   | 'SPEAKING'
   | 'ERROR';
 
-export interface LiveTranscriptEntry {
+export interface AIConversationContext {
+  activeMember?: {
+    id: string;
+    name: string;
+    jabatan?: string;
+    divisi?: string;
+  };
+  activeItem?: {
+    id: string;
+    name: string;
+    satuan?: string;
+    kategori?: string;
+    lokasi?: string;
+    stok?: number;
+  };
+  activeLimit?: {
+    id?: string;
+    memberId: string;
+    itemId: string;
+    maxQty: number;
+    satuan?: string;
+    status?: string;
+  };
+  recentEntities?: {
+    members?: Array<{
+      id: string;
+      name: string;
+      jabatan?: string;
+    }>;
+    items?: Array<{
+      id: string;
+      name: string;
+      satuan?: string;
+    }>;
+  };
+}
+
+export interface AIConversation {
   id: string;
-  sender: 'user' | 'assistant';
-  text: string;
-  timestamp: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  messages: AIMessage[];
+  context?: AIConversationContext;
+}
+
+export interface StructuredToolResult<T = unknown> {
+  success: boolean;
+  errorCode?: 'MISSING_PARAMETER' | 'LIMIT_ALREADY_EXISTS' | 'NOT_FOUND' | 'INVALID_INPUT' | 'API_ERROR' | 'UNAUTHORIZED';
+  message?: string;
+  missing?: string[];
+  data?: T;
+  idLimit?: string;
+  idTransaksi?: string;
+  idPengajuan?: string;
+  confirmation?: AIConfirmationData;
+}
+
+export interface AIError {
+  category: GeminiErrorCategory;
+  errorCode?: string;
+  statusCode?: number;
+  tool?: string;
+  message: string;
+  technicalDetails?: string;
+  retryable?: boolean;
 }
 

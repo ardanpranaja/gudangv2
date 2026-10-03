@@ -100,7 +100,7 @@ const handleModelsDiscovery = async (req: express.Request, res: express.Response
     for await (const m of modelsIterator) {
       const supportedActions = (m as any).supportedActions || [];
       // Capability Filter: Ensure model supports text/multimodal generation (generateContent)
-      // GudangPresisi utilizes generateContent for chat, reasoning, tool execution, and structured query
+      // GudangV2 utilizes generateContent for chat, reasoning, tool execution, and structured query
       const isGenerative =
         supportedActions.includes('generateContent') ||
         supportedActions.length === 0;
@@ -233,7 +233,7 @@ app.post('/api/ai/chat', async (req, res) => {
 // GEMINI LIVE API WEBSOCKET BRIDGE (/api/ai/live)
 // ============================================================================
 
-const LIVE_SYSTEM_INSTRUCTION = `Anda adalah asisten AI suara dan operasional cerdas untuk GudangPresisi (Sistem Pengelolaan Gudang Presisi).
+const LIVE_SYSTEM_INSTRUCTION = `Anda adalah asisten AI suara dan operasional cerdas untuk GudangV2 (Sistem Pengelolaan Gudang V2).
 Peran Anda adalah membantu operator dan admin gudang secara proaktif menjalankan pekerjaan operasional gudang melalui percakapan suara realtime.
 
 KEMAMPUAN & OPERASI ADMINISTRATIF LANGSUNG:

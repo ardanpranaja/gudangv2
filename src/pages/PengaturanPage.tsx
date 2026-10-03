@@ -247,7 +247,7 @@ export const PengaturanPage: React.FC = () => {
         <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
           <p className="font-semibold mb-0.5">Catatan Backend Source of Truth:</p>
           <p className="text-[11px] text-amber-800 leading-relaxed">
-            Backend production GudangPresisi aktif menggunakan Google Apps Script Version 1.2.4 (debug_source: 1.2.4-DIAGNOSTIC). Kode template di bawah disediakan sebagai referensi struktur skema sheet dan kontrak API v1.2.4.
+            Backend production GudangV2 aktif menggunakan Google Apps Script Version 1.2.4 (debug_source: 1.2.4-DIAGNOSTIC). Kode template di bawah disediakan sebagai referensi struktur skema sheet dan kontrak API v1.2.4.
           </p>
         </div>
 
