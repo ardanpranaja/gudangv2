@@ -19,12 +19,33 @@ export const AIConfigPanel: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState(aiService.getModel());
   const [savedKeys, setSavedKeys] = useState(aiService.getSavedApiKeys());
   const [selectedSavedKeyId, setSelectedSavedKeyId] = useState('');
+  const [modelOptions, setModelOptions] = useState<Array<{ id: string; name: string; description: string }>>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [modelLoadError, setModelLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     setApiKeyInput(aiService.getApiKey());
     setSelectedModel(aiService.getModel());
     setSavedKeys(aiService.getSavedApiKeys());
+    void loadModels();
   }, []);
+
+  const loadModels = async () => {
+    setIsLoadingModels(true);
+    setModelLoadError(null);
+    try {
+      const models = await aiService.listAvailableModels();
+      setModelOptions(models.map((model) => ({
+        id: model.id,
+        name: model.name || model.id,
+        description: model.description || '',
+      })));
+    } catch (err: unknown) {
+      setModelLoadError(err instanceof Error ? err.message : 'Daftar model Gemini gagal dimuat.');
+    } finally {
+      setIsLoadingModels(false);
+    }
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,20 +194,42 @@ export const AIConfigPanel: React.FC = () => {
             <label className="block font-medium text-slate-700 mb-1">
               Model Gemini:
             </label>
-            <select
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs bg-white"
-            >
-              <option value="gemini-3.8-flash">gemini-3.8-flash (Default)</option>
-              <option value="gemini-3.7-flash">gemini-3.7-flash</option>
-              <option value="gemini-3.6-flash">gemini-3.6-flash</option>
-              <option value="gemini-3.5-flash">gemini-3.5-flash</option>
-              <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite</option>
-              <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite</option>
-              <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview</option>
-              <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
-            </select>
+            <div className="flex gap-2">
+              <select
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                className="flex-1 px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs bg-white"
+              >
+                {modelOptions.length === 0 ? (
+                  <>
+                    <option value="gemini-3.8-flash">gemini-3.8-flash</option>
+                    <option value="gemini-3.7-flash">gemini-3.7-flash</option>
+                  </>
+                ) : (
+                  modelOptions.map((model) => (
+                    <option key={model.id} value={model.id}>
+                      {model.name} — {model.id}
+                    </option>
+                  ))
+                )}
+              </select>
+              <button
+                type="button"
+                onClick={loadModels}
+                disabled={isLoadingModels}
+                className="px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded hover:bg-slate-50 disabled:opacity-50 inline-flex items-center gap-1.5"
+                title="Muat ulang daftar model dari Gemini API"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoadingModels ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Muat</span>
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1">
+              {isLoadingModels ? 'Memuat model yang tersedia untuk API key ini...' : `${modelOptions.length || 2} model chat tersedia dari API key aktif.`}
+            </p>
+            {modelLoadError && (
+              <p className="text-[10px] text-amber-700 mt-1">{modelLoadError}</p>
+            )}
           </div>
         </div>
       </form>
