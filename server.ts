@@ -98,6 +98,50 @@ function getGeminiClient(req: express.Request): GoogleGenAI {
   return new GoogleGenAI({ apiKey });
 }
 
+// GET /api/ai/models — list models available to the active Gemini API key.
+// Only models suitable for GudangPresisi text/tool chat are returned.
+app.get('/api/ai/models', async (req, res) => {
+  try {
+    const client = getGeminiClient(req);
+    const models: any[] = [];
+    for await (const model of client.models.list()) {
+      const id = String(model.baseModelId || model.name || '').replace(/^models\//, '');
+      const actions = Array.isArray(model.supportedActions)
+        ? model.supportedActions
+        : Array.isArray(model.supportedGenerationMethods)
+        ? model.supportedGenerationMethods
+        : [];
+      const lower = id.toLowerCase();
+      const excluded = /(image|tts|live|transcribe|embedding|robotics|veo|lyria|computer-use|deep-research|antigravity)/i.test(lower);
+      const supportsGenerateContent = actions.length === 0 || actions.includes('generateContent');
+
+      if (!id || excluded || !supportsGenerateContent) continue;
+
+      models.push({
+        id,
+        name: model.displayName || id,
+        description: model.description || '',
+        version: model.version || '',
+        inputTokenLimit: model.inputTokenLimit || null,
+        outputTokenLimit: model.outputTokenLimit || null,
+        supportedActions: actions,
+      });
+    }
+
+    models.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+    res.json({ success: true, count: models.length, models });
+  } catch (err: unknown) {
+    const classified = classifyError(err);
+    res.status(classified.statusCode).json({
+      success: false,
+      category: classified.category,
+      statusCode: classified.statusCode,
+      isTransient: classified.isTransient,
+      error: classified.message,
+    });
+  }
+});
+
 // POST /api/ai/test
 app.post('/api/ai/test', async (req, res) => {
   try {
