@@ -1,13 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { aiService } from '../../services/aiService';
+import React, { useState, useEffect, useCallback } from 'react';
+import { aiService, maskApiKey } from '../../services/aiService';
 import { useApp } from '../../context/AppContext';
-import { GeminiErrorCategory } from '../../types/ai';
-import { Bot, Sparkles, CheckCircle2, AlertCircle, AlertTriangle, RefreshCw, Eye, EyeOff, KeyRound, Trash2 } from 'lucide-react';
+import { GeminiErrorCategory, SavedApiKey, AIModelInfo } from '../../types/ai';
+import {
+  Bot,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
+  RefreshCw,
+  Eye,
+  EyeOff,
+  Key,
+  Plus,
+  Trash2,
+  Layers,
+  Cpu,
+  ShieldCheck,
+} from 'lucide-react';
 
 export const AIConfigPanel: React.FC = () => {
   const { addToast } = useApp();
-  const [apiKeyInput, setApiKeyInput] = useState(aiService.getApiKey());
-  const [showKey, setShowKey] = useState(false);
+
+  // Saved Keys State
+  const [savedKeys, setSavedKeys] = useState<SavedApiKey[]>([]);
+  const [selectedKeyId, setSelectedKeyId] = useState<string>('');
+  
+  // New Key Form State
+  const [isAddingNewKey, setIsAddingNewKey] = useState(false);
+  const [newKeyInput, setNewKeyInput] = useState('');
+  const [newKeyLabel, setNewKeyLabel] = useState('');
+  const [showNewKey, setShowNewKey] = useState(false);
+  const [isSavingKey, setIsSavingKey] = useState(false);
+  const [saveKeyError, setSaveKeyError] = useState<string | null>(null);
+
+  // Dynamic Models State
+  const [availableModels, setAvailableModels] = useState<AIModelInfo[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>(aiService.getModel());
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [modelsError, setModelsError] = useState<string | null>(null);
+
+  // Connection Test State
   const [isTesting, setIsTesting] = useState(false);
   const [testingProgressText, setTestingProgressText] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{
@@ -16,49 +49,171 @@ export const AIConfigPanel: React.FC = () => {
     message: string;
     statusCode?: number;
   } | null>(null);
-  const [selectedModel, setSelectedModel] = useState(aiService.getModel());
-  const [savedKeys, setSavedKeys] = useState(aiService.getSavedApiKeys());
-  const [selectedSavedKeyId, setSelectedSavedKeyId] = useState('');
-  const [modelOptions, setModelOptions] = useState<Array<{ id: string; name: string; description: string }>>([]);
-  const [isLoadingModels, setIsLoadingModels] = useState(false);
-  const [modelLoadError, setModelLoadError] = useState<string | null>(null);
 
-  const loadModels = async () => {
+  // Load Models Callback
+  const loadModels = useCallback(async (forceRefresh = false) => {
     setIsLoadingModels(true);
-    setModelLoadError(null);
+    setModelsError(null);
     try {
-      const models = await aiService.listAvailableModels();
-      setModelOptions(models.map((model) => ({
-        id: model.id,
-        name: model.name || model.id,
-        description: model.description || '',
-      })));
+      const models = await aiService.fetchAvailableModels(forceRefresh);
+      setAvailableModels(models);
+      // Synchronize selected model
+      const currentModel = aiService.getModel();
+      const exists = models.some((m) => m.id === currentModel);
+      if (exists) {
+        setSelectedModel(currentModel);
+      } else if (models.length > 0) {
+        const fallback = models.find((m) => m.id === 'gemini-3.7-flash') || models[0];
+        setSelectedModel(fallback.id);
+        aiService.setModel(fallback.id);
+      }
     } catch (err: unknown) {
-      setModelLoadError(err instanceof Error ? err.message : 'Daftar model Gemini gagal dimuat.');
+      const msg = err instanceof Error ? err.message : 'Gagal memuat daftar model dari API.';
+      setModelsError(msg);
+      setAvailableModels(aiService.getAvailableModels());
     } finally {
       setIsLoadingModels(false);
     }
-  };
-
-  useEffect(() => {
-    setApiKeyInput(aiService.getApiKey());
-    setSelectedModel(aiService.getModel());
-    setSavedKeys(aiService.getSavedApiKeys());
-    void loadModels();
   }, []);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    aiService.setApiKey(apiKeyInput);
-    aiService.saveApiKey(apiKeyInput);
-    aiService.setModel(selectedModel);
-    setSavedKeys(aiService.getSavedApiKeys());
-    addToast('success', 'Konfigurasi Disimpan', 'Konfigurasi AI Assistant telah diperbarui.');
+  // Initial Load
+  useEffect(() => {
+    const keys = aiService.getSavedApiKeys();
+    setSavedKeys(keys);
+
+    const activeRawKey = aiService.getApiKey();
+    if (activeRawKey) {
+      const matching = keys.find((k) => k.fullKey === activeRawKey);
+      if (matching) {
+        setSelectedKeyId(matching.id);
+      } else {
+        // Active key exists but not in savedKeys yet
+        const newEntry = aiService.saveApiKey(activeRawKey);
+        setSavedKeys(aiService.getSavedApiKeys());
+        setSelectedKeyId(newEntry.id);
+      }
+    } else {
+      setSelectedKeyId('__env__');
+    }
+
+    setSelectedModel(aiService.getModel());
+    loadModels(false);
+  }, [loadModels]);
+
+  // Handle switching active API Key
+  const handleKeySelectionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setTestResult(null);
+    setSaveKeyError(null);
+
+    if (value === '__add_new__') {
+      setIsAddingNewKey(true);
+      return;
+    }
+
+    setIsAddingNewKey(false);
+    setSelectedKeyId(value);
+
+    if (value === '__env__') {
+      aiService.setApiKey('');
+      addToast('info', 'Kunci Server Aktif', 'Menggunakan GEMINI_API_KEY dari lingkungan server.');
+    } else {
+      const target = savedKeys.find((k) => k.id === value);
+      if (target) {
+        aiService.setApiKey(target.fullKey);
+        addToast('success', 'API Key Diganti', `Kunci aktif: ${target.maskedKey}`);
+      }
+    }
+
+    // Refresh model list using the newly selected API Key
+    await loadModels(true);
   };
 
+  // Handle Saving New API Key
+  const handleSaveNewKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanKey = newKeyInput.trim();
+    if (!cleanKey) {
+      setSaveKeyError('Silakan masukkan API Key Gemini yang valid.');
+      return;
+    }
+
+    setIsSavingKey(true);
+    setSaveKeyError(null);
+    setTestResult(null);
+
+    try {
+      // 1. Test the new key before persisting
+      const testRes = await aiService.testConnection(undefined, selectedModel, cleanKey);
+      if (!testRes.success && testRes.category === 'INVALID_API_KEY') {
+        throw new Error('API Key tidak valid. Silakan periksa kembali kunci dari Google AI Studio.');
+      }
+
+      // 2. Persist key without duplicates
+      const savedEntry = aiService.saveApiKey(cleanKey, newKeyLabel.trim() || undefined);
+      const updatedKeys = aiService.getSavedApiKeys();
+      setSavedKeys(updatedKeys);
+      setSelectedKeyId(savedEntry.id);
+      setIsAddingNewKey(false);
+      setNewKeyInput('');
+      setNewKeyLabel('');
+      setShowNewKey(false);
+
+      addToast('success', 'API Key Berhasil Disimpan', `Kunci aktif: ${savedEntry.maskedKey}`);
+
+      // 3. Refresh models dynamically using new key
+      await loadModels(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal menyimpan dan memvalidasi API Key.';
+      setSaveKeyError(msg);
+      addToast('error', 'Validasi Kunci Gagal', msg);
+    } finally {
+      setIsSavingKey(false);
+    }
+  };
+
+  // Handle Deleting a Saved API Key
+  const handleDeleteKey = (keyIdToDelete: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const target = savedKeys.find((k) => k.id === keyIdToDelete);
+    if (!target) return;
+
+    if (window.confirm(`Hapus API Key tersimpan (${target.maskedKey})?`)) {
+      aiService.removeSavedApiKey(keyIdToDelete);
+      const updated = aiService.getSavedApiKeys();
+      setSavedKeys(updated);
+
+      if (selectedKeyId === keyIdToDelete) {
+        if (updated.length > 0) {
+          setSelectedKeyId(updated[0].id);
+          aiService.setApiKey(updated[0].fullKey);
+        } else {
+          setSelectedKeyId('__env__');
+          aiService.setApiKey('');
+        }
+        loadModels(true);
+      }
+      addToast('info', 'Kunci Dihapus', `API Key ${target.maskedKey} telah dihapus.`);
+    }
+  };
+
+  // Handle Model Change
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newModel = e.target.value;
+    setSelectedModel(newModel);
+    aiService.setModel(newModel);
+    setTestResult(null);
+    addToast('info', 'Model Diperbarui', `Model aktif: ${newModel}`);
+  };
+
+  // Handle Refreshing Models List Manually
+  const handleRefreshModels = async () => {
+    await loadModels(true);
+    addToast('success', 'Daftar Model Diperbarui', 'Daftar model Gemini terbaru berhasil dimuat dari API.');
+  };
+
+  // Handle Testing Connection
   const handleTestConnection = async () => {
-    // Save state first before testing
-    aiService.setApiKey(apiKeyInput);
     aiService.setModel(selectedModel);
 
     setIsTesting(true);
@@ -68,13 +223,13 @@ export const AIConfigPanel: React.FC = () => {
     try {
       const res = await aiService.testConnection((_attempt, _max, text) => {
         setTestingProgressText(text);
-      });
+      }, selectedModel);
       setTestResult(res);
 
       if (res.success) {
         addToast('success', 'Koneksi Berhasil', res.message);
       } else if (res.category === 'UNAVAILABLE') {
-        addToast('warning', 'Layanan Gemini Sedang Padat (503)', res.message);
+        addToast('warning', 'Layanan Gemini Sibuk (503)', res.message);
       } else if (res.category === 'QUOTA') {
         addToast('warning', 'Batas Kuota Penggunaan (429)', res.message);
       } else {
@@ -90,153 +245,283 @@ export const AIConfigPanel: React.FC = () => {
     }
   };
 
+  // Currently Active Key Object for info
+  const activeKeyObj = savedKeys.find((k) => k.id === selectedKeyId);
+  const activeMaskedText = activeKeyObj
+    ? activeKeyObj.maskedKey
+    : aiService.getApiKey()
+    ? maskApiKey(aiService.getApiKey())
+    : 'Server Environment Key';
+
+  // Selected Model Object
+  const selectedModelObj = availableModels.find((m) => m.id === selectedModel);
+
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
         <div className="flex items-center gap-2 text-slate-900">
           <Bot className="w-4 h-4 text-emerald-600" />
           <h3 className="text-sm font-semibold">Konfigurasi AI Assistant (Gemini API)</h3>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          <span>Chat &amp; Voice Engine</span>
+          <span>Chat &amp; Operasional Engine</span>
         </div>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-4 text-xs">
-        <div>
-          <label className="block font-medium text-slate-700 mb-1">
-            Gemini API Key:
-          </label>
+      <div className="space-y-4 text-xs">
+        {/* SECTION 1: API KEY SELECTOR */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="block font-medium text-slate-700">
+              Pilih API Key Tersimpan:
+            </label>
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+              <Key className="w-3 h-3 text-slate-400" />
+              <span>Aktif: <strong className="font-mono text-slate-700">{activeMaskedText}</strong></span>
+            </div>
+          </div>
 
-          {savedKeys.length > 0 && (
-            <div className="mb-2 flex items-center gap-2">
-              <div className="relative flex-1">
-                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                <select
-                  value={selectedSavedKeyId}
-                  onChange={(e) => {
-                    const id = e.target.value;
-                    setSelectedSavedKeyId(id);
-                    if (id) {
-                      const key = aiService.useSavedApiKey(id);
-                      setApiKeyInput(key);
-                    }
-                  }}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded bg-slate-50 text-slate-700 text-xs"
-                >
-                  <option value="">Pilih API Key yang pernah disimpan...</option>
-                  {savedKeys.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label} — {item.key.slice(0, 4)}••••{item.key.slice(-4)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {selectedSavedKeyId && (
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <select
+                value={isAddingNewKey ? '__add_new__' : selectedKeyId}
+                onChange={handleKeySelectionChange}
+                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs bg-white pr-8 font-medium"
+              >
+                <option value="__env__">
+                  ⚙️ Kunci Server Environment (Default / Otomatis)
+                </option>
+                {savedKeys.map((k, idx) => (
+                  <option key={k.id} value={k.id}>
+                    🔑 {k.label || `API Key ${idx + 1}`} •••• ({k.maskedKey})
+                  </option>
+                ))}
+                <option value="__add_new__" className="font-semibold text-emerald-700">
+                  + Masukkan API Key Baru...
+                </option>
+              </select>
+            </div>
+
+            <div className="flex gap-2">
+              {!isAddingNewKey && (
                 <button
                   type="button"
-                  title="Hapus API Key tersimpan"
-                  onClick={() => {
-                    aiService.removeSavedApiKey(selectedSavedKeyId);
-                    setSavedKeys(aiService.getSavedApiKeys());
-                    setSelectedSavedKeyId('');
-                  }}
-                  className="p-2 text-slate-400 hover:text-rose-600 border border-slate-200 rounded"
+                  onClick={() => setIsAddingNewKey(true)}
+                  className="px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 rounded font-medium transition-colors inline-flex items-center gap-1.5 shrink-0"
+                  title="Tambah API Key Baru"
+                >
+                  <Plus className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Tambah Kunci</span>
+                </button>
+              )}
+
+              {activeKeyObj && (
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteKey(activeKeyObj.id, e)}
+                  className="px-2.5 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded font-medium transition-colors inline-flex items-center gap-1 shrink-0"
+                  title="Hapus Kunci Aktif"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Hapus</span>
                 </button>
               )}
             </div>
-          )}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <input
-                type={showKey ? 'text' : 'password'}
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                placeholder="AIzaSy... (atau kosongkan untuk menggunakan server environment key)"
-                className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 font-mono text-xs"
-              />
+          </div>
+        </div>
+
+        {/* SECTION 1B: FORM MASUKKAN API KEY BARU */}
+        {isAddingNewKey && (
+          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg space-y-3 transition-all animate-fadeIn">
+            <div className="flex items-center justify-between border-b border-slate-200/70 pb-2">
+              <div className="flex items-center gap-1.5 text-slate-800 font-semibold">
+                <Plus className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Input &amp; Simpan API Key Baru</span>
+              </div>
               <button
                 type="button"
-                onClick={() => setShowKey(!showKey)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
-                title={showKey ? 'Sembunyikan' : 'Tampilkan'}
+                onClick={() => {
+                  setIsAddingNewKey(false);
+                  setSaveKeyError(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 text-xs font-medium"
               >
-                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                Batal
               </button>
             </div>
+
+            <form onSubmit={handleSaveNewKey} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-700">
+                    Kunci API Gemini (AIzaSy...):
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNewKey ? 'text' : 'password'}
+                      value={newKeyInput}
+                      onChange={(e) => setNewKeyInput(e.target.value)}
+                      placeholder="Tempel API Key baru di sini..."
+                      autoComplete="off"
+                      className="w-full pl-3 pr-10 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 font-mono text-xs bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewKey(!showNewKey)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                      title={showNewKey ? 'Sembunyikan' : 'Tampilkan'}
+                    >
+                      {showNewKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-700">
+                    Label Kunci (Opsional):
+                  </label>
+                  <input
+                    type="text"
+                    value={newKeyLabel}
+                    onChange={(e) => setNewKeyLabel(e.target.value)}
+                    placeholder={`API Key ${savedKeys.length + 1}`}
+                    className="w-full px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs bg-white"
+                  />
+                </div>
+              </div>
+
+              {saveKeyError && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded text-rose-800 text-[11px] flex items-center gap-2">
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <span>{saveKeyError}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddingNewKey(false);
+                    setSaveKeyError(null);
+                  }}
+                  className="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 rounded font-medium hover:bg-slate-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingKey || !newKeyInput.trim()}
+                  className="px-4 py-1.5 bg-slate-900 text-white rounded font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors inline-flex items-center gap-1.5 shadow-2xs"
+                >
+                  {isSavingKey ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Memvalidasi &amp; Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Simpan &amp; Jadikan Kunci Aktif</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* SECTION 2: DYNAMIC MODEL SELECTOR */}
+        <div className="pt-1">
+          <div className="flex items-center justify-between mb-1">
+            <label className="block font-medium text-slate-700">
+              Model Gemini (Discovery Dinamis dari API):
+            </label>
             <button
-              type="submit"
-              className="px-4 py-2 bg-slate-900 text-white rounded font-medium hover:bg-slate-800 transition-colors"
+              type="button"
+              onClick={handleRefreshModels}
+              disabled={isLoadingModels}
+              className="text-[11px] font-medium text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 transition-colors"
+              title="Perbarui daftar model dari Google AI Studio"
             >
-              Simpan
+              <RefreshCw className={`w-3 h-3 ${isLoadingModels ? 'animate-spin text-emerald-600' : 'text-slate-400'}`} />
+              <span>{isLoadingModels ? 'Memuat model...' : 'Refresh Models'}</span>
             </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <select
+                value={selectedModel}
+                onChange={handleModelChange}
+                disabled={isLoadingModels}
+                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs bg-white font-medium"
+              >
+                {isLoadingModels && availableModels.length === 0 && (
+                  <option value={selectedModel}>Memuat daftar model dari API...</option>
+                )}
+                {availableModels.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.displayName} ({m.id})
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button
               type="button"
               onClick={handleTestConnection}
-              disabled={isTesting}
-              className="px-3.5 py-2 bg-white border border-slate-300 text-slate-700 rounded font-medium hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5"
+              disabled={isTesting || isLoadingModels}
+              className="px-3.5 py-2 bg-white border border-slate-300 text-slate-700 rounded font-medium hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5 shrink-0"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
               <span>{testingProgressText ? 'Mencoba...' : 'Test Connection'}</span>
             </button>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-            Kunci API digunakan oleh server untuk berkomunikasi dengan model Gemini (default: <code>gemini-3.8-flash</code>).
-            Jika lingkungan server telah menyediakan <code>GEMINI_API_KEY</code>, Anda dapat mengosongkan kolom ini.
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          <div>
-            <label className="block font-medium text-slate-700 mb-1">
-              Model Gemini:
-            </label>
-            <div className="flex gap-2">
-              <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="flex-1 px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs bg-white"
-              >
-                {modelOptions.length === 0 ? (
-                  <>
-                    <option value="gemini-3.8-flash">gemini-3.8-flash</option>
-                    <option value="gemini-3.7-flash">gemini-3.7-flash</option>
-                  </>
-                ) : (
-                  modelOptions.map((model) => (
-                    <option key={model.id} value={model.id}>
-                      {model.name} — {model.id}
-                    </option>
-                  ))
-                )}
-              </select>
+          {/* Model Description & Metadata */}
+          {selectedModelObj && (
+            <div className="mt-2 p-2.5 bg-slate-50 border border-slate-100 rounded text-[11px] text-slate-600 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-slate-700 flex items-center gap-1">
+                  <Cpu className="w-3 h-3 text-slate-500" />
+                  {selectedModelObj.displayName}
+                </span>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">
+                  <Layers className="w-2.5 h-2.5 text-slate-500" />
+                  {selectedModelObj.id}
+                </span>
+              </div>
+              {selectedModelObj.description && (
+                <p className="text-slate-500 leading-relaxed text-[11px]">
+                  {selectedModelObj.description}
+                </p>
+              )}
+            </div>
+          )}
+
+          {modelsError && (
+            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded text-amber-800 text-[11px] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>{modelsError}</span>
+              </div>
               <button
                 type="button"
-                onClick={loadModels}
-                disabled={isLoadingModels}
-                className="px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded hover:bg-slate-50 disabled:opacity-50 inline-flex items-center gap-1.5"
-                title="Muat ulang daftar model dari Gemini API"
+                onClick={() => loadModels(true)}
+                className="font-medium underline hover:text-amber-900 ml-2 shrink-0"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoadingModels ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Muat</span>
+                Coba Lagi
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">
-              {isLoadingModels ? 'Memuat model yang tersedia untuk API key ini...' : `${modelOptions.length || 2} model chat tersedia dari API key aktif.`}
-            </p>
-            {modelLoadError && (
-              <p className="text-[10px] text-amber-700 mt-1">{modelLoadError}</p>
-            )}
-          </div>
+          )}
         </div>
-      </form>
+      </div>
 
       {/* Progress feedback while testing */}
       {isTesting && testingProgressText && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs flex items-center gap-2">
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs flex items-center gap-2 animate-pulse">
           <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 shrink-0" />
           <span>{testingProgressText}</span>
         </div>
@@ -260,19 +545,20 @@ export const AIConfigPanel: React.FC = () => {
           ) : (
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
           )}
-          <div className="space-y-0.5">
+
+          <div className="space-y-1">
             <div className="font-semibold">
               {testResult.success
-                ? 'Koneksi Gemini API Aktif'
+                ? 'Koneksi Berhasil'
                 : testResult.category === 'UNAVAILABLE'
-                ? 'Layanan Gemini Sementara Sibuk (HTTP 503)'
+                ? 'Layanan Gemini Sementara Sibuk (503)'
                 : testResult.category === 'QUOTA'
-                ? 'Batas Kuota Penggunaan Terlampaui (HTTP 429)'
+                ? 'Batas Kuota Penggunaan Terlampaui (429)'
                 : testResult.category === 'INVALID_API_KEY'
-                ? 'Kunci API Tidak Valid'
-                : 'Koneksi Gemini API Gagal'}
+                ? 'Kunci API Tidak Valid (401)'
+                : 'Koneksi Gagal'}
             </div>
-            <div className="text-[11px] opacity-90 leading-relaxed">{testResult.message}</div>
+            <p className="leading-relaxed opacity-90">{testResult.message}</p>
           </div>
         </div>
       )}

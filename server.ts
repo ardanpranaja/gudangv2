@@ -98,58 +98,70 @@ function getGeminiClient(req: express.Request): GoogleGenAI {
   return new GoogleGenAI({ apiKey });
 }
 
-// GET /api/ai/models — list models available to the active Gemini API key.
-// Only models suitable for GudangPresisi text/tool chat are returned.
-app.get('/api/ai/models', async (req, res) => {
+// GET & POST /api/ai/models - Dynamic Model Discovery with Capability Filtering
+const handleModelsDiscovery = async (req: express.Request, res: express.Response) => {
   try {
     const client = getGeminiClient(req);
-    const models: any[] = [];
-    for await (const model of client.models.list()) {
-      const modelInfo = model as any;
-      const id = String(modelInfo.baseModelId || modelInfo.name || '').replace(/^models\//, '');
-      const actions = Array.isArray(modelInfo.supportedActions)
-        ? modelInfo.supportedActions
-        : Array.isArray(modelInfo.supportedGenerationMethods)
-        ? modelInfo.supportedGenerationMethods
-        : [];
-      const lower = id.toLowerCase();
-      const excluded = /(image|tts|live|transcribe|embedding|robotics|veo|lyria|computer-use|deep-research|antigravity)/i.test(lower);
-      const supportsGenerateContent = actions.length === 0 || actions.includes('generateContent');
+    const modelsIterator = await client.models.list();
+    const models: Array<{
+      id: string;
+      name: string;
+      displayName: string;
+      description?: string;
+      supportedActions: string[];
+    }> = [];
 
-      if (!id || excluded || !supportsGenerateContent) continue;
+    for await (const m of modelsIterator) {
+      const supportedActions = (m as any).supportedActions || [];
+      // Capability Filter: Ensure model supports text/multimodal generation (generateContent)
+      // GudangPresisi utilizes generateContent for chat, reasoning, tool execution, and structured query
+      const isGenerative =
+        supportedActions.includes('generateContent') ||
+        supportedActions.length === 0;
 
-      models.push({
-        id,
-        name: modelInfo.displayName || id,
-        description: modelInfo.description || '',
-        version: modelInfo.version || '',
-        inputTokenLimit: modelInfo.inputTokenLimit || null,
-        outputTokenLimit: modelInfo.outputTokenLimit || null,
-        supportedActions: actions,
-      });
+      if (isGenerative) {
+        const cleanId = (m.name || '').replace(/^models\//, '');
+        models.push({
+          id: cleanId,
+          name: m.name || cleanId,
+          displayName: m.displayName || cleanId,
+          description: m.description || '',
+          supportedActions,
+        });
+      }
     }
 
-    models.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
-    res.json({ success: true, count: models.length, models });
+    res.json({
+      success: true,
+      total: models.length,
+      models,
+    });
   } catch (err: unknown) {
     const classified = classifyError(err);
+    console.log(`[AI Models Discovery Info] ${classified.category} (${classified.statusCode})`);
+
     res.status(classified.statusCode).json({
       success: false,
       category: classified.category,
       statusCode: classified.statusCode,
       isTransient: classified.isTransient,
       error: classified.message,
+      technicalDetails: classified.technicalDetails,
     });
   }
-});
+};
+
+app.get('/api/ai/models', handleModelsDiscovery);
+app.post('/api/ai/models', handleModelsDiscovery);
 
 // POST /api/ai/test
 app.post('/api/ai/test', async (req, res) => {
   try {
     const client = getGeminiClient(req);
+    const requestedModel = req.body?.model || (req.query?.model as string) || 'gemini-3.7-flash';
     const result = await generateWithFallback(
       client,
-      'gemini-3.7-flash',
+      requestedModel,
       'Ping test. Jawab "OK".',
       undefined,
       1
@@ -158,7 +170,7 @@ app.post('/api/ai/test', async (req, res) => {
     res.json({
       success: true,
       category: 'CONNECTED',
-      message: 'Koneksi ke Gemini API berhasil.',
+      message: `Koneksi ke Gemini API berhasil menggunakan model ${requestedModel}.`,
       reply: result.text || 'OK',
     });
   } catch (err: unknown) {

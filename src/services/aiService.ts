@@ -1,17 +1,10 @@
-import { AIMessage, AIToolCallInfo, AIConfirmationData, GeminiErrorCategory } from '../types/ai';
+import { AIMessage, AIToolCallInfo, AIConfirmationData, GeminiErrorCategory, SavedApiKey, AIModelInfo } from '../types/ai';
 import { AI_TOOL_DECLARATIONS, executeAITool } from './aiTools';
 
 const STORAGE_KEY_GEMINI_KEY = 'GP_GEMINI_API_KEY';
-const STORAGE_KEY_GEMINI_KEYS = 'GP_GEMINI_API_KEYS';
+const STORAGE_KEY_GEMINI_SAVED_KEYS = 'GP_GEMINI_SAVED_KEYS';
 const STORAGE_KEY_GEMINI_MODEL = 'GP_GEMINI_MODEL';
-
-export interface SavedGeminiApiKey {
-  id: string;
-  label: string;
-  key: string;
-  createdAt: string;
-  lastUsedAt: string;
-}
+const STORAGE_KEY_GEMINI_CACHED_MODELS = 'GP_GEMINI_CACHED_MODELS';
 
 export const SYSTEM_INSTRUCTION = `Anda adalah asisten AI operasional cerdas untuk GudangPresisi (Sistem Pengelolaan Gudang Presisi).
 Peran Anda adalah membantu operator dan admin gudang secara proaktif menjalankan pekerjaan operasional gudang selama fungsinya tersedia melalui tools aplikasi.
@@ -53,17 +46,24 @@ SUMBER KEBENARAN & KEAMANAN:
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function calculateBackoffDelay(attempt: number): number {
-  // attempt 1: base ~1000ms + random jitter 0-300ms
-  // attempt 2: base ~2000ms + random jitter 0-500ms
-  // attempt 3: base ~4000ms + random jitter 0-800ms
   const base = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
   const jitter = Math.floor(Math.random() * (base * 0.3));
   return base + jitter;
 }
 
+export function maskApiKey(key: string): string {
+  if (!key || typeof key !== 'string') return '';
+  const clean = key.trim();
+  if (clean.length <= 4) return '••••';
+  const last4 = clean.slice(-4);
+  return `••••••••••${last4}`;
+}
+
 export class AIService {
   private customApiKey: string = '';
-  private selectedModel: string = 'gemini-3.8-flash';
+  private savedKeys: SavedApiKey[] = [];
+  private selectedModel: string = 'gemini-3.7-flash';
+  private availableModels: AIModelInfo[] = [];
 
   constructor() {
     this.loadConfig();
@@ -71,113 +71,136 @@ export class AIService {
 
   private loadConfig() {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      const savedKey = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
-      if (savedKey) this.customApiKey = savedKey.trim();
+      try {
+        const savedKey = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
+        if (savedKey) this.customApiKey = savedKey.trim();
 
-      const savedModel = localStorage.getItem(STORAGE_KEY_GEMINI_MODEL);
-      if (savedModel) this.selectedModel = savedModel.trim();
+        const rawSavedKeys = localStorage.getItem(STORAGE_KEY_GEMINI_SAVED_KEYS);
+        if (rawSavedKeys) {
+          const parsed = JSON.parse(rawSavedKeys);
+          if (Array.isArray(parsed)) {
+            this.savedKeys = parsed;
+          }
+        }
+
+        // If we have an active key but no saved keys array yet, seed it into savedKeys
+        if (this.customApiKey && this.savedKeys.length === 0) {
+          this.savedKeys.push({
+            id: `key-${Date.now()}`,
+            maskedKey: maskApiKey(this.customApiKey),
+            label: `API Key 1 (${maskApiKey(this.customApiKey)})`,
+            fullKey: this.customApiKey,
+            createdAt: new Date().toISOString(),
+          });
+          this.persistSavedKeys();
+        }
+
+        const savedModel = localStorage.getItem(STORAGE_KEY_GEMINI_MODEL);
+        if (savedModel) this.selectedModel = savedModel.trim();
+
+        const cachedModels = localStorage.getItem(STORAGE_KEY_GEMINI_CACHED_MODELS);
+        if (cachedModels) {
+          const parsed = JSON.parse(cachedModels);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            this.availableModels = parsed;
+          }
+        }
+      } catch {
+        // Safe fallback on parse errors
+      }
     }
+  }
+
+  private persistSavedKeys() {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY_GEMINI_SAVED_KEYS, JSON.stringify(this.savedKeys));
+      } catch {
+        // Ignore localStorage quota errors
+      }
+    }
+  }
+
+  public getSavedApiKeys(): SavedApiKey[] {
+    return [...this.savedKeys];
   }
 
   public getApiKey(): string {
     return this.customApiKey;
   }
 
-  public getSavedApiKeys(): SavedGeminiApiKey[] {
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return [];
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY_GEMINI_KEYS);
-      const parsed = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(parsed)) {
-        return parsed.filter(
-          (item): item is SavedGeminiApiKey =>
-            !!item &&
-            typeof item.id === 'string' &&
-            typeof item.key === 'string' &&
-            typeof item.label === 'string'
-        );
-      }
-    } catch {
-      // Ignore malformed local history and rebuild it below.
-    }
-
-    // Backward compatibility: migrate the previously stored single key.
-    if (this.customApiKey) {
-      const migrated: SavedGeminiApiKey = {
-        id: `key-${Date.now()}`,
-        label: 'API Key tersimpan',
-        key: this.customApiKey,
-        createdAt: new Date().toISOString(),
-        lastUsedAt: new Date().toISOString(),
-      };
-      localStorage.setItem(STORAGE_KEY_GEMINI_KEYS, JSON.stringify([migrated]));
-      return [migrated];
-    }
-    return [];
-  }
-
-  public saveApiKey(key: string, label?: string): SavedGeminiApiKey[] {
-    const normalized = key.trim();
-    if (!normalized) return this.getSavedApiKeys();
-
-    const existing = this.getSavedApiKeys();
-    const now = new Date().toISOString();
-    const index = existing.findIndex((item) => item.key === normalized);
-
-    if (index >= 0) {
-      existing[index] = {
-        ...existing[index],
-        label: label?.trim() || existing[index].label,
-        lastUsedAt: now,
-      };
-    } else {
-      existing.unshift({
-        id: `key-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        label: label?.trim() || `API Key ${existing.length + 1}`,
-        key: normalized,
-        createdAt: now,
-        lastUsedAt: now,
-      });
-    }
-
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_GEMINI_KEYS, JSON.stringify(existing.slice(0, 10)));
-    }
-    return existing.slice(0, 10);
-  }
-
-  public useSavedApiKey(id: string): string {
-    const item = this.getSavedApiKeys().find((entry) => entry.id === id);
-    if (!item) return this.customApiKey;
-
-    this.setApiKey(item.key);
-    const existing = this.getSavedApiKeys().map((entry) =>
-      entry.id === id ? { ...entry, lastUsedAt: new Date().toISOString() } : entry
-    );
-    localStorage.setItem(STORAGE_KEY_GEMINI_KEYS, JSON.stringify(existing));
-    return item.key;
-  }
-
-  public removeSavedApiKey(id: string) {
-    const existing = this.getSavedApiKeys().filter((entry) => entry.id !== id);
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_GEMINI_KEYS, JSON.stringify(existing));
-    }
-  }
-
-  public static maskApiKey(key: string): string {
-    const normalized = key.trim();
-    if (normalized.length <= 8) return '••••••••';
-    return `${normalized.slice(0, 4)}••••••••••${normalized.slice(-4)}`;
-  }
-
   public setApiKey(key: string) {
-    this.customApiKey = key.trim();
+    const cleanKey = (key || '').trim();
+    const hasChanged = this.customApiKey !== cleanKey;
+    this.customApiKey = cleanKey;
+
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       if (this.customApiKey) {
         localStorage.setItem(STORAGE_KEY_GEMINI_KEY, this.customApiKey);
       } else {
         localStorage.removeItem(STORAGE_KEY_GEMINI_KEY);
+      }
+    }
+
+    if (hasChanged) {
+      // Clear cached models so fresh discovery occurs for new key
+      this.availableModels = [];
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY_GEMINI_CACHED_MODELS);
+      }
+    }
+  }
+
+  /**
+   * Save an API key into persistent storage without duplicates and make it active
+   */
+  public saveApiKey(rawKey: string, customLabel?: string): SavedApiKey {
+    const clean = (rawKey || '').trim();
+    if (!clean) {
+      throw new Error('Kunci API tidak boleh kosong.');
+    }
+
+    // Check if key already exists
+    const existingIndex = this.savedKeys.findIndex((k) => k.fullKey === clean);
+    let targetEntry: SavedApiKey;
+
+    if (existingIndex >= 0) {
+      targetEntry = this.savedKeys[existingIndex];
+      if (customLabel && customLabel.trim()) {
+        targetEntry.label = customLabel.trim();
+        this.persistSavedKeys();
+      }
+    } else {
+      const keyIndex = this.savedKeys.length + 1;
+      targetEntry = {
+        id: `key-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        maskedKey: maskApiKey(clean),
+        label: customLabel?.trim() || `API Key ${keyIndex} (${maskApiKey(clean)})`,
+        fullKey: clean,
+        createdAt: new Date().toISOString(),
+      };
+      this.savedKeys.push(targetEntry);
+      this.persistSavedKeys();
+    }
+
+    this.setApiKey(clean);
+    return targetEntry;
+  }
+
+  /**
+   * Remove a saved API key by ID
+   */
+  public removeSavedApiKey(id: string) {
+    const target = this.savedKeys.find((k) => k.id === id);
+    this.savedKeys = this.savedKeys.filter((k) => k.id !== id);
+    this.persistSavedKeys();
+
+    // If the active key was removed, switch to another saved key or reset
+    if (target && target.fullKey === this.customApiKey) {
+      if (this.savedKeys.length > 0) {
+        this.setApiKey(this.savedKeys[0].fullKey);
+      } else {
+        this.setApiKey('');
       }
     }
   }
@@ -187,38 +210,98 @@ export class AIService {
   }
 
   public setModel(model: string) {
-    this.selectedModel = model.trim() || 'gemini-3.8-flash';
+    const cleanModel = (model || '').trim();
+    if (!cleanModel) return;
+    this.selectedModel = cleanModel;
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_GEMINI_MODEL, this.selectedModel);
+      localStorage.setItem(STORAGE_KEY_GEMINI_MODEL, cleanModel);
     }
   }
 
-  public async listAvailableModels(): Promise<Array<{
-    id: string;
-    name: string;
-    description: string;
-    version?: string;
-    inputTokenLimit?: number | null;
-    outputTokenLimit?: number | null;
-    supportedActions?: string[];
-  }>> {
-    const res = await fetch(this.getApiUrl('/api/ai/models'), {
-      method: 'GET',
-      headers: this.getHeaders(),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.success) {
-      throw new Error(data.error || 'Daftar model Gemini tidak dapat dimuat.');
-    }
-    return Array.isArray(data.models) ? data.models : [];
+  public getAvailableModels(): AIModelInfo[] {
+    return [...this.availableModels];
   }
 
-  private getHeaders(): Record<string, string> {
+  /**
+   * Dynamically fetch all compatible models for the active API key
+   */
+  public async fetchAvailableModels(forceRefresh = false): Promise<AIModelInfo[]> {
+    if (!forceRefresh && this.availableModels.length > 0) {
+      return this.availableModels;
+    }
+
+    try {
+      const res = await fetch(this.getApiUrl('/api/ai/models'), {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.success && Array.isArray(data.models)) {
+        this.availableModels = data.models;
+
+        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem(
+              STORAGE_KEY_GEMINI_CACHED_MODELS,
+              JSON.stringify(this.availableModels)
+            );
+          } catch {
+            // Safe storage quota fallback
+          }
+        }
+
+        // Check if selected model is present in discovered models
+        const modelExists = this.availableModels.some((m) => m.id === this.selectedModel);
+        if (!modelExists && this.availableModels.length > 0) {
+          // If current model is not present, pick gemini-3.7-flash or the first valid model
+          const preferred = this.availableModels.find((m) => m.id === 'gemini-3.7-flash') || this.availableModels[0];
+          this.setModel(preferred.id);
+        }
+
+        return this.availableModels;
+      }
+
+      if (!res.ok) {
+        const errorMsg = data.error || 'Gagal mengambil daftar model dari Gemini API.';
+        throw new Error(errorMsg);
+      }
+    } catch (err: unknown) {
+      if (this.availableModels.length > 0) {
+        return this.availableModels;
+      }
+      // Provide basic fallback if network fails
+      const fallbackModels: AIModelInfo[] = [
+        {
+          id: 'gemini-3.7-flash',
+          name: 'models/gemini-3.7-flash',
+          displayName: 'Gemini 3.7 Flash',
+          description: 'Model standar cepat & responsif',
+          supportedActions: ['generateContent'],
+        },
+        {
+          id: 'gemini-3.8-flash',
+          name: 'models/gemini-3.8-flash',
+          displayName: 'Gemini 3.8 Flash',
+          description: 'Model generasi mutakhir',
+          supportedActions: ['generateContent'],
+        },
+      ];
+      this.availableModels = fallbackModels;
+      throw err;
+    }
+
+    return this.availableModels;
+  }
+
+  private getHeaders(explicitApiKey?: string): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    if (this.customApiKey) {
-      headers['x-gemini-api-key'] = this.customApiKey;
+    const keyToSend = explicitApiKey !== undefined ? explicitApiKey : this.customApiKey;
+    if (keyToSend) {
+      headers['x-gemini-api-key'] = keyToSend;
     }
     return headers;
   }
@@ -247,13 +330,20 @@ export class AIService {
         res = await fetch(this.getApiUrl('/api/ai/chat'), {
           method: 'POST',
           headers: this.getHeaders(),
-          body: JSON.stringify(body),
+          body: JSON.stringify({
+            model: this.selectedModel,
+            ...body,
+          }),
         });
       } catch (networkErr: unknown) {
         if (attempt <= maxClientRetries) {
           const delay = calculateBackoffDelay(attempt);
           if (onRetryProgress) {
-            onRetryProgress(attempt, maxClientRetries, `Koneksi terputus. Mencoba kembali (${attempt}/${maxClientRetries})...`);
+            onRetryProgress(
+              attempt,
+              maxClientRetries,
+              `Koneksi terputus. Mencoba kembali (${attempt}/${maxClientRetries})...`
+            );
           }
           await sleep(delay);
           continue;
@@ -268,7 +358,12 @@ export class AIService {
       }
 
       // Check if transient error (503, 429, 504, 500)
-      const isTransient = data.isTransient || res.status === 503 || res.status === 429 || res.status === 504 || res.status === 500;
+      const isTransient =
+        data.isTransient ||
+        res.status === 503 ||
+        res.status === 429 ||
+        res.status === 504 ||
+        res.status === 500;
       const isUnavailable = data.category === 'UNAVAILABLE' || res.status === 503;
 
       if (isTransient && attempt <= maxClientRetries) {
@@ -280,20 +375,25 @@ export class AIService {
         if (onRetryProgress) {
           onRetryProgress(attempt, maxClientRetries, retryMsg);
         }
-        console.warn(`[AI Client Retry] Attempt ${attempt}/${maxClientRetries}: waiting ${delay}ms...`);
         await sleep(delay);
         continue;
       }
 
       // Exhausted retries or non-transient error
       if (isUnavailable) {
-        throw new Error('Gemini sedang tidak tersedia sementara. Silakan coba kembali beberapa saat lagi.');
+        throw new Error(
+          'Gemini sedang tidak tersedia sementara. Silakan coba kembali beberapa saat lagi.'
+        );
       }
       if (data.category === 'QUOTA' || res.status === 429) {
-        throw new Error('Kuota Gemini API telah terlampaui. Silakan periksa batas penggunaan API Anda.');
+        throw new Error(
+          'Kuota Gemini API telah terlampaui. Silakan periksa batas penggunaan API Anda.'
+        );
       }
       if (data.category === 'INVALID_API_KEY' || res.status === 401) {
-        throw new Error('Kunci API Gemini tidak valid. Silakan periksa di menu Pengaturan > AI Assistant.');
+        throw new Error(
+          'Kunci API Gemini tidak valid. Silakan periksa di menu Pengaturan > AI Assistant.'
+        );
       }
 
       throw new Error(data.error || 'Terjadi kendala saat memproses permintaan AI.');
@@ -304,10 +404,13 @@ export class AIService {
    * Test connection to Gemini API with retry and specific status classification
    */
   public async testConnection(
-    onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void
+    onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void,
+    modelToTest?: string,
+    explicitKey?: string
   ): Promise<{ success: boolean; category: GeminiErrorCategory; message: string; statusCode?: number }> {
     const maxRetries = 2;
     let attempt = 0;
+    const testModel = modelToTest || this.selectedModel || 'gemini-3.7-flash';
 
     while (true) {
       attempt++;
@@ -315,7 +418,8 @@ export class AIService {
       try {
         res = await fetch(this.getApiUrl('/api/ai/test'), {
           method: 'POST',
-          headers: this.getHeaders(),
+          headers: this.getHeaders(explicitKey),
+          body: JSON.stringify({ model: testModel }),
         });
       } catch {
         return {
@@ -331,17 +435,22 @@ export class AIService {
         return {
           success: true,
           category: 'CONNECTED',
-          message: data.message || 'Koneksi ke Gemini API berhasil.',
+          message: data.message || `Koneksi ke Gemini API berhasil (${testModel}).`,
         };
       }
 
       const category = (data.category as GeminiErrorCategory) || 'UNKNOWN';
-      const isTransient = data.isTransient || res.status === 503 || res.status === 429 || res.status === 504;
+      const isTransient =
+        data.isTransient || res.status === 503 || res.status === 429 || res.status === 504;
 
       if (isTransient && attempt <= maxRetries) {
         const delay = calculateBackoffDelay(attempt);
         if (onRetryProgress) {
-          onRetryProgress(attempt, maxRetries, `Gemini sedang sibuk. Menguji ulang (${attempt}/${maxRetries})...`);
+          onRetryProgress(
+            attempt,
+            maxRetries,
+            `Gemini sedang sibuk. Menguji ulang (${attempt}/${maxRetries})...`
+          );
         }
         await sleep(delay);
         continue;
@@ -352,7 +461,8 @@ export class AIService {
           success: false,
           category: 'UNAVAILABLE',
           statusCode: 503,
-          message: 'Layanan Gemini sementara sedang sibuk (503). Kunci API valid namun server Gemini sedang mengalami lonjakan beban. Coba beberapa saat lagi.',
+          message:
+            'Layanan Gemini sementara sedang sibuk (503). Kunci API valid namun server Gemini sedang mengalami lonjakan beban. Coba beberapa saat lagi.',
         };
       }
 
@@ -361,7 +471,8 @@ export class AIService {
           success: false,
           category: 'QUOTA',
           statusCode: 429,
-          message: 'Kuota Gemini API telah terlampaui (429). Silakan periksa limit kuota akun Anda.',
+          message:
+            'Kuota Gemini API telah terlampaui (429). Silakan periksa limit kuota akun Anda.',
         };
       }
 
@@ -370,7 +481,8 @@ export class AIService {
           success: false,
           category: 'INVALID_API_KEY',
           statusCode: 401,
-          message: 'Kunci API Gemini tidak valid. Silakan periksa kembali API key yang dimasukkan.',
+          message:
+            'Kunci API Gemini tidak valid. Silakan periksa kembali API key yang dimasukkan.',
         };
       }
 
@@ -378,16 +490,16 @@ export class AIService {
         success: false,
         category,
         statusCode: res.status,
-        message: data.error || 'Uji koneksi gagal.',
+        message: data.error || 'Uji koneksi gagal diproses oleh server.',
       };
     }
   }
 
   /**
-   * Send chat message and handle tool invocation loop with standard function calling turns
+   * Main AI Chat messaging method with multi-turn tool execution loop
    */
   public async sendMessage(
-    userText: string,
+    userMessageText: string,
     history: AIMessage[],
     callbacks?: {
       onToolStatus?: (toolInfo: AIToolCallInfo) => void;
@@ -398,16 +510,12 @@ export class AIService {
     toolCalls: AIToolCallInfo[];
     confirmation?: AIConfirmationData;
   }> {
-    const executedTools: AIToolCallInfo[] = [];
-    let pendingConfirmation: AIConfirmationData | undefined;
+    const contents: any[] = [];
 
-    // Convert existing message history to Gemini API contents format
-    const contents: Array<Record<string, unknown>> = [];
-
-    // Filter relevant recent history (last 10 turns)
+    // Map conversation history
     const recentHistory = history.slice(-10);
     for (const msg of recentHistory) {
-      if (msg.role === 'user') {
+      if (msg.role === 'user' && msg.content) {
         contents.push({
           role: 'user',
           parts: [{ text: msg.content }],
@@ -415,7 +523,7 @@ export class AIService {
       } else if (msg.role === 'assistant' && msg.content) {
         let contentWithContext = msg.content;
         if (msg.confirmation) {
-          contentWithContext += `\n[Status Kartu Konfirmasi: ${msg.confirmation.title} | Status: ${msg.confirmation.status} | Jenis: ${msg.confirmation.type} | Item: ${msg.confirmation.rawInput.itemId} | Jumlah: ${msg.confirmation.rawInput.jumlah} | Member: ${msg.confirmation.rawInput.memberId || '-'}]`;
+          contentWithContext += `\n[Status Kartu Konfirmasi: ${msg.confirmation.title} | Status: ${msg.confirmation.status}]`;
         }
         contents.push({
           role: 'model',
@@ -424,72 +532,73 @@ export class AIService {
       }
     }
 
-    // Add current user message
+    // Add current user prompt
     contents.push({
       role: 'user',
-      parts: [{ text: userText }],
+      parts: [{ text: userMessageText }],
     });
 
+    const executedTools: AIToolCallInfo[] = [];
+    let pendingConfirmation: AIConfirmationData | undefined;
+    let finalText = '';
     const maxIterations = 5;
     let iteration = 0;
-    let finalText = '';
 
     while (iteration < maxIterations) {
       iteration++;
 
-      const responseData = await this.callChatWithRetry(
+      const res = await this.callChatWithRetry(
         {
           contents,
-          systemInstruction: SYSTEM_INSTRUCTION,
           tools: [{ functionDeclarations: AI_TOOL_DECLARATIONS }],
-          model: this.selectedModel,
+          systemInstruction: SYSTEM_INSTRUCTION,
         },
         callbacks?.onRetryProgress
       );
 
-      const functionCalls: Array<{ name: string; args: Record<string, unknown>; id?: string }> =
-        responseData.functionCalls || [];
-      const textOutput = responseData.text || '';
+      const candidates = res.candidates || [];
+      const firstCandidate = candidates[0];
+      const modelParts = firstCandidate?.content?.parts || [];
 
-      // If no function calls returned, we reached final response
+      // Extract text parts
+      const textParts = modelParts
+        .filter((p: any) => Boolean(p.text))
+        .map((p: any) => p.text)
+        .join('\n')
+        .trim();
+
+      if (textParts) {
+        finalText = textParts;
+      }
+
+      // Check for function calls
+      const functionCalls: any[] = [];
+      for (const part of modelParts) {
+        if (part.functionCall) {
+          functionCalls.push(part.functionCall);
+        }
+      }
+
+      // If no tools were called, finish turn
       if (functionCalls.length === 0) {
-        finalText = textOutput;
         break;
       }
 
-      // Add model's functionCall turn to contents to preserve valid conversational turn
-      const modelContent = responseData.candidates?.[0]?.content;
-      if (modelContent) {
-        contents.push(modelContent);
-      } else {
-        contents.push({
-          role: 'model',
-          parts: functionCalls.map((call) => ({
-            functionCall: {
-              id: call.id,
-              name: call.name,
-              args: call.args,
-            },
-          })),
-        });
-      }
+      // Record model response turn
+      contents.push({
+        role: 'model',
+        parts: modelParts,
+      });
 
-      // Execute each function call and collect functionResponse parts
-      const functionResponseParts: Array<{
-        functionResponse: {
-          name: string;
-          response: Record<string, unknown>;
-          id?: string;
-        };
-      }> = [];
-
+      // Execute each tool locally
+      const functionResponseParts: any[] = [];
       for (const call of functionCalls) {
         const toolInfo: AIToolCallInfo = {
-          id: call.id,
           name: call.name,
           args: call.args || {},
           status: 'running',
         };
+
         if (callbacks?.onToolStatus) callbacks.onToolStatus(toolInfo);
 
         try {

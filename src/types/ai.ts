@@ -60,6 +60,22 @@ export type GeminiErrorCategory =
   | 'NETWORK_ERROR'
   | 'UNKNOWN';
 
+export interface SavedApiKey {
+  id: string;
+  maskedKey: string;
+  label: string;
+  fullKey: string;
+  createdAt: string;
+}
+
+export interface AIModelInfo {
+  id: string;
+  name: string;
+  displayName: string;
+  description?: string;
+  supportedActions?: string[];
+}
+
 export interface AIConfig {
   apiKey?: string;
   model: string;
