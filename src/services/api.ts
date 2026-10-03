@@ -107,7 +107,7 @@ export class GasApiError extends Error {
 
 const STORAGE_KEY_GAS_URL = 'gudangpresisi_gas_url';
 const DEFAULT_GAS_URL =
-  'https://script.google.com/macros/s/AKfycbzMK3VeOCqqGKI-xVnkKij17NCaZ7VQHzgxX6y6CD7PoJydaIyiI_P5mvxdMlTlIEOK/exec';
+  'https://script.google.com/macros/s/AKfycbyswhx3m7G4jWEGwHTKpqxlt162W2xRe6Nm2iGo6yDt5QSz7iXYdEq07qf5ygWc5Cf9/exec';
 
 class ApiService {
   private gasUrl: string = '';
