@@ -23,13 +23,6 @@ export const AIConfigPanel: React.FC = () => {
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [modelLoadError, setModelLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setApiKeyInput(aiService.getApiKey());
-    setSelectedModel(aiService.getModel());
-    setSavedKeys(aiService.getSavedApiKeys());
-    void loadModels();
-  }, []);
-
   const loadModels = async () => {
     setIsLoadingModels(true);
     setModelLoadError(null);
@@ -46,6 +39,13 @@ export const AIConfigPanel: React.FC = () => {
       setIsLoadingModels(false);
     }
   };
+
+  useEffect(() => {
+    setApiKeyInput(aiService.getApiKey());
+    setSelectedModel(aiService.getModel());
+    setSavedKeys(aiService.getSavedApiKeys());
+    void loadModels();
+  }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
