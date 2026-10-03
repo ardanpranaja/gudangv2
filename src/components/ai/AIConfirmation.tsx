@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AIConfirmationData } from '../../types/ai';
-import { api, normalizeGasErrorMessage } from '../../services/api';
+import { normalizeGasErrorMessage } from '../../services/api';
+import { executeConfirmationBackend } from '../../services/aiConfirmationHandler';
 import { useApp } from '../../context/AppContext';
 import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Loader2, ShieldCheck, Clock } from 'lucide-react';
 
@@ -16,53 +17,29 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
   const handleConfirm = async () => {
     setIsProcessing(true);
     try {
+      const res = await executeConfirmationBackend(confirmation);
+
       if (confirmation.type === 'REQUEST') {
-        const res = await api.submitRequest({
-          memberId: String(confirmation.rawInput.memberId),
-          itemId: String(confirmation.rawInput.itemId),
-          jumlah: Number(confirmation.rawInput.jumlah),
-          alasan: String(confirmation.rawInput.alasan),
-        });
-
-        const idPengajuan = (res as any)?.ID_PENGAJUAN || (res as any)?.id || 'Terkirim';
-        addToast('success', 'Pengajuan Berhasil', `Pengajuan ${idPengajuan} berhasil dicatat.`);
-        triggerRefresh();
-
-        onUpdate({
-          ...confirmation,
-          status: 'executed',
-          executionResult: {
-            success: true,
-            message: 'Pengajuan early pickup berhasil dikirim ke antrean approval.',
-            idPengajuan,
-          },
-        });
+        addToast('success', 'Pengajuan Berhasil', `Pengajuan ${res.idPengajuan || ''} berhasil dicatat.`);
       } else {
-        // Transaction: BARANG_MASUK, BARANG_KELUAR, PINJAM, KEMBALI
-        const res = await api.submitTransaction({
-          itemId: String(confirmation.rawInput.itemId),
-          type: confirmation.type,
-          jumlah: Number(confirmation.rawInput.jumlah),
-          memberId: confirmation.rawInput.memberId ? String(confirmation.rawInput.memberId) : undefined,
-          keterangan: confirmation.rawInput.keterangan ? String(confirmation.rawInput.keterangan) : undefined,
-          tanggal: confirmation.rawInput.tanggal ? String(confirmation.rawInput.tanggal) : undefined,
-          noDokumen: confirmation.rawInput.noDokumen ? String(confirmation.rawInput.noDokumen) : undefined,
-        });
-
-        const idTransaksi = (res as any)?.ID_TRANSAKSI || (res as any)?.idTransaksi || 'Tercatat';
-        addToast('success', 'Transaksi Berhasil', `Transaksi ${confirmation.type} (${idTransaksi}) berhasil disimpan ke Spreadsheet.`);
-        triggerRefresh();
-
-        onUpdate({
-          ...confirmation,
-          status: 'executed',
-          executionResult: {
-            success: true,
-            message: `Transaksi berhasil dicatat di backend GAS.`,
-            idTransaksi,
-          },
-        });
+        addToast(
+          'success',
+          'Transaksi Berhasil',
+          `Transaksi ${confirmation.type} (${res.idTransaksi || ''}) berhasil disimpan ke Spreadsheet.`
+        );
       }
+      triggerRefresh();
+
+      onUpdate({
+        ...confirmation,
+        status: 'executed',
+        executionResult: {
+          success: true,
+          message: res.message,
+          idTransaksi: res.idTransaksi,
+          idPengajuan: res.idPengajuan,
+        },
+      });
     } catch (err: unknown) {
       const msg = normalizeGasErrorMessage(err, undefined, 'Gagal mengeksekusi operasi.');
       addToast('error', 'Eksekusi Gagal', msg);

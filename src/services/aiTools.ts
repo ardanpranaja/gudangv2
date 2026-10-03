@@ -64,6 +64,90 @@ export const AI_TOOL_DECLARATIONS = [
     },
   },
   {
+    name: 'create_member_limit',
+    description: 'Buat kuota batas limit pengambilan barang baru untuk member (MEMBER_LIMIT). Gunakan jika limit belum ada. Operasi administratif ini langsung dieksekusi ke backend GAS.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        memberId: {
+          type: 'STRING',
+          description: 'ID Member penerima kuota (wajib), misalnya "MBR000008".',
+        },
+        itemId: {
+          type: 'STRING',
+          description: 'ID Item barang (wajib), misalnya "PRL0098".',
+        },
+        maxQty: {
+          type: 'NUMBER',
+          description: 'Batas kuota maksimal pengambilan barang (wajib).',
+        },
+        satuan: {
+          type: 'STRING',
+          description: 'Satuan barang (opsional, misalnya "box", "pcs", "roll").',
+        },
+        status: {
+          type: 'STRING',
+          description: 'Status limit: "AKTIF" atau "NONAKTIF" (default "AKTIF").',
+        },
+      },
+      required: ['memberId', 'itemId', 'maxQty'],
+    },
+  },
+  {
+    name: 'update_member_limit',
+    description: 'Ubah kuota batas limit pengambilan barang member yang sudah terdaftar (berdasarkan ID_LIMIT). Operasi administratif ini langsung dieksekusi ke backend GAS.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        limitId: {
+          type: 'STRING',
+          description: 'ID Limit yang ingin diubah (wajib), misalnya "LIM000001".',
+        },
+        maxQty: {
+          type: 'NUMBER',
+          description: 'Batas kuota maksimal baru (wajib).',
+        },
+        satuan: {
+          type: 'STRING',
+          description: 'Satuan barang baru (opsional).',
+        },
+        status: {
+          type: 'STRING',
+          description: 'Status limit baru: "AKTIF" atau "NONAKTIF" (opsional).',
+        },
+      },
+      required: ['limitId', 'maxQty'],
+    },
+  },
+  {
+    name: 'activate_member_limit',
+    description: 'Aktifkan kembali konfigurasi limit member yang berstatus nonaktif (berdasarkan ID_LIMIT). Operasi administratif ini langsung dieksekusi ke backend GAS.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        limitId: {
+          type: 'STRING',
+          description: 'ID Limit yang ingin diaktifkan (wajib), misalnya "LIM000001".',
+        },
+      },
+      required: ['limitId'],
+    },
+  },
+  {
+    name: 'deactivate_member_limit',
+    description: 'Nonaktifkan konfigurasi limit member (berdasarkan ID_LIMIT). Operasi administratif ini langsung dieksekusi ke backend GAS.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        limitId: {
+          type: 'STRING',
+          description: 'ID Limit yang ingin dinonaktifkan (wajib), misalnya "LIM000001".',
+        },
+      },
+      required: ['limitId'],
+    },
+  },
+  {
     name: 'get_bincard',
     description: 'Ambil kartu stok (Bin Card) suatu barang untuk memeriksa riwayat pergerakan masuk/keluar, saldo awal, dan saldo akhir.',
     parameters: {
@@ -328,6 +412,111 @@ export async function executeAITool(
             satuan: l.SATUAN,
             status: l.STATUS,
           })),
+        },
+      };
+    }
+
+    case 'create_member_limit': {
+      const memberId = String(args.memberId || '').trim();
+      const itemId = String(args.itemId || '').trim();
+      const maxQty = Number(args.maxQty || 0);
+      const satuan = typeof args.satuan === 'string' && args.satuan.trim() ? args.satuan.trim() : undefined;
+      const status = (args.status === 'NONAKTIF' ? 'NONAKTIF' : 'AKTIF') as 'AKTIF' | 'NONAKTIF';
+
+      if (!memberId || !itemId || maxQty <= 0) {
+        return { data: { error: 'ID Member, ID Item, dan kuota MAX_QTY (> 0) wajib diisi.' } };
+      }
+
+      // Check if limit already exists to prevent duplicate creation
+      try {
+        const existingLimits = await api.getLimits();
+        const existing = existingLimits.find(
+          (l) => l.ID_MEMBER.toUpperCase() === memberId.toUpperCase() && l.ID_ITEM.toUpperCase() === itemId.toUpperCase()
+        );
+        if (existing) {
+          return {
+            data: {
+              error: `Limit untuk member ${memberId} dan barang ${itemId} sudah ada dengan ID_LIMIT "${existing.ID_LIMIT}" (kuota saat ini: ${existing.MAX_QTY} ${existing.SATUAN || ''}, status: ${existing.STATUS}). Jangan buat duplikat. Gunakan tool update_member_limit dengan limitId "${existing.ID_LIMIT}" jika ingin mengubah kuota.`,
+              existingLimit: existing,
+            },
+          };
+        }
+      } catch {
+        // Proceed if check fails
+      }
+
+      const res = await api.createLimit({
+        memberId,
+        itemId,
+        maxQty,
+        satuan,
+        status,
+      });
+
+      return {
+        data: {
+          success: true,
+          message: `Limit member berhasil dibuat untuk ${memberId} - ${itemId} dengan kuota ${maxQty} ${satuan || ''}.`,
+          idLimit: res.ID_LIMIT || (res as any)?.idLimit,
+          limit: res.limit || res,
+        },
+      };
+    }
+
+    case 'update_member_limit': {
+      const limitId = String(args.limitId || '').trim();
+      const maxQty = Number(args.maxQty || 0);
+      const satuan = typeof args.satuan === 'string' && args.satuan.trim() ? args.satuan.trim() : undefined;
+      const status = args.status ? ((args.status === 'NONAKTIF' ? 'NONAKTIF' : 'AKTIF') as 'AKTIF' | 'NONAKTIF') : undefined;
+
+      if (!limitId || maxQty <= 0) {
+        return { data: { error: 'ID Limit dan kuota MAX_QTY (> 0) wajib diisi.' } };
+      }
+
+      const res = await api.updateLimit({
+        limitId,
+        maxQty,
+        satuan,
+        status,
+      });
+
+      return {
+        data: {
+          success: true,
+          message: `Limit member ${limitId} berhasil diperbarui menjadi ${maxQty} ${satuan || ''}.`,
+          limit: res.limit || res,
+        },
+      };
+    }
+
+    case 'activate_member_limit': {
+      const limitId = String(args.limitId || '').trim();
+      if (!limitId) {
+        return { data: { error: 'ID Limit wajib diisi.' } };
+      }
+
+      const res = await api.activateLimit(limitId);
+      return {
+        data: {
+          success: true,
+          message: `Limit member ${limitId} berhasil diaktifkan.`,
+          limit: res.limit || res,
+        },
+      };
+    }
+
+    case 'deactivate_member_limit': {
+      const limitId = String(args.limitId || '').trim();
+      if (!limitId) {
+        return { data: { error: 'ID Limit wajib diisi.' } };
+      }
+
+      const res = await api.deactivateLimit(limitId);
+      return {
+        data: {
+          success: true,
+          message: `Limit member ${limitId} berhasil dinonaktifkan.`,
+          limit: res.limit || res,
         },
       };
     }

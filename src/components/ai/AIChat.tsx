@@ -5,18 +5,27 @@ import { aiLiveService } from '../../services/aiLiveService';
 import { AIMessage } from './AIMessage';
 import { AIVoiceButton } from './AIVoiceButton';
 import { AILiveOverlay } from './AILiveOverlay';
-import { Send, Bot, Sparkles, Trash2, Loader2, Info } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+import {
+  executeConfirmationBackend,
+  isUserConfirmationApproval,
+  isUserCancellation,
+} from '../../services/aiConfirmationHandler';
+import { normalizeGasErrorMessage } from '../../services/api';
+import { Send, Bot, Trash2, Loader2, Info } from 'lucide-react';
 
 const SUGGESTIONS = [
   'Cari stok plastik biru',
   'Cek barang yang stoknya menipis',
   'Cek limit pengambilan barang member',
+  'Set limit Armin Gandi tissue roll 10 box',
   'Lihat riwayat mutasi kartu stok barang',
   'Validasi kelayakan pengambilan barang',
   'Periksa status koneksi backend GAS',
 ];
 
 export const AIChat: React.FC = () => {
+  const { addToast, triggerRefresh } = useApp();
   const [messages, setMessages] = useState<AIMessageType[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -67,6 +76,123 @@ export const AIChat: React.FC = () => {
     setIsLoading(true);
     setActiveTool(null);
     setRetryStatus(null);
+
+    // =========================================================================
+    // FRONTEND CONFIRMATION HANDLER (Chat Approval Flow)
+    // Rules 7, 8, 9:
+    // User confirmation -> Frontend confirmation handler -> api.ts -> GAS
+    // =========================================================================
+    const pendingConfirmations = messages
+      .filter((m) => m.confirmation && m.confirmation.status === 'pending')
+      .map((m) => m.confirmation!);
+
+    // Case A: User expresses approval ("Setuju", "Ya", "Eksekusi", "Lanjutkan", "Silakan")
+    if (isUserConfirmationApproval(text)) {
+      if (pendingConfirmations.length === 1) {
+        const targetConf = pendingConfirmations[0];
+        setActiveTool('Eksekusi Transaksi');
+        try {
+          const res = await executeConfirmationBackend(targetConf);
+
+          const updatedConf: AIConfirmationData = {
+            ...targetConf,
+            status: 'executed',
+            executionResult: {
+              success: true,
+              message: res.message,
+              idTransaksi: res.idTransaksi,
+              idPengajuan: res.idPengajuan,
+            },
+          };
+
+          handleUpdateConfirmation(updatedConf);
+
+          if (targetConf.type === 'REQUEST') {
+            addToast('success', 'Pengajuan Berhasil', `Pengajuan ${res.idPengajuan || ''} berhasil dicatat.`);
+          } else {
+            addToast(
+              'success',
+              'Transaksi Berhasil',
+              `Transaksi ${targetConf.type} (${res.idTransaksi || ''}) berhasil disimpan ke Spreadsheet.`
+            );
+          }
+          triggerRefresh();
+
+          const docIdInfo = res.idTransaksi ? ` (ID Transaksi: **${res.idTransaksi}**)` : (res.idPengajuan ? ` (ID Pengajuan: **${res.idPengajuan}**)` : '');
+          const assistantReply: AIMessageType = {
+            id: `asst-${Date.now()}`,
+            role: 'assistant',
+            content: `Persetujuan diterima. **${targetConf.title}**${docIdInfo} telah berhasil dieksekusi dan dicatat resmi ke backend Google Spreadsheet GudangPresisi.`,
+            timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            confirmation: updatedConf,
+          };
+
+          setMessages((prev) => [...prev, assistantReply]);
+        } catch (execErr: unknown) {
+          const errMsg = normalizeGasErrorMessage(execErr, undefined, 'Gagal mengeksekusi operasi.');
+          const failedConf: AIConfirmationData = {
+            ...targetConf,
+            status: 'failed',
+            executionResult: {
+              success: false,
+              message: errMsg,
+            },
+          };
+          handleUpdateConfirmation(failedConf);
+          addToast('error', 'Eksekusi Gagal', errMsg);
+
+          const assistantReply: AIMessageType = {
+            id: `asst-${Date.now()}`,
+            role: 'assistant',
+            content: `Gagal mengeksekusi transaksi: ${errMsg}. Silakan periksa kembali atau gunakan tombol "Coba Lagi" pada kartu konfirmasi.`,
+            timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            confirmation: failedConf,
+          };
+          setMessages((prev) => [...prev, assistantReply]);
+        } finally {
+          setIsLoading(false);
+          setActiveTool(null);
+        }
+        return;
+      } else if (pendingConfirmations.length > 1) {
+        // Rule 9: Do not execute ambiguously if multiple confirmations pending
+        const listText = pendingConfirmations
+          .map((c, i) => `${i + 1}. **${c.title}** (${c.details.map((d) => `${d.label}: ${d.value}`).join(', ')})`)
+          .join('\n');
+
+        const assistantReply: AIMessageType = {
+          id: `asst-${Date.now()}`,
+          role: 'assistant',
+          content: `Terdapat **${pendingConfirmations.length} draf konfirmasi** yang sedang menunggu persetujuan:\n\n${listText}\n\nUntuk memastikan ketepatan, silakan klik tombol **"Konfirmasi & Eksekusi"** pada kartu yang ingin Anda setujui, atau sebutkan secara spesifik transaksi yang ingin dieksekusi.`,
+          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages((prev) => [...prev, assistantReply]);
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // Case B: User expresses cancellation ("Batalkan", "Batal", "Cancel")
+    if (isUserCancellation(text) && pendingConfirmations.length === 1) {
+      const targetConf = pendingConfirmations[0];
+      const cancelledConf: AIConfirmationData = {
+        ...targetConf,
+        status: 'cancelled',
+      };
+      handleUpdateConfirmation(cancelledConf);
+      addToast('info', 'Dibatalkan', `Draf transaksi ${targetConf.title} telah dibatalkan.`);
+
+      const assistantReply: AIMessageType = {
+        id: `asst-${Date.now()}`,
+        role: 'assistant',
+        content: `Draf transaksi **${targetConf.title}** telah dibatalkan oleh operator.`,
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        confirmation: cancelledConf,
+      };
+      setMessages((prev) => [...prev, assistantReply]);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await aiService.sendMessage(text, newHistory, {
