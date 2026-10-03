@@ -2,7 +2,16 @@ import { AIMessage, AIToolCallInfo, AIConfirmationData, GeminiErrorCategory } fr
 import { AI_TOOL_DECLARATIONS, executeAITool } from './aiTools';
 
 const STORAGE_KEY_GEMINI_KEY = 'GP_GEMINI_API_KEY';
+const STORAGE_KEY_GEMINI_KEYS = 'GP_GEMINI_API_KEYS';
 const STORAGE_KEY_GEMINI_MODEL = 'GP_GEMINI_MODEL';
+
+export interface SavedGeminiApiKey {
+  id: string;
+  label: string;
+  key: string;
+  createdAt: string;
+  lastUsedAt: string;
+}
 
 export const SYSTEM_INSTRUCTION = `Anda adalah asisten AI operasional cerdas untuk GudangPresisi (Sistem Pengelolaan Gudang Presisi).
 Peran Anda adalah membantu operator dan admin gudang secara proaktif menjalankan pekerjaan operasional gudang selama fungsinya tersedia melalui tools aplikasi.
@@ -54,7 +63,7 @@ function calculateBackoffDelay(attempt: number): number {
 
 export class AIService {
   private customApiKey: string = '';
-  private selectedModel: string = 'gemini-3.7-flash';
+  private selectedModel: string = 'gemini-3.8-flash';
 
   constructor() {
     this.loadConfig();
@@ -74,6 +83,94 @@ export class AIService {
     return this.customApiKey;
   }
 
+  public getSavedApiKeys(): SavedGeminiApiKey[] {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_GEMINI_KEYS);
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) {
+        return parsed.filter(
+          (item): item is SavedGeminiApiKey =>
+            !!item &&
+            typeof item.id === 'string' &&
+            typeof item.key === 'string' &&
+            typeof item.label === 'string'
+        );
+      }
+    } catch {
+      // Ignore malformed local history and rebuild it below.
+    }
+
+    // Backward compatibility: migrate the previously stored single key.
+    if (this.customApiKey) {
+      const migrated: SavedGeminiApiKey = {
+        id: `key-${Date.now()}`,
+        label: 'API Key tersimpan',
+        key: this.customApiKey,
+        createdAt: new Date().toISOString(),
+        lastUsedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(STORAGE_KEY_GEMINI_KEYS, JSON.stringify([migrated]));
+      return [migrated];
+    }
+    return [];
+  }
+
+  public saveApiKey(key: string, label?: string): SavedGeminiApiKey[] {
+    const normalized = key.trim();
+    if (!normalized) return this.getSavedApiKeys();
+
+    const existing = this.getSavedApiKeys();
+    const now = new Date().toISOString();
+    const index = existing.findIndex((item) => item.key === normalized);
+
+    if (index >= 0) {
+      existing[index] = {
+        ...existing[index],
+        label: label?.trim() || existing[index].label,
+        lastUsedAt: now,
+      };
+    } else {
+      existing.unshift({
+        id: `key-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        label: label?.trim() || `API Key ${existing.length + 1}`,
+        key: normalized,
+        createdAt: now,
+        lastUsedAt: now,
+      });
+    }
+
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_GEMINI_KEYS, JSON.stringify(existing.slice(0, 10)));
+    }
+    return existing.slice(0, 10);
+  }
+
+  public useSavedApiKey(id: string): string {
+    const item = this.getSavedApiKeys().find((entry) => entry.id === id);
+    if (!item) return this.customApiKey;
+
+    this.setApiKey(item.key);
+    const existing = this.getSavedApiKeys().map((entry) =>
+      entry.id === id ? { ...entry, lastUsedAt: new Date().toISOString() } : entry
+    );
+    localStorage.setItem(STORAGE_KEY_GEMINI_KEYS, JSON.stringify(existing));
+    return item.key;
+  }
+
+  public removeSavedApiKey(id: string) {
+    const existing = this.getSavedApiKeys().filter((entry) => entry.id !== id);
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_GEMINI_KEYS, JSON.stringify(existing));
+    }
+  }
+
+  public static maskApiKey(key: string): string {
+    const normalized = key.trim();
+    if (normalized.length <= 8) return '••••••••';
+    return `${normalized.slice(0, 4)}••••••••••${normalized.slice(-4)}`;
+  }
+
   public setApiKey(key: string) {
     this.customApiKey = key.trim();
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
@@ -90,7 +187,7 @@ export class AIService {
   }
 
   public setModel(model: string) {
-    this.selectedModel = model;
+    this.selectedModel = model.trim() || 'gemini-3.8-flash';
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       localStorage.setItem(STORAGE_KEY_GEMINI_MODEL, model);
     }
