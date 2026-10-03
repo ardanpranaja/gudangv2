@@ -1,10 +1,13 @@
 import express from 'express';
+import http from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Modality, LiveServerMessage } from '@google/genai';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { classifyError, ClassifiedError, GeminiErrorCategory } from './src/services/aiErrorClassifier';
+import { AI_TOOL_DECLARATIONS, executeAITool } from './src/services/aiTools';
 
 export { classifyError, type ClassifiedError, type GeminiErrorCategory };
 
@@ -14,6 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const server = http.createServer(app);
 const PORT = 3000;
 
 app.use(express.json({ limit: '10mb' }));
@@ -21,8 +25,6 @@ app.use(express.json({ limit: '10mb' }));
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function calculateBackoffDelay(attempt: number): number {
-  // attempt 1: ~1000ms + jitter
-  // attempt 2: ~2000ms + jitter
   const base = Math.min(1000 * Math.pow(2, attempt - 1), 4000);
   const jitter = Math.floor(Math.random() * (base * 0.3));
   return base + jitter;
@@ -140,6 +142,231 @@ app.post('/api/ai/chat', async (req, res) => {
   }
 });
 
+// ============================================================================
+// GEMINI LIVE API WEBSOCKET BRIDGE (/api/ai/live)
+// ============================================================================
+
+const LIVE_SYSTEM_INSTRUCTION = `Anda adalah asisten AI suara dan operasional cerdas untuk GudangPresisi (Sistem Pengelolaan Gudang Presisi).
+Peran Anda adalah membantu operator dan admin gudang melalui percakapan suara realtime dalam:
+1. Mengecek stok barang saat ini, lokasi penyimpanan, dan barang yang menipis (isLowStock).
+2. Memeriksa kelayakan pengambilan barang oleh member (kuota MAX_QTY, masa pakai, early pickup).
+3. Mengecek kartu stok (Bin Card) dan riwayat mutasi barang.
+4. Mengecek riwayat pengambilan barang oleh member.
+5. Menyiapkan transaksi gudang (Barang Masuk, Barang Keluar, Pinjam, Kembali) atau pengajuan early pickup.
+
+ATURAN UTAMA & KEAMANAN SUARA:
+- Selalu gunakan Bahasa Indonesia yang alami, ringkas, jelas, dan ramah untuk respons suara.
+- Sumber kebenaran utama adalah Google Spreadsheet backend via tools yang disediakan. JANGAN mengarang data stok atau member jika tidak ditemukan.
+- Jangan pernah membuat atau mengarang ID Transaksi baru.
+- Jika pengguna meminta transaksi melalui suara (misal: "Catat barang keluar 2 pcs plastik untuk Budi"), selalu panggil tool propose_transaction. Beritahukan kepada pengguna dengan jelas bahwa kartu konfirmasi transaksi telah ditampilkan di layar dan menunggu konfirmasi fisik operator sebelum dieksekusi. JANGAN mengaku transaksi sudah tersimpan jika konfirmasi belum ditekan.`;
+
+const wss = new WebSocketServer({ noServer: true });
+
+wss.on('connection', (clientWs: WebSocket) => {
+  let geminiSession: any = null;
+  let isSessionActive = false;
+
+  const safeSend = (payload: Record<string, unknown>) => {
+    if (clientWs.readyState === WebSocket.OPEN) {
+      try {
+        clientWs.send(JSON.stringify(payload));
+      } catch (err) {
+        console.error('[WS Bridge] Send error:', err);
+      }
+    }
+  };
+
+  clientWs.on('message', async (data: Buffer | string) => {
+    try {
+      const msg = JSON.parse(data.toString());
+
+      // 1. Initialization message
+      if (msg.type === 'init') {
+        const apiKey = (msg.apiKey && typeof msg.apiKey === 'string' && msg.apiKey.trim()) || process.env.GEMINI_API_KEY || '';
+        if (!apiKey) {
+          safeSend({
+            type: 'error',
+            error: 'Gemini API Key belum dikonfigurasi. Atur API key di Pengaturan > AI Assistant.',
+          });
+          return;
+        }
+
+        try {
+          const ai = new GoogleGenAI({ apiKey });
+          const liveModel = msg.model || 'gemini-3.8-live';
+
+          geminiSession = await ai.live.connect({
+            model: liveModel,
+            config: {
+              responseModalities: [Modality.AUDIO],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: { voiceName: 'Kore' },
+                },
+              },
+              systemInstruction: LIVE_SYSTEM_INSTRUCTION,
+              tools: [{ functionDeclarations: AI_TOOL_DECLARATIONS as any }],
+              outputAudioTranscription: {},
+              inputAudioTranscription: {},
+            },
+            callbacks: {
+              onopen: () => {
+                isSessionActive = true;
+                safeSend({ type: 'ready' });
+              },
+              onmessage: async (serverMsg: LiveServerMessage) => {
+                // Audio chunk
+                const audio = serverMsg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+                if (audio) {
+                  safeSend({ type: 'audio', audio });
+                }
+
+                // Interruption
+                if (serverMsg.serverContent?.interrupted) {
+                  safeSend({ type: 'interrupted' });
+                }
+
+                // Input audio transcription (user)
+                if (serverMsg.serverContent?.inputTranscription?.text) {
+                  safeSend({
+                    type: 'input_transcript',
+                    text: serverMsg.serverContent.inputTranscription.text,
+                  });
+                }
+
+                // Output audio transcription (model)
+                if (serverMsg.serverContent?.outputTranscription?.text) {
+                  safeSend({
+                    type: 'output_transcript',
+                    text: serverMsg.serverContent.outputTranscription.text,
+                  });
+                }
+
+                // Turn complete
+                if (serverMsg.serverContent?.turnComplete) {
+                  safeSend({ type: 'turn_complete' });
+                }
+
+                // Tool Calls
+                const toolCall = serverMsg.toolCall;
+                if (toolCall?.functionCalls && toolCall.functionCalls.length > 0) {
+                  safeSend({
+                    type: 'tool_call_start',
+                    calls: toolCall.functionCalls.map((c) => ({ name: c.name || '', args: c.args || {} })),
+                  });
+
+                  const functionResponses: Array<{ name: string; response: Record<string, unknown>; id?: string }> = [];
+
+                  for (const call of toolCall.functionCalls) {
+                    const toolName = call.name || '';
+                    try {
+                      const toolExec = await executeAITool(toolName, call.args || {});
+                      const responseObj =
+                        typeof toolExec.data === 'object' && toolExec.data !== null && !Array.isArray(toolExec.data)
+                          ? (toolExec.data as Record<string, unknown>)
+                          : { result: toolExec.data };
+
+                      functionResponses.push({
+                        name: toolName,
+                        response: responseObj,
+                        id: call.id,
+                      });
+
+                      safeSend({
+                        type: 'tool_call_result',
+                        name: toolName,
+                        id: call.id,
+                        data: toolExec.data,
+                        confirmation: toolExec.confirmation,
+                      });
+                    } catch (toolErr: unknown) {
+                      const errMsg = toolErr instanceof Error ? toolErr.message : 'Gagal eksekusi tool';
+                      functionResponses.push({
+                        name: toolName,
+                        response: { error: errMsg },
+                        id: call.id,
+                      });
+
+                      safeSend({
+                        type: 'tool_call_result',
+                        name: toolName,
+                        id: call.id,
+                        error: errMsg,
+                      });
+                    }
+                  }
+
+                  if (geminiSession && isSessionActive) {
+                    geminiSession.sendToolResponse({ functionResponses });
+                  }
+                }
+              },
+              onerror: (err: unknown) => {
+                const classified = classifyError(err);
+                console.log(`[Live WS Error] ${classified.category} (${classified.statusCode})`);
+                safeSend({
+                  type: 'error',
+                  category: classified.category,
+                  error: classified.message,
+                });
+              },
+              onclose: () => {
+                isSessionActive = false;
+                safeSend({ type: 'closed' });
+              },
+            },
+          });
+        } catch (connErr: unknown) {
+          const classified = classifyError(connErr);
+          safeSend({
+            type: 'error',
+            category: classified.category,
+            error: classified.message,
+          });
+        }
+        return;
+      }
+
+      // 2. Realtime audio streaming from client mic
+      if (msg.type === 'audio' && typeof msg.audio === 'string') {
+        if (geminiSession && isSessionActive) {
+          geminiSession.sendRealtimeInput({
+            audio: {
+              data: msg.audio,
+              mimeType: 'audio/pcm;rate=16000',
+            },
+          });
+        }
+        return;
+      }
+
+      // 3. Close command
+      if (msg.type === 'close') {
+        if (geminiSession) {
+          try {
+            geminiSession.close();
+          } catch {}
+          geminiSession = null;
+        }
+        isSessionActive = false;
+        return;
+      }
+    } catch (msgErr) {
+      console.error('[WS Bridge] Message error:', msgErr);
+    }
+  });
+
+  clientWs.on('close', () => {
+    isSessionActive = false;
+    if (geminiSession) {
+      try {
+        geminiSession.close();
+      } catch {}
+      geminiSession = null;
+    }
+  });
+});
+
 async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
   if (!isProd) {
@@ -155,7 +382,17 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  // Handle WebSocket upgrades for /api/ai/live
+  server.on('upgrade', (request, socket, head) => {
+    const pathname = new URL(request.url || '', `http://${request.headers.host}`).pathname;
+    if (pathname === '/api/ai/live') {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    }
+  });
+
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server listening on http://0.0.0.0:${PORT}`);
   });
 }

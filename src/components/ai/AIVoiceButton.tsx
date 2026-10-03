@@ -1,141 +1,65 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Loader2 } from 'lucide-react';
+import React from 'react';
+import { Mic, MicOff, Loader2, Volume2, Sparkles } from 'lucide-react';
+import { LiveAssistantStatus } from '../../types/ai';
 
 interface AIVoiceButtonProps {
-  onTranscript: (text: string) => void;
+  status: LiveAssistantStatus;
+  statusText: string;
+  onToggle: () => void;
   disabled?: boolean;
 }
 
-// Declare SpeechRecognition types for browsers
-interface IWindow extends Window {
-  SpeechRecognition?: any;
-  webkitSpeechRecognition?: any;
-}
-
-export const AIVoiceButton: React.FC<AIVoiceButtonProps> = ({ onTranscript, disabled = false }) => {
-  const [isListening, setIsListening] = useState(false);
-  const [isSupported, setIsSupported] = useState(true);
-  const [interimText, setInterimText] = useState('');
-  const recognitionRef = useRef<any>(null);
-
-  useEffect(() => {
-    const win = window as unknown as IWindow;
-    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      setIsSupported(false);
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = 'id-ID'; // Bahasa Indonesia
-
-      recognition.onstart = () => {
-        setIsListening(true);
-        setInterimText('');
-      };
-
-      recognition.onresult = (event: any) => {
-        let finalTranscript = '';
-        let currentInterim = '';
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript;
-          } else {
-            currentInterim += transcript;
-          }
-        }
-
-        if (finalTranscript) {
-          onTranscript(finalTranscript.trim());
-          setInterimText('');
-        } else {
-          setInterimText(currentInterim);
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        console.warn('[Voice Recognition Error]:', event?.error);
-        setIsListening(false);
-        setInterimText('');
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-        setInterimText('');
-      };
-
-      recognitionRef.current = recognition;
-    } catch (e) {
-      console.warn('SpeechRecognition initialization failed:', e);
-      setIsSupported(false);
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
-    };
-  }, [onTranscript]);
-
-  const toggleListen = () => {
-    if (!recognitionRef.current || !isSupported) return;
-
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      try {
-        recognitionRef.current.start();
-      } catch (err) {
-        console.warn('Failed to start speech recognition:', err);
-      }
-    }
-  };
-
-  if (!isSupported) {
-    return (
-      <button
-        type="button"
-        title="Web Speech API tidak didukung pada peramban ini. Gunakan Google Chrome/Edge."
-        disabled
-        className="p-2.5 rounded-full text-slate-300 bg-slate-100 cursor-not-allowed"
-      >
-        <MicOff className="w-5 h-5" />
-      </button>
-    );
-  }
+export const AIVoiceButton: React.FC<AIVoiceButtonProps> = ({
+  status,
+  statusText,
+  onToggle,
+  disabled = false,
+}) => {
+  const isLive = status !== 'DISCONNECTED' && status !== 'ERROR';
 
   return (
     <div className="relative flex items-center">
-      {/* Interim text floating badge */}
-      {isListening && interimText && (
-        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 text-white text-[11px] px-3 py-1.5 rounded-full shadow-lg border border-slate-700 pointer-events-none animate-pulse">
-          &ldquo;{interimText}&rdquo;
+      {/* Floating tooltip/badge when active */}
+      {isLive && (
+        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 text-white text-[11px] px-2.5 py-1 rounded-full shadow-lg border border-slate-700 pointer-events-none flex items-center gap-1.5 z-20">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+          <span>{statusText}</span>
         </div>
       )}
 
       <button
         type="button"
-        onClick={toggleListen}
+        onClick={onToggle}
         disabled={disabled}
-        title={isListening ? 'Hentikan rekaman suara' : 'Tekan untuk berbicara'}
-        className={`relative p-2.5 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-          isListening
-            ? 'bg-rose-600 text-white shadow-lg ring-rose-400 animate-pulse'
-            : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 focus:ring-slate-400'
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        title={
+          isLive
+            ? `Gemini Live Aktif (${status}) - Klik untuk mematikan suara`
+            : 'Mulai Percakapan Suara Realtime (Gemini Live API)'
+        }
+        className={`p-2.5 rounded-full transition-all relative flex items-center justify-center shrink-0 ${
+          disabled
+            ? 'bg-slate-100 text-slate-300 cursor-not-allowed border border-slate-200'
+            : status === 'LISTENING'
+            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30 ring-4 ring-emerald-100 animate-pulse'
+            : status === 'SPEAKING'
+            ? 'bg-teal-600 text-white shadow-md shadow-teal-500/30 ring-4 ring-teal-100 animate-pulse'
+            : status === 'THINKING'
+            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 ring-4 ring-indigo-100'
+            : status === 'CONNECTING'
+            ? 'bg-amber-500 text-white shadow-md ring-4 ring-amber-100'
+            : status === 'ERROR'
+            ? 'bg-rose-100 text-rose-700 border border-rose-300 hover:bg-rose-200'
+            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 border border-slate-200'
+        }`}
       >
-        {isListening ? (
-          <span className="flex items-center justify-center">
-            <span className="absolute w-full h-full rounded-full bg-rose-500 animate-ping opacity-75" />
-            <Mic className="w-5 h-5 relative z-10" />
-          </span>
+        {status === 'CONNECTING' ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : status === 'SPEAKING' ? (
+          <Volume2 className="w-5 h-5" />
+        ) : status === 'THINKING' ? (
+          <Sparkles className="w-5 h-5 animate-spin" />
+        ) : status === 'ERROR' ? (
+          <MicOff className="w-5 h-5" />
         ) : (
           <Mic className="w-5 h-5" />
         )}

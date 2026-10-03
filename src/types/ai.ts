@@ -68,3 +68,19 @@ export interface AIConfig {
   lastChecked?: string;
   errorMessage?: string;
 }
+
+export type LiveAssistantStatus =
+  | 'DISCONNECTED'
+  | 'CONNECTING'
+  | 'LISTENING'
+  | 'THINKING'
+  | 'SPEAKING'
+  | 'ERROR';
+
+export interface LiveTranscriptEntry {
+  id: string;
+  sender: 'user' | 'assistant';
+  text: string;
+  timestamp: string;
+}
+

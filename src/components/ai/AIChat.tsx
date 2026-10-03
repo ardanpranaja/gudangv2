@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AIMessage as AIMessageType, AIConfirmationData, AIToolCallInfo } from '../../types/ai';
+import { AIMessage as AIMessageType, AIConfirmationData, AIToolCallInfo, LiveAssistantStatus } from '../../types/ai';
 import { aiService } from '../../services/aiService';
+import { aiLiveService } from '../../services/aiLiveService';
 import { AIMessage } from './AIMessage';
 import { AIVoiceButton } from './AIVoiceButton';
+import { AILiveOverlay } from './AILiveOverlay';
 import { Send, Bot, Sparkles, Trash2, Loader2, Info } from 'lucide-react';
 
 const SUGGESTIONS = [
@@ -20,6 +22,14 @@ export const AIChat: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [retryStatus, setRetryStatus] = useState<string | null>(null);
+
+  // Live Assistant state
+  const [liveStatus, setLiveStatus] = useState<LiveAssistantStatus>('DISCONNECTED');
+  const [liveStatusText, setLiveStatusText] = useState('Tidak aktif');
+  const [userLiveTranscript, setUserLiveTranscript] = useState('');
+  const [geminiLiveTranscript, setGeminiLiveTranscript] = useState('');
+  const [liveActiveTool, setLiveActiveTool] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,7 +40,14 @@ export const AIChat: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading, activeTool, retryStatus]);
+  }, [messages, isLoading, activeTool, retryStatus, liveStatus, userLiveTranscript, geminiLiveTranscript]);
+
+  // Clean up Live session when unmounting
+  useEffect(() => {
+    return () => {
+      aiLiveService.disconnect();
+    };
+  }, []);
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
@@ -52,19 +69,15 @@ export const AIChat: React.FC = () => {
     setRetryStatus(null);
 
     try {
-      const response = await aiService.sendMessage(
-        text,
-        newHistory,
-        {
-          onToolStatus: (toolInfo: AIToolCallInfo) => {
-            setActiveTool(toolInfo.name);
-            setRetryStatus(null);
-          },
-          onRetryProgress: (_attempt: number, _maxAttempts: number, statusText: string) => {
-            setRetryStatus(statusText);
-          },
-        }
-      );
+      const response = await aiService.sendMessage(text, newHistory, {
+        onToolStatus: (toolInfo: AIToolCallInfo) => {
+          setActiveTool(toolInfo.name);
+          setRetryStatus(null);
+        },
+        onRetryProgress: (_attempt: number, _maxAttempts: number, statusText: string) => {
+          setRetryStatus(statusText);
+        },
+      });
 
       const assistantMsg: AIMessageType = {
         id: `asst-${Date.now()}`,
@@ -76,12 +89,17 @@ export const AIChat: React.FC = () => {
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMsgText =
+        err instanceof Error
+          ? err.message
+          : 'Gemini sedang tidak tersedia sementara. Silakan coba kembali beberapa saat lagi.';
+
       const errorMsg: AIMessageType = {
         id: `err-${Date.now()}`,
         role: 'assistant',
-        content: err?.message || 'Gemini sedang tidak tersedia sementara. Silakan coba kembali beberapa saat lagi.',
-        error: err?.message,
+        content: errorMsgText,
+        error: errorMsgText,
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -92,10 +110,77 @@ export const AIChat: React.FC = () => {
     }
   };
 
-  const handleVoiceTranscript = (transcript: string) => {
-    if (transcript) {
-      handleSendMessage(transcript);
+  const handleToggleLiveVoice = async () => {
+    if (aiLiveService.isConnected()) {
+      aiLiveService.disconnect();
+      setLiveStatus('DISCONNECTED');
+      setLiveStatusText('Sesi suara diakhiri.');
+      setUserLiveTranscript('');
+      setGeminiLiveTranscript('');
+      setLiveActiveTool(null);
+      return;
     }
+
+    await aiLiveService.startSession({
+      onStatusChange: (status, statusText) => {
+        setLiveStatus(status);
+        setLiveStatusText(statusText);
+      },
+      onInputTranscript: (text, isFinal) => {
+        if (isFinal && text.trim()) {
+          const userMsg: AIMessageType = {
+            id: `live-usr-${Date.now()}`,
+            role: 'user',
+            content: text.trim(),
+            timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          };
+          setMessages((prev) => [...prev, userMsg]);
+          setUserLiveTranscript('');
+        } else {
+          setUserLiveTranscript(text);
+        }
+      },
+      onOutputTranscript: (text, isFinal) => {
+        if (isFinal && text.trim()) {
+          const asstMsg: AIMessageType = {
+            id: `live-asst-${Date.now()}`,
+            role: 'assistant',
+            content: text.trim(),
+            timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          };
+          setMessages((prev) => [...prev, asstMsg]);
+          setGeminiLiveTranscript('');
+        } else {
+          setGeminiLiveTranscript(text);
+        }
+      },
+      onToolCallStart: (toolName) => {
+        setLiveActiveTool(toolName);
+      },
+      onToolCallDone: () => {
+        setLiveActiveTool(null);
+      },
+      onConfirmationDraft: (conf: AIConfirmationData) => {
+        const confMsg: AIMessageType = {
+          id: `live-conf-${Date.now()}`,
+          role: 'assistant',
+          content: `Saya telah menyiapkan ${conf.title}. Silakan periksa rincian pada kartu konfirmasi di bawah dan klik tombol konfirmasi untuk mengeksekusi ke backend.`,
+          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          confirmation: conf,
+        };
+        setMessages((prev) => [...prev, confMsg]);
+      },
+      onError: (errMsg) => {
+        const errChatMsg: AIMessageType = {
+          id: `live-err-${Date.now()}`,
+          role: 'assistant',
+          content: errMsg,
+          error: errMsg,
+          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages((prev) => [...prev, errChatMsg]);
+      },
+    });
   };
 
   const handleUpdateConfirmation = (updated: AIConfirmationData) => {
@@ -117,9 +202,19 @@ export const AIChat: React.FC = () => {
       {/* Chat Top Subheader */}
       <div className="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div
+            className={`w-2 h-2 rounded-full ${
+              liveStatus === 'LISTENING' || liveStatus === 'SPEAKING'
+                ? 'bg-teal-500 animate-ping'
+                : liveStatus === 'CONNECTING'
+                ? 'bg-amber-500 animate-spin'
+                : 'bg-emerald-500 animate-pulse'
+            }`}
+          />
           <span className="text-xs font-semibold text-slate-800">
-            AI Assistant Terhubung (Gemini 3.8 Flash)
+            {liveStatus !== 'DISCONNECTED'
+              ? `Gemini Live Voice (${liveStatus})`
+              : 'AI Assistant Terhubung (Gemini 3.8 Flash)'}
           </span>
         </div>
         {messages.length > 0 && (
@@ -147,7 +242,7 @@ export const AIChat: React.FC = () => {
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
                 Tanyakan posisi stok barang, validasi kuota limit member, cek mutasi kartu stok,
-                atau siapkan draf transaksi dengan mengetik atau berbicara langsung.
+                atau siapkan draf transaksi dengan mengetik pesan atau menggunakan percakapan suara realtime (Gemini Live).
               </p>
             </div>
 
@@ -180,7 +275,7 @@ export const AIChat: React.FC = () => {
           ))
         )}
 
-        {/* Loading / Tool executing indicator */}
+        {/* Loading / Tool executing indicator in chat mode */}
         {isLoading && (
           <div className="flex gap-3 justify-start">
             <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0">
@@ -198,6 +293,16 @@ export const AIChat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Realtime Live Voice Overlay Bar when Live Session is active */}
+      <AILiveOverlay
+        status={liveStatus}
+        statusText={liveStatusText}
+        userTranscript={userLiveTranscript}
+        geminiTranscript={geminiLiveTranscript}
+        activeTool={liveActiveTool}
+        onDisconnect={handleToggleLiveVoice}
+      />
+
       {/* Input Form Bar */}
       <div className="p-3 bg-white border-t border-slate-200">
         <form
@@ -207,9 +312,11 @@ export const AIChat: React.FC = () => {
           }}
           className="flex items-center gap-2"
         >
-          {/* Voice Input Button */}
+          {/* Gemini Live Voice Toggle Button */}
           <AIVoiceButton
-            onTranscript={handleVoiceTranscript}
+            status={liveStatus}
+            statusText={liveStatusText}
+            onToggle={handleToggleLiveVoice}
             disabled={isLoading}
           />
 
@@ -219,7 +326,7 @@ export const AIChat: React.FC = () => {
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Ketik perintah atau tanyakan stok gudang..."
+            placeholder="Ketik perintah atau gunakan tombol mikrofon untuk Gemini Live..."
             disabled={isLoading}
             className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-full text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all"
           />
