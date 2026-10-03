@@ -197,7 +197,17 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 {selectedOption.label}
               </span>
               {selectedOption.badge && (
-                <span className="text-[10px] text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded shrink-0">
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 border ${
+                    selectedOption.badgeColor === 'green' || selectedOption.badgeColor === 'emerald'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold'
+                      : selectedOption.badgeColor === 'red' || selectedOption.badgeColor === 'rose'
+                      ? 'bg-rose-50 text-rose-700 border-rose-200 font-semibold'
+                      : selectedOption.badgeColor === 'blue'
+                      ? 'bg-blue-50 text-blue-700 border-blue-200 font-semibold'
+                      : 'text-slate-600 bg-slate-50 border-slate-200'
+                  }`}
+                >
                   {selectedOption.badge}
                 </span>
               )}
@@ -223,7 +233,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100 min-w-[280px]">
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden animate-fadeIn min-w-[280px]">
           {/* Search Box */}
           <div className="p-2 border-b border-slate-100 bg-slate-50/50">
             <div className="relative flex items-center">
@@ -305,7 +315,17 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                           {opt.label}
                         </span>
                         {opt.badge && (
-                          <span className="text-[10px] text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded shrink-0">
+                          <span
+                            className={`text-[10px] px-1.5 py-0.2 rounded shrink-0 border ${
+                              opt.badgeColor === 'green' || opt.badgeColor === 'emerald'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold'
+                                : opt.badgeColor === 'red' || opt.badgeColor === 'rose'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200 font-semibold'
+                                : opt.badgeColor === 'blue'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200 font-semibold'
+                                : 'text-slate-600 bg-slate-100 border-slate-200'
+                            }`}
+                          >
                             {opt.badge}
                           </span>
                         )}

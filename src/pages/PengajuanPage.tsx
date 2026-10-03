@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
 import { DataTable, Column } from '../components/common/DataTable';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { SearchableSelect, SearchableSelectOption } from '../components/common/SearchableSelect';
 import { AIAssistantBubble } from '../components/ai/AIAssistantBubble';
 import { useApp } from '../context/AppContext';
 import { api, normalizeGasErrorMessage } from '../services/api';
@@ -31,6 +32,7 @@ import {
   Building2,
   Send,
   Layers,
+  HelpCircle,
 } from 'lucide-react';
 
 export const PengajuanPage: React.FC = () => {
@@ -96,6 +98,31 @@ export const PengajuanPage: React.FC = () => {
     items.forEach((i) => map.set(i.ID_ITEM, i));
     return map;
   }, [items]);
+
+  // Searchable select options for members (Name, Jabatan, Lantai badge)
+  const memberOptions: SearchableSelectOption[] = useMemo(() => {
+    return members.map((m) => ({
+      value: m.ID_MEMBER,
+      label: m.NAMA_MEMBER,
+      sublabel: m.JABATAN || undefined,
+      badge: m.LANTAI ? `Lantai ${m.LANTAI}` : 'Lantai -',
+      badgeColor: 'blue',
+    }));
+  }, [members]);
+
+  // Searchable select options for items (Binary status READY / KOSONG only - NO stock numbers!)
+  const itemOptions: SearchableSelectOption[] = useMemo(() => {
+    return items.map((item) => {
+      const isReady = stockAvailabilityMap.get(item.ID_ITEM) ?? false;
+      return {
+        value: item.ID_ITEM,
+        label: item.NAMA_ITEM,
+        sublabel: `${item.KATEGORI} • Satuan: ${item.SATUAN}`,
+        badge: isReady ? 'READY' : 'KOSONG',
+        badgeColor: isReady ? 'emerald' : 'rose',
+      };
+    });
+  }, [items, stockAvailabilityMap]);
 
   // Load Requests
   const loadRequests = async () => {
@@ -765,226 +792,415 @@ export const PengajuanPage: React.FC = () => {
       {/* ===================================================================== */}
       {activeTab === 'crew' && (
         <div className="space-y-6">
-          {/* Crew Request Form Card */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5 shadow-xs">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2 text-slate-900">
-                <Send className="w-4 h-4 text-emerald-600" />
-                <h3 className="text-sm font-semibold">Buat Permintaan Barang Baru</h3>
+          {/* Form Permintaan & Panduan Singkat Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            {/* LEFT / MAIN COLUMN: FORM CARD */}
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+              {/* Header Gradient */}
+              <div className="bg-gradient-to-r from-emerald-900 via-slate-900 to-slate-950 text-white p-5 sm:p-6 border-b border-slate-800">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 flex items-center justify-center shrink-0">
+                      <Send className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-base font-bold tracking-tight truncate">
+                        Buat Permintaan Barang Baru
+                      </h3>
+                      <p className="text-xs text-emerald-300/90 font-medium truncate mt-0.5">
+                        {selectedMemberObj
+                          ? `Halo, ${selectedMemberObj.NAMA_MEMBER}`
+                          : 'Layanan mandiri permintaan barang operasional gudang'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold tracking-wide shrink-0">
+                    Mode Crew
+                  </span>
+                </div>
               </div>
-              <span className="text-[11px] text-slate-400 font-medium">Mode Personil Lapangan / Crew</span>
+
+              {/* Form Body */}
+              <div className="p-5 sm:p-6 space-y-6">
+                {/* Success Banner */}
+                {submittedRequestId && (
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3 text-emerald-900 text-xs animate-fadeIn">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-emerald-950 text-sm">
+                        Permintaan Berhasil Tercatat: ID {submittedRequestId}
+                      </div>
+                      <p className="mt-1 text-emerald-800 leading-relaxed">
+                        Permintaan Anda telah masuk ke antrean gudang dan menunggu persetujuan admin. Anda dapat memantau progresnya pada tabel Riwayat di bawah.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <form onSubmit={handleCrewSubmitRequest} className="space-y-6 text-xs">
+                  {/* STEP 1: PILIH NAMA */}
+                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
+                          selectedMemberId
+                            ? 'bg-emerald-600 text-white shadow-2xs'
+                            : 'bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {selectedMemberId ? <Check className="w-4 h-4 text-white" /> : '1'}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900">
+                          Pilih Nama Anda <span className="text-rose-500">*</span>
+                        </h4>
+                        <p className="text-[11px] text-slate-500">
+                          Cari nama pemohon sesuai penempatan lantai tugas
+                        </p>
+                      </div>
+                    </div>
+
+                    <SearchableSelect
+                      value={selectedMemberId}
+                      onChange={(val) => {
+                        setSelectedMemberId(val);
+                        setEligibilityResult(null);
+                      }}
+                      options={memberOptions}
+                      placeholder="Ketik atau pilih nama Anda..."
+                      searchPlaceholder="Cari nama atau jabatan pemohon..."
+                      required
+                    />
+
+                    {/* Kartu Identitas Ringkas Member */}
+                    {selectedMemberObj && (
+                      <div className="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs animate-fadeIn">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                            {selectedMemberObj.NAMA_MEMBER.charAt(0)}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-semibold text-slate-900 flex items-center gap-1.5 truncate">
+                              <span className="truncate">{selectedMemberObj.NAMA_MEMBER}</span>
+                              <span className="text-[10px] font-mono text-slate-500 shrink-0 font-normal">
+                                [{selectedMemberObj.ID_MEMBER}]
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-slate-600 truncate">
+                              {selectedMemberObj.JABATAN || 'Personil Lapangan'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0 ml-2">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs">
+                            <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>{selectedMemberObj.LANTAI ? `Lantai ${selectedMemberObj.LANTAI}` : 'Lantai -'}</span>
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* STEP 2: PILIH BARANG */}
+                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
+                          selectedItemId
+                            ? 'bg-emerald-600 text-white shadow-2xs'
+                            : 'bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {selectedItemId ? <Check className="w-4 h-4 text-white" /> : '2'}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900">
+                          Pilih Barang <span className="text-rose-500">*</span>
+                        </h4>
+                        <p className="text-[11px] text-slate-500">
+                          Cari barang yang ingin diajukan dan perhatikan status ketersediaan
+                        </p>
+                      </div>
+                    </div>
+
+                    <SearchableSelect
+                      value={selectedItemId}
+                      onChange={(val) => {
+                        setSelectedItemId(val);
+                        setEligibilityResult(null);
+                      }}
+                      options={itemOptions}
+                      placeholder="Ketik atau pilih barang..."
+                      searchPlaceholder="Cari nama barang atau kategori..."
+                      required
+                    />
+
+                    {/* Binary Status Indicator Pill (No stock numbers!) */}
+                    {selectedItemObj && (
+                      <div className="p-3 rounded-lg border bg-white flex items-center justify-between text-xs animate-fadeIn shadow-2xs">
+                        <div className="min-w-0 pr-2">
+                          <div className="font-semibold text-slate-900 truncate">{selectedItemObj.NAMA_ITEM}</div>
+                          <div className="text-[11px] text-slate-500 truncate">
+                            Kategori: {selectedItemObj.KATEGORI} • Satuan: {selectedItemObj.SATUAN}
+                          </div>
+                        </div>
+                        <div className="shrink-0">
+                          {isSelectedItemReady ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] border border-emerald-200">
+                              <Check className="w-3.5 h-3.5" />
+                              <span>STATUS: READY</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-bold text-[11px] border border-rose-200">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              <span>STATUS: KOSONG (Habis)</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* STEP 3: JUMLAH & CEK KELAYAKAN */}
+                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
+                          formJumlah >= 1
+                            ? 'bg-emerald-600 text-white shadow-2xs'
+                            : 'bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {formJumlah >= 1 ? <Check className="w-4 h-4 text-white" /> : '3'}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900">
+                          Jumlah &amp; Cek Kelayakan <span className="text-rose-500">*</span>
+                        </h4>
+                        <p className="text-[11px] text-slate-500">
+                          Tentukan kuantitas dan cek kesesuaian jadwal serta kuota limit
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-medium text-slate-700">Jumlah Diminta:</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={formJumlah}
+                          onChange={(e) => {
+                            setFormJumlah(Math.max(1, Number(e.target.value)));
+                            setEligibilityResult(null);
+                          }}
+                          required
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 font-mono text-slate-900 bg-white"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2 flex items-end">
+                        <button
+                          type="button"
+                          onClick={handleCheckEligibility}
+                          disabled={isCheckingEligibility || !selectedMemberId || !selectedItemId}
+                          className="w-full py-2 px-3.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-lg font-medium transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                        >
+                          {isCheckingEligibility ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                          )}
+                          <span>Cek Kelayakan Pengambilan</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Eligibility Result Box (Human Friendly) */}
+                    {eligibilityResult && (
+                      <div
+                        className={`p-3 rounded-lg border text-xs flex items-start gap-2.5 transition-all ${
+                          eligibilityResult.allowed && !eligibilityResult.early
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                            : eligibilityResult.early
+                            ? 'bg-amber-50 border-amber-200 text-amber-900'
+                            : 'bg-rose-50 border-rose-200 text-rose-900'
+                        }`}
+                      >
+                        {eligibilityResult.allowed && !eligibilityResult.early ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        ) : eligibilityResult.early ? (
+                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        )}
+                        <div className="space-y-0.5">
+                          <div className="font-semibold">
+                            {eligibilityResult.allowed && !eligibilityResult.early
+                              ? 'Pengambilan Sesuai Jadwal & Kuota'
+                              : eligibilityResult.early
+                              ? 'Pengambilan Awal (Early Pickup)'
+                              : 'Permintaan Melebihi Batas / Belum Memenuhi Syarat'}
+                          </div>
+                          <p className="opacity-90 leading-relaxed">
+                            {eligibilityResult.reason ||
+                              (eligibilityResult.early
+                                ? `Jatuh tempo pengambilan berikutnya adalah ${eligibilityResult.dueDate || 'belum tiba'}. Anda dapat mengajukan pengambilan lebih awal dengan menyertakan alasan yang jelas.`
+                                : 'Kuota pengambilan tersedia.')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* STEP 4: ALASAN PERMINTAAN */}
+                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
+                            formAlasan.trim().length >= 10
+                              ? 'bg-emerald-600 text-white shadow-2xs'
+                              : 'bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {formAlasan.trim().length >= 10 ? <Check className="w-4 h-4 text-white" /> : '4'}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-900">
+                            Alasan Permintaan <span className="text-rose-500">*</span>
+                          </h4>
+                          <p className="text-[11px] text-slate-500">
+                            Wajib diisi minimal 10 karakter untuk pertimbangan admin
+                          </p>
+                        </div>
+                      </div>
+
+                      <span
+                        className={`text-[11px] font-mono shrink-0 ${
+                          formAlasan.trim().length >= 10 ? 'text-emerald-700 font-semibold' : 'text-slate-400'
+                        }`}
+                      >
+                        {formAlasan.trim().length} / 10 karakter
+                      </span>
+                    </div>
+
+                    <textarea
+                      rows={3}
+                      value={formAlasan}
+                      onChange={(e) => setFormAlasan(e.target.value)}
+                      placeholder="Contoh: Barang sebelumnya rusak saat operasional / kebutuhan mendesak pembersihan lantai 3..."
+                      required
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 text-xs bg-white"
+                    />
+                  </div>
+
+                  {/* STEP 5: KIRIM PERMINTAAN */}
+                  <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-slate-100">
+                    <div>
+                      {!isSelectedItemReady && selectedItemObj && (
+                        <span className="text-rose-600 font-semibold text-xs flex items-center gap-1.5">
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                          <span>Stok kosong di gudang — form tidak dapat diajukan saat ini</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmittingRequest || !isSelectedItemReady || !canPerformAction('REQUEST')}
+                      className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs hover:shadow"
+                    >
+                      {isSubmittingRequest ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                      <span>Ajukan Permintaan Sekarang</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
 
-            {submittedRequestId && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start gap-3 text-emerald-900 text-xs">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-semibold text-emerald-950">
-                    Permintaan Berhasil Tercatat: ID {submittedRequestId}
+            {/* RIGHT COLUMN: PANDUAN SINGKAT PANEL */}
+            <div className="lg:col-span-1 space-y-4">
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4 text-xs">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                    <HelpCircle className="w-4 h-4" />
                   </div>
-                  <p className="mt-0.5 text-emerald-800">
-                    Permintaan Anda telah masuk ke antrean gudang dan menunggu persetujuan admin.
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-xs">Panduan Singkat Pengambilan</h3>
+                    <p className="text-[10px] text-slate-500">Informasi status barang &amp; alur gudang</p>
+                  </div>
+                </div>
+
+                {/* Status Biner Explanation */}
+                <div className="space-y-2">
+                  <div className="text-[11px] font-semibold text-slate-700">Arti Status Barang:</div>
+                  <div className="space-y-1.5">
+                    <div className="p-2 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2">
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-bold text-[9px] shrink-0 mt-0.5">
+                        READY
+                      </span>
+                      <span className="text-[11px] text-emerald-950 leading-relaxed">
+                        Barang tersedia fisik di rak gudang dan siap untuk diajukan.
+                      </span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-rose-50/70 border border-rose-200 flex items-start gap-2">
+                      <span className="px-1.5 py-0.5 rounded bg-rose-600 text-white font-bold text-[9px] shrink-0 mt-0.5">
+                        KOSONG
+                      </span>
+                      <span className="text-[11px] text-rose-950 leading-relaxed">
+                        Stok di gudang habis. Pengajuan dinonaktifkan hingga restok tiba.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Workflow Status Steps (One Line with Arrows) */}
+                <div className="space-y-2 pt-1 border-t border-slate-100">
+                  <div className="text-[11px] font-semibold text-slate-700">Alur Status Permintaan:</div>
+                  <div className="flex items-center justify-between text-[10px] font-bold bg-slate-50 p-2.5 rounded-lg border border-slate-200 overflow-x-auto">
+                    <span className="text-amber-700">MENUNGGU</span>
+                    <span className="text-slate-400">&rarr;</span>
+                    <span className="text-blue-700">DISETUJUI</span>
+                    <span className="text-slate-400">&rarr;</span>
+                    <span className="text-orange-700">DIPROSES</span>
+                    <span className="text-slate-400">&rarr;</span>
+                    <span className="text-emerald-700">SELESAI</span>
+                  </div>
+                  <ul className="space-y-1.5 text-[11px] text-slate-600 leading-relaxed pt-1">
+                    <li className="flex items-start gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5" />
+                      <span><strong>MENUNGGU</strong>: Masuk ke antrean review verifikasi admin gudang.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                      <span><strong>DISETUJUI</strong>: Telah divalidasi dan disetujui admin gudang.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0 mt-1.5" />
+                      <span><strong>DIPROSES</strong>: Tim logistik menyiapkan fisik barang (picking list).</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
+                      <span><strong>SELESAI</strong>: Fisik barang diserahkan ke personil lapangan.</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Important Notes */}
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1">
+                  <div className="font-semibold text-slate-800">Tips Pengisian:</div>
+                  <p className="leading-relaxed">
+                    Pastikan nama pemohon sesuai dengan lantai tugas Anda. Alasan minimal 10 karakter membantu admin memverifikasi urgensi pengambilan.
                   </p>
                 </div>
               </div>
-            )}
-
-            <form onSubmit={handleCrewSubmitRequest} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* 1. Pilih Nama Sendiri (dengan label Lantai) */}
-                <div className="space-y-1">
-                  <label className="block font-medium text-slate-700">
-                    Pilih Nama Anda: <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={selectedMemberId}
-                    onChange={(e) => {
-                      setSelectedMemberId(e.target.value);
-                      setEligibilityResult(null);
-                    }}
-                    required
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 font-medium bg-white"
-                  >
-                    <option value="">-- Pilih Nama Pemohon --</option>
-                    {members.map((m) => {
-                      const floorText = m.LANTAI ? ` — Lantai ${m.LANTAI}` : '';
-                      return (
-                        <option key={m.ID_MEMBER} value={m.ID_MEMBER}>
-                          {m.NAMA_MEMBER}{floorText} ({m.JABATAN || m.ID_MEMBER})
-                        </option>
-                      );
-                    })}
-                  </select>
-                  {selectedMemberObj && (
-                    <div className="flex items-center gap-2 text-[11px] text-slate-500 pt-0.5">
-                      <Building2 className="w-3 h-3 text-slate-400" />
-                      <span>
-                        Lokasi Tugas: <strong>{selectedMemberObj.LANTAI ? `Lantai ${selectedMemberObj.LANTAI}` : 'Belum ditentukan'}</strong>
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* 2. Pilih Barang (Badge Status Biner READY / KOSONG - TANPA ANGKA STOK) */}
-                <div className="space-y-1">
-                  <label className="block font-medium text-slate-700">
-                    Pilih Barang: <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={selectedItemId}
-                    onChange={(e) => {
-                      setSelectedItemId(e.target.value);
-                      setEligibilityResult(null);
-                    }}
-                    required
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 font-medium bg-white"
-                  >
-                    <option value="">-- Pilih Barang --</option>
-                    {items.map((item) => {
-                      const isReady = stockAvailabilityMap.get(item.ID_ITEM) ?? false;
-                      const statusTag = isReady ? '[READY]' : '[KOSONG]';
-                      return (
-                        <option key={item.ID_ITEM} value={item.ID_ITEM}>
-                          {statusTag} {item.NAMA_ITEM} ({item.KATEGORI})
-                        </option>
-                      );
-                    })}
-                  </select>
-
-                  {/* Binary Status Indicator Pill (No stock numbers!) */}
-                  {selectedItemObj && (
-                    <div className="flex items-center gap-2 text-[11px] pt-0.5">
-                      {isSelectedItemReady ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold text-[10px]">
-                          <Check className="w-3 h-3" />
-                          STATUS: READY
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-semibold text-[10px]">
-                          <AlertCircle className="w-3 h-3" />
-                          STATUS: KOSONG (Tidak dapat diajukan)
-                        </span>
-                      )}
-                      <span className="text-slate-500 font-mono text-[10px]">
-                        Satuan: {selectedItemObj.SATUAN}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 3. Jumlah & Tombol Cek Kelayakan */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                <div className="space-y-1">
-                  <label className="block font-medium text-slate-700">
-                    Jumlah Diminta: <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={formJumlah}
-                    onChange={(e) => {
-                      setFormJumlah(Math.max(1, Number(e.target.value)));
-                      setEligibilityResult(null);
-                    }}
-                    required
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 font-mono text-slate-900"
-                  />
-                </div>
-
-                <div className="sm:col-span-2 flex items-end">
-                  <button
-                    type="button"
-                    onClick={handleCheckEligibility}
-                    disabled={isCheckingEligibility || !selectedMemberId || !selectedItemId}
-                    className="w-full py-2 px-3.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-lg font-medium transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
-                  >
-                    {isCheckingEligibility ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    )}
-                    <span>Cek Kelayakan Pengambilan</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Eligibility Result Box (Human Friendly) */}
-              {eligibilityResult && (
-                <div
-                  className={`p-3 rounded-lg border text-xs flex items-start gap-2.5 transition-all ${
-                    eligibilityResult.allowed && !eligibilityResult.early
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                      : eligibilityResult.early
-                      ? 'bg-amber-50 border-amber-200 text-amber-900'
-                      : 'bg-rose-50 border-rose-200 text-rose-900'
-                  }`}
-                >
-                  {eligibilityResult.allowed && !eligibilityResult.early ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  ) : eligibilityResult.early ? (
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                  )}
-                  <div className="space-y-0.5">
-                    <div className="font-semibold">
-                      {eligibilityResult.allowed && !eligibilityResult.early
-                        ? 'Pengambilan Sesuai Jadwal & Kuota'
-                        : eligibilityResult.early
-                        ? 'Pengambilan Awal (Early Pickup)'
-                        : 'Permintaan Melebihi Batas / Belum Memenuhi Syarat'}
-                    </div>
-                    <p className="opacity-90">
-                      {eligibilityResult.reason ||
-                        (eligibilityResult.early
-                          ? `Jatuh tempo pengambilan berikutnya adalah ${eligibilityResult.dueDate || 'belum tiba'}. Anda dapat mengajukan pengambilan lebih awal dengan menyertakan alasan yang jelas.`
-                          : 'Kuota pengambilan tersedia.')}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* 4. Alasan Wajib (Min 10 karakter) */}
-              <div className="space-y-1">
-                <label className="block font-medium text-slate-700">
-                  Alasan Permintaan: <span className="text-rose-500">* (Min. 10 karakter)</span>
-                </label>
-                <textarea
-                  rows={3}
-                  value={formAlasan}
-                  onChange={(e) => setFormAlasan(e.target.value)}
-                  placeholder="Contoh: Barang sebelumnya rusak saat operasional / kebutuhan mendesak pembersihan lantai..."
-                  required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 text-xs"
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-2 flex items-center justify-between">
-                <div>
-                  {!isSelectedItemReady && selectedItemObj && (
-                    <span className="text-rose-600 font-semibold text-xs flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      Stok kosong — tidak bisa diajukan
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmittingRequest || !isSelectedItemReady || !canPerformAction('REQUEST')}
-                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-colors inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
-                >
-                  {isSubmittingRequest ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Send className="w-3.5 h-3.5" />
-                  )}
-                  <span>Ajukan Permintaan</span>
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
 
           {/* Riwayat Permintaan Saya (Crew History) */}
