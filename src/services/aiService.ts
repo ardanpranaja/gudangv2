@@ -189,8 +189,28 @@ export class AIService {
   public setModel(model: string) {
     this.selectedModel = model.trim() || 'gemini-3.8-flash';
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_GEMINI_MODEL, model);
+      localStorage.setItem(STORAGE_KEY_GEMINI_MODEL, this.selectedModel);
     }
+  }
+
+  public async listAvailableModels(): Promise<Array<{
+    id: string;
+    name: string;
+    description: string;
+    version?: string;
+    inputTokenLimit?: number | null;
+    outputTokenLimit?: number | null;
+    supportedActions?: string[];
+  }>> {
+    const res = await fetch(this.getApiUrl('/api/ai/models'), {
+      method: 'GET',
+      headers: this.getHeaders(),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Daftar model Gemini tidak dapat dimuat.');
+    }
+    return Array.isArray(data.models) ? data.models : [];
   }
 
   private getHeaders(): Record<string, string> {
