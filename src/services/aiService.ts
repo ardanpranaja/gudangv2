@@ -168,6 +168,10 @@ export class AIService {
         localStorage.removeItem(STORAGE_KEY_GEMINI_CACHED_MODELS);
       }
     }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('gemini-key-changed', { detail: cleanKey }));
+    }
   }
 
   /**
@@ -234,6 +238,9 @@ export class AIService {
     this.selectedModel = cleanModel;
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       localStorage.setItem(STORAGE_KEY_GEMINI_MODEL, cleanModel);
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('gemini-model-changed', { detail: cleanModel }));
     }
   }
 

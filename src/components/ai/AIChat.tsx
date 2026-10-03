@@ -83,9 +83,11 @@ export const AIChat: React.FC = () => {
     syncModel();
     window.addEventListener('storage', syncModel);
     window.addEventListener('focus', syncModel);
+    window.addEventListener('gemini-model-changed', syncModel);
     return () => {
       window.removeEventListener('storage', syncModel);
       window.removeEventListener('focus', syncModel);
+      window.removeEventListener('gemini-model-changed', syncModel);
     };
   }, []);
 
@@ -511,9 +513,7 @@ export const AIChat: React.FC = () => {
     });
   };
 
-  const availableModels = aiService.getAvailableModels();
-  const matchedModelObj = availableModels.find((m) => m.id === currentRuntimeModel);
-  const runtimeModelDisplayName = matchedModelObj ? matchedModelObj.displayName : currentRuntimeModel;
+  const activeModelId = (currentRuntimeModel || aiService.getModel() || '').trim();
 
   // Filtered conversation history for search
   const filteredConversations = conversations.filter((c) => {
@@ -684,8 +684,8 @@ export const AIChat: React.FC = () => {
               <span className="text-xs font-semibold text-slate-800 block truncate">
                 {liveStatus !== 'DISCONNECTED'
                   ? `Gemini Live Voice (${liveStatus})`
-                  : currentRuntimeModel
-                  ? `AI Assistant Terhubung (${runtimeModelDisplayName})`
+                  : activeModelId
+                  ? `AI Assistant Terhubung (${activeModelId})`
                   : 'AI Assistant — Model belum dipilih'}
               </span>
               <span className="text-[10px] text-slate-400 block truncate">
