@@ -1,7 +1,6 @@
-/* Diagnostik: uji import aiErrorClassifier dari api/ */
-import { classifyError } from '../src/services/aiErrorClassifier';
+/* Diagnostik: uji import file trivial dari ../src/ */
+import { PINGTEST_VALUE } from '../src/_pingtest';
 
 export default async function handler(_req: any, res: any): Promise<void> {
-  const c = classifyError(new Error('tes diagnostik'));
-  res.status(200).json({ ok: true, category: c.category });
+  res.status(200).json({ ok: true, value: PINGTEST_VALUE });
 }
