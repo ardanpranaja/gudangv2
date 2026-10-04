@@ -6,17 +6,15 @@ import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { ItemStock, Transaksi, MasterMember } from '../types';
+import { ItemStock, Transaksi, MasterMember, PengajuanPengambilan } from '../types';
 import {
   Package,
   Users,
   AlertTriangle,
   ArrowDownLeft,
   ArrowUpRight,
-  RotateCcw,
-  Undo2,
   ArrowRight,
-  Boxes,
+  Hourglass,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -29,19 +27,22 @@ export const DashboardPage: React.FC = () => {
   const [stocks, setStocks] = useState<ItemStock[]>([]);
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [transactions, setTransactions] = useState<Transaksi[]>([]);
+  const [requests, setRequests] = useState<PengajuanPengambilan[]>([]);
 
   const loadDashboardData = async () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const [stockData, memberData, txData] = await Promise.all([
+      const [stockData, memberData, txData, reqData] = await Promise.all([
         api.getStock(),
         api.getMembers(),
         api.getTransactions({ limit: '20' }),
+        api.getRequests(),
       ]);
       setStocks(stockData);
       setMembers(memberData);
       setTransactions(txData);
+      setRequests(reqData);
     } catch (err: any) {
       setIsError(true);
       setErrorMessage(err.message || 'Gagal memuat ringkasan dashboard.');
@@ -65,6 +66,22 @@ export const DashboardPage: React.FC = () => {
   const lowStockItems = stocks.filter((s) => s.isLowStock);
   const activeMembersCount = members.filter((m) => m.STATUS === 'AKTIF').length;
   const recentTransactions = transactions.slice(0, 6);
+  const pendingRequests = requests.filter((r) => (r.STATUS || '').toUpperCase() === 'MENUNGGU').length;
+
+  const formatDateTime = (iso?: string): string => {
+    if (!iso) return '-';
+    try {
+      return new Date(iso).toLocaleString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return iso;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -93,7 +110,7 @@ export const DashboardPage: React.FC = () => {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Total Master Barang"
           value={stocks.length}
@@ -111,6 +128,15 @@ export const DashboardPage: React.FC = () => {
           onClick={() => navigateTo('members')}
         />
         <StatCard
+          label="Menunggu Persetujuan"
+          value={pendingRequests}
+          unit="pengajuan"
+          subtitle={pendingRequests > 0 ? 'Perlu direview admin' : 'Antrean kosong'}
+          icon={Hourglass}
+          variant={pendingRequests > 0 ? 'warning' : 'success'}
+          onClick={() => navigateTo('pengajuan')}
+        />
+        <StatCard
           label="Barang Stok Menipis"
           value={lowStockItems.length}
           unit="SKU"
@@ -119,45 +145,6 @@ export const DashboardPage: React.FC = () => {
           variant={lowStockItems.length > 0 ? 'warning' : 'default'}
           onClick={() => navigateTo('stok')}
         />
-      </div>
-
-      {/* Quick Action Navigation Strip */}
-      <div className="p-4 bg-white rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-slate-600">
-          <Boxes className="w-4 h-4 text-slate-400" />
-          <span className="font-semibold text-slate-800">Aksi Cepat Transaksi:</span>
-          <span className="text-slate-500">Pilih modul operasional utama yang ingin diproses:</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => navigateTo('masuk')}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded transition-colors"
-          >
-            <ArrowDownLeft className="w-3.5 h-3.5 text-slate-600" />
-            <span>Masuk</span>
-          </button>
-          <button
-            onClick={() => navigateTo('keluar')}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded transition-colors"
-          >
-            <ArrowUpRight className="w-3.5 h-3.5 text-slate-600" />
-            <span>Keluar</span>
-          </button>
-          <button
-            onClick={() => navigateTo('pinjam')}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-600" />
-            <span>Pinjam</span>
-          </button>
-          <button
-            onClick={() => navigateTo('kembali')}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded transition-colors"
-          >
-            <Undo2 className="w-3.5 h-3.5 text-slate-600" />
-            <span>Kembali</span>
-          </button>
-        </div>
       </div>
 
       {/* Main Grid: Low Stock & Recent Transactions */}
@@ -225,18 +212,9 @@ export const DashboardPage: React.FC = () => {
         {/* Right Column: Recent Transactions Summary */}
         <div className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900">Aktivitas Transaksi Terkini</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Pencatatan mutasi barang terakhir di Google Spreadsheet</p>
-              </div>
-              <button
-                onClick={() => navigateTo('bincard')}
-                className="text-xs font-medium text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
-              >
-                <span>Buka Bin Card</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-slate-900">Aktivitas Transaksi Terkini</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Pencatatan mutasi barang terakhir di Google Spreadsheet</p>
             </div>
 
             {recentTransactions.length === 0 ? (
@@ -257,7 +235,7 @@ export const DashboardPage: React.FC = () => {
                         {tx.NAMA_MEMBER ? ` · Member: ${tx.NAMA_MEMBER}` : ''}
                       </div>
                       <div className="text-[11px] text-slate-400 mt-0.5">
-                        {tx.TIMESTAMP || tx.TANGGAL} · &quot;{tx.KETERANGAN || '-'}&quot;
+                        {formatDateTime(tx.TIMESTAMP || tx.TANGGAL)} · &quot;{tx.KETERANGAN || '-'}&quot;
                       </div>
                     </div>
                     <div className="text-right shrink-0">
