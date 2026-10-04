@@ -62,7 +62,8 @@ export const PengajuanPage: React.FC = () => {
   // CREW FORM STATE
   // ---------------------------------------------------------------------------
   // Tab switcher in Crew View: 'general' (Barang Standar) vs 'consumable' (Tisu & Plastik)
-  const [crewFormType, setCrewFormType] = useState<'general' | 'consumable'>('general');
+  // Default: 'consumable' — tab Tisu & Plastik tampil pertama saat aplikasi dibuka.
+  const [crewFormType, setCrewFormType] = useState<'general' | 'consumable'>('consumable');
   const [lastConsumableItem, setLastConsumableItem] = useState<MasterItem | null>(null);
   const [lastConsumableReady, setLastConsumableReady] = useState<boolean | null>(null);
 
@@ -356,8 +357,9 @@ export const PengajuanPage: React.FC = () => {
   // FILTERED DATA FOR CREW & ADMIN
   // ---------------------------------------------------------------------------
   // Riwayat Pengajuan Milik Member Terpilih (Crew View)
+  // Privasi: bila belum ada member dipilih, kembalikan list kosong (jangan tampilkan milik orang lain).
   const myRequests = useMemo(() => {
-    if (!selectedMemberId) return requests;
+    if (!selectedMemberId) return [];
     return requests.filter((r) => r.ID_MEMBER === selectedMemberId);
   }, [requests, selectedMemberId]);
 
@@ -1346,7 +1348,7 @@ export const PengajuanPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-slate-600" />
                 <h3 className="text-sm font-semibold text-slate-900">
-                  Riwayat Permintaan Saya ({selectedMemberObj?.NAMA_MEMBER || 'Semua'})
+                  Riwayat Permintaan Saya{selectedMemberObj ? ` (${selectedMemberObj.NAMA_MEMBER})` : ''}
                 </h3>
                 <span className="px-2 py-0.5 text-[11px] font-mono bg-slate-100 text-slate-700 rounded-full border border-slate-200">
                   {myRequests.length} data
@@ -1363,8 +1365,8 @@ export const PengajuanPage: React.FC = () => {
               errorMessage={requestsError}
               onRetry={loadRequests}
               searchPlaceholder="Cari ID pengajuan, barang, atau alasan..."
-              emptyTitle="Belum ada riwayat permintaan"
-              emptyDescription="Permintaan pengambilan barang yang Anda ajukan akan muncul di sini."
+              emptyTitle={selectedMemberId ? "Belum ada riwayat permintaan" : "Pilih nama Anda terlebih dahulu"}
+              emptyDescription={selectedMemberId ? "Permintaan pengambilan barang yang Anda ajukan akan muncul di sini." : "Pilih nama Anda pada form di atas untuk melihat riwayat permintaan Anda."}
             />
           </div>
         </div>
