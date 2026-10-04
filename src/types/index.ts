@@ -215,7 +215,7 @@ export interface PemakaianMesin {
 export interface SystemHealth {
   status: 'ONLINE' | 'OFFLINE' | 'UNCONFIGURED';
   spreadsheetId?: string;
-  sheetsFound?: string[];
+  sheetsFound?: Array<string | { name?: string; exists?: boolean }>;
   latencyMs?: number;
   version?: string;
   lastChecked?: string;
@@ -429,7 +429,7 @@ export interface GasHealthResponse {
   status?: string;
   spreadsheetId?: string;
   ssId?: string;
-  sheets?: string[];
-  sheetsFound?: string[];
+  sheets?: Array<string | { name?: string; exists?: boolean }>;
+  sheetsFound?: Array<string | { name?: string; exists?: boolean }>;
   version?: string;
 }
