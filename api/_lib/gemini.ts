@@ -2,7 +2,7 @@
  * File/dirname diawali "_" agar TIDAK dianggap function oleh Vercel.
  * Logika disalin dari server.ts (dipakai saat dev/AI Studio) agar perilaku identik. */
 import { GoogleGenAI } from '@google/genai';
-import { classifyError } from './errorClassifier';
+import { classifyError } from './errorClassifier.js';
 
 export { classifyError };
 

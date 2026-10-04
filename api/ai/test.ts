@@ -7,7 +7,7 @@ import {
   getBody,
   type ApiReq,
   type ApiRes,
-} from '../_lib/gemini';
+} from '../_lib/gemini.js';
 
 export default async function handler(req: ApiReq, res: ApiRes): Promise<void> {
   try {

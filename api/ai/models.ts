@@ -1,6 +1,6 @@
 /* Vercel Serverless Function: GET/POST /api/ai/models
  * Discovery model Gemini dinamis + filter kapabilitas (port dari server.ts). */
-import { getGeminiClient, sendClassifiedError, type ApiReq, type ApiRes } from '../_lib/gemini';
+import { getGeminiClient, sendClassifiedError, type ApiReq, type ApiRes } from '../_lib/gemini.js';
 
 export default async function handler(req: ApiReq, res: ApiRes): Promise<void> {
   try {
