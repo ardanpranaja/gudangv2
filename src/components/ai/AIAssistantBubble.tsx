@@ -25,7 +25,7 @@ interface AIAssistantBubbleProps {
 }
 
 const INITIAL_GREETING =
-  'Halo! Saya Asisten Panduan Gudang Presisi. Ada yang ingin Anda tanyakan seputar cara pengisian form permintaan, arti status barang, atau alur verifikasi gudang? Silakan tanyakan di sini!';
+  'Halo! Saya Uti AI, asisten panduan Gudang Presisi. Ada yang ingin Anda tanyakan seputar cara pengisian form permintaan, arti status barang, atau alur verifikasi gudang? Silakan tanyakan di sini!';
 
 const QUICK_PROMPTS = [
   'Bagaimana alur setelah permintaan diajukan?',
@@ -202,7 +202,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
               <AIAvatarIcon size="sm" status={isLoading ? 'busy' : 'online'} isThinking={isLoading} showStatusDot />
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-xs font-bold truncate">Asisten Gudang Presisi</h3>
+                  <h3 className="text-xs font-bold truncate">Uti AI</h3>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                 </div>
                 <p className="text-[10px] text-slate-300 truncate">
@@ -445,8 +445,8 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
               type="button"
               onClick={() => setIsOpen(true)}
               className="group relative w-14 h-14 rounded-full bg-gradient-to-tr from-slate-950 via-slate-900 to-emerald-950 text-white shadow-2xl hover:shadow-emerald-500/25 border-2 border-emerald-400/50 hover:border-emerald-300 flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer overflow-visible"
-              aria-label="Buka Asisten AI Gudang"
-              title="Tanya Asisten AI Gudang Presisi"
+              aria-label="Buka Uti AI"
+              title="Tanya Uti AI"
             >
               {/* Outer Pulse Glow Halo */}
               <span className="absolute -inset-2 rounded-full bg-emerald-500/20 group-hover:bg-emerald-400/35 blur-xs transition-all pointer-events-none" />
