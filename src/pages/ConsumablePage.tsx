@@ -709,12 +709,12 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                   <div className="flex items-center gap-2.5">
                     <div
                       className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
-                        formAlasan.trim().length >= 10
+                        formAlasan.trim().length > 0
                           ? 'bg-emerald-600 text-white shadow-2xs'
                           : 'bg-slate-200 text-slate-700'
                       }`}
                     >
-                      {formAlasan.trim().length >= 10 ? <Check className="w-4 h-4 text-white" /> : '3'}
+                      {formAlasan.trim().length > 0 ? <Check className="w-4 h-4 text-white" /> : '3'}
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900">
