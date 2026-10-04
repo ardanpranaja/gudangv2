@@ -370,7 +370,7 @@ export const BarangKeluarPage: React.FC = () => {
             {checkingEligibility ? (
               <div className="p-3 bg-slate-50 border border-slate-200 rounded text-slate-500 flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-slate-600 shrink-0" />
-                <span>Memvalidasi aturan limit member & masa pakai via API GAS...</span>
+                <span>Memvalidasi aturan masa pakai via API GAS...</span>
               </div>
             ) : eligibilityError ? (
               <div className="p-4 bg-rose-50 border border-rose-300 rounded-lg space-y-1.5 text-rose-900">
