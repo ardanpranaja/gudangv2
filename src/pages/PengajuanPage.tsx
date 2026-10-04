@@ -156,13 +156,8 @@ export const PengajuanPage: React.FC = () => {
       setItems(activeItems);
       setStocks(stockData);
       setRequests(reqData);
-
-      if (activeMembers.length > 0 && !selectedMemberId) {
-        setSelectedMemberId(activeMembers[0].ID_MEMBER);
-      }
-      if (activeItems.length > 0 && !selectedItemId) {
-        setSelectedItemId(activeItems[0].ID_ITEM);
-      }
+      // Pilihan member & barang TIDAK diisi otomatis — user harus memilih sendiri
+      // lewat kolom pencarian, agar status/centang langkah hanya muncul setelah dipilih.
     } catch (err: unknown) {
       const msg = normalizeGasErrorMessage(err, undefined, 'Gagal memuat master data.');
       addToast('warning', 'Peringatan Koneksi', msg);
