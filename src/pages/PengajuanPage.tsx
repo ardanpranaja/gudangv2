@@ -221,11 +221,11 @@ export const PengajuanPage: React.FC = () => {
       const res = await api.getPickupEligibility(selectedMemberId, selectedItemId, Number(formJumlah));
       setEligibilityResult(res);
       if (res.allowed && !res.early) {
-        addToast('success', 'Kelayakan Terpenuhi', 'Pengambilan memenuhi jadwal dan kuota limit.');
+        addToast('success', 'Kelayakan Terpenuhi', 'Pengambilan memenuhi jadwal masa pakai.');
       } else if (res.early) {
         addToast('info', 'Pengambilan Awal Terdeteksi', 'Alasan pengajuan wajib diisi untuk persetujuan admin.');
       } else {
-        addToast('warning', 'Perhatian Limit', res.reason || 'Tidak memenuhi syarat kuota limit.');
+        addToast('warning', 'Perhatian', res.reason || 'Tidak memenuhi syarat pengambilan.');
       }
     } catch (err: unknown) {
       const msg = normalizeGasErrorMessage(err, undefined, 'Gagal memeriksa kelayakan.');
@@ -1115,7 +1115,7 @@ export const PengajuanPage: React.FC = () => {
                           Jumlah &amp; Cek Kelayakan <span className="text-rose-500">*</span>
                         </h4>
                         <p className="text-[11px] text-slate-500">
-                          Tentukan kuantitas dan cek kesesuaian jadwal serta kuota limit
+                          Tentukan kuantitas dan cek kesesuaian jadwal masa pakai
                         </p>
                       </div>
                     </div>
