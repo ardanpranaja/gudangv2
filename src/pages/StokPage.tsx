@@ -427,7 +427,6 @@ export const StokPage: React.FC = () => {
               className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-700"
             >
               <option value="ALL">Semua Kategori</option>
-              <option value="MESIN">MESIN</option>
               <option value="CHEMICAL">CHEMICAL</option>
               <option value="PERALATAN">PERALATAN</option>
               <option value="SERAGAM">SERAGAM</option>
