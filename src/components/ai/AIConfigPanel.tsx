@@ -123,6 +123,7 @@ export const AIConfigPanel: React.FC = () => {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Gagal memuat daftar model dari API.';
       setModelsError(msg);
+      setTestResult(null);
       setAvailableModels(aiService.getAvailableModels());
     } finally {
       setIsLoadingModels(false);
@@ -336,6 +337,7 @@ export const AIConfigPanel: React.FC = () => {
     setIsTesting(true);
     setTestingProgressText(null);
     setTestResult(null);
+    setModelsError(null);
 
     try {
       const explicitKeyToTest = activeKeyObj ? activeKeyObj.fullKey : undefined;
@@ -511,9 +513,11 @@ export const AIConfigPanel: React.FC = () => {
                   </option>
                   {savedKeys.map((k, idx) => {
                     const inCooldown = aiService.isKeyInCooldown(k.id);
+                    const labelHasMask = !!(k.label && k.maskedKey && k.label.includes(k.maskedKey));
                     return (
                       <option key={k.id} value={k.id}>
-                        🔑 {k.label || `API Key ${idx + 1}`} •••• ({k.maskedKey})
+                        🔑 {k.label || `API Key ${idx + 1}`}
+                        {labelHasMask ? '' : ` •••• (${k.maskedKey})`}
                         {inCooldown ? ' [Cooldown Kuota 10 Mnt]' : ''}
                       </option>
                     );
