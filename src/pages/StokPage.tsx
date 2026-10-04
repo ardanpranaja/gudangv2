@@ -63,7 +63,7 @@ export const StokPage: React.FC = () => {
       value: s.idItem,
       label: s.namaItem,
       sublabel: `Stok: ${s.stok} ${s.satuan}`,
-      badge: s.idItem,
+      badge: s.kategori,
       badgeColor: s.stok <= 0 ? 'rose' : s.isLowStock ? 'amber' : 'emerald',
       extra: `${s.namaItem} ${s.idItem} ${s.kategori} ${s.lokasi || ''}`,
     }));
