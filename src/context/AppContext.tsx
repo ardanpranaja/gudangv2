@@ -39,7 +39,7 @@ interface AppContextType {
   isAdminLoginOpen: boolean;
   setIsAdminLoginOpen: (open: boolean) => void;
   health: SystemHealth;
-  refreshHealth: () => Promise<void>;
+  refreshHealth: () => Promise<SystemHealth>;
   toasts: ToastMessage[];
   addToast: (
     type: 'success' | 'error' | 'info' | 'warning',
@@ -76,12 +76,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const res = await api.checkHealth();
       setHealth(res);
+      return res;
     } catch {
-      setHealth({
+      const offline = {
         status: 'OFFLINE',
         version: '1.2.4',
         error: 'Tidak dapat menghubungi backend',
-      });
+      };
+      setHealth(offline);
+      return offline;
     }
   }, []);
 
