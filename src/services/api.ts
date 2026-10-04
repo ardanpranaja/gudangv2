@@ -292,7 +292,8 @@ class ApiService {
     if (!data || !Array.isArray(data.items)) {
       throw new GasApiError('Format response items dari GAS tidak valid.', 'MALFORMED_RESPONSE');
     }
-    return data.items;
+    // Kategori MESIN dikelola terpisah (Master Mesin) — sembunyikan dari seluruh list barang.
+    return data.items.filter((it: any) => String(it.KATEGORI || '').toUpperCase() !== 'MESIN');
   }
 
   /**
