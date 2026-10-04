@@ -188,7 +188,7 @@ export const AIChat: React.FC = () => {
     setActiveTool(null);
     setRetryStatus(null);
     setIsHistoryOpen(false);
-    addToast('info', 'Chat Baru Dibuat', 'Mulai percakapan baru dengan AI Assistant GudangV2.');
+    addToast('info', 'Chat Baru Dibuat', 'Mulai percakapan baru dengan Uti AI.');
   };
 
   // Open an existing conversation
@@ -314,7 +314,7 @@ export const AIChat: React.FC = () => {
           const assistantReply: AIMessageType = {
             id: `asst-${Date.now()}`,
             role: 'assistant',
-            content: `Persetujuan diterima. **${targetConf.title}**${docIdInfo} telah berhasil dieksekusi dan dicatat resmi ke backend Google Spreadsheet GudangV2.`,
+            content: `Persetujuan diterima. **${targetConf.title}**${docIdInfo} telah berhasil dieksekusi dan dicatat resmi ke backend Google Spreadsheet Kegudangaja.`,
             timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
             confirmation: updatedConf,
           };
@@ -446,7 +446,7 @@ export const AIChat: React.FC = () => {
       const finalMessages = [...newHistory, errorAssistantMsg];
       setMessages(finalMessages);
       await persistCurrentConversation(finalMessages, effectiveTitle);
-      addToast('error', 'Kendala AI Assistant', errorMsg);
+      addToast('error', 'Kendala Uti AI', errorMsg);
     } finally {
       setIsLoading(false);
       setActiveTool(null);
@@ -688,8 +688,8 @@ export const AIChat: React.FC = () => {
                 {liveStatus !== 'DISCONNECTED'
                   ? `Gemini Live Voice (${liveStatus})`
                   : activeModelId
-                  ? `AI Assistant Terhubung (${aiService.getModelDisplayName(activeModelId)})`
-                  : 'AI Assistant — Model belum dipilih'}
+                  ? `Uti AI Terhubung (${aiService.getModelDisplayName(activeModelId)})`
+                  : 'Uti AI — Model belum dipilih'}
               </span>
               <span className="text-[10px] text-slate-400 block truncate">
                 {conversationTitle}

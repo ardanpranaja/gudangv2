@@ -25,7 +25,7 @@ interface AIAssistantBubbleProps {
 }
 
 const INITIAL_GREETING =
-  'Halo! Saya Uti AI, asisten panduan Gudang Presisi. Ada yang ingin Anda tanyakan seputar cara pengisian form permintaan, arti status barang, atau alur verifikasi gudang? Silakan tanyakan di sini!';
+  'Halo! Saya Uti AI, asisten panduan Kegudangaja. Ada yang ingin Anda tanyakan seputar cara pengisian form permintaan, arti status barang, atau alur verifikasi gudang? Silakan tanyakan di sini!';
 
 const QUICK_PROMPTS = [
   'Bagaimana alur setelah permintaan diajukan?',
@@ -373,7 +373,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
             </div>
             <div className="mt-1 flex items-center justify-between text-[9px] text-slate-400 px-1">
               <span>Tekan Enter untuk mengirim</span>
-              <span>Gudang Presisi AI</span>
+              <span>Uti AI</span>
             </div>
           </div>
         </div>
@@ -412,7 +412,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
                 className="cursor-pointer space-y-1.5 text-[11px] leading-relaxed"
               >
                 <p className="font-medium text-slate-800">
-                  Halo! Saya asisten Gudang Presisi. Cara memakai form ini:
+                  Halo! Saya Uti AI. Cara memakai form ini:
                 </p>
                 <ol className="list-decimal list-inside space-y-0.5 text-slate-600">
                   <li>

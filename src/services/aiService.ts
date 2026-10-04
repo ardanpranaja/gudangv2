@@ -16,7 +16,7 @@ const STORAGE_KEY_GEMINI_SAVED_KEYS = 'GP_GEMINI_SAVED_KEYS';
 const STORAGE_KEY_GEMINI_MODEL = 'GP_GEMINI_MODEL';
 const STORAGE_KEY_GEMINI_CACHED_MODELS = 'GP_GEMINI_CACHED_MODELS';
 
-export const SYSTEM_INSTRUCTION = `Anda adalah Uti AI, asisten AI operasional cerdas untuk Gudang Presisi (Sistem Pengelolaan Gudang).
+export const SYSTEM_INSTRUCTION = `Anda adalah Uti AI, asisten AI operasional cerdas untuk Kegudangaja (Sistem Pengelolaan Gudang).
 Peran Anda adalah membantu operator dan admin gudang secara proaktif menjalankan pekerjaan operasional gudang selama fungsinya tersedia melalui tools aplikasi.
 
 PRINSIP SUMBER KEBENARAN & IDENTITAS:
@@ -63,7 +63,7 @@ ATURAN TRANSAKSI PERGERAKAN FISIK BARANG:
    - Sampaikan kepada user bahwa draf konfirmasi telah disiapkan di antarmuka dan menunggu persetujuan.
    - Jika pengguna membalas dengan persetujuan melalui pesan (misal: "Setuju", "Ya", "Eksekusi", "Lanjutkan", "Silakan"), sistem frontend akan langsung mengeksekusi konfirmasi pending ke backend GAS.`;
 
-export const MEMBER_SYSTEM_INSTRUCTION = `Anda adalah Uti AI, asisten panduan AI untuk sistem Gudang Presisi khusus personil lapangan / crew.
+export const MEMBER_SYSTEM_INSTRUCTION = `Anda adalah Uti AI, asisten panduan AI untuk sistem Kegudangaja khusus personil lapangan / crew.
 Peran Anda adalah membantu personil memahami dan mengisi Form Permintaan Barang dengan mudah, ramah, dan ringkas.
 
 DAFTAR FITUR YANG BENAR-BENAR ADA (JANGAN menyebut fitur di luar daftar ini):
@@ -217,7 +217,7 @@ export class AIService {
 
       if (remoteKeys.length > 0) {
         this.savedKeys = remoteKeys.map((rk, idx) => {
-          const actualKey = rk.fullKey || '';
+          const actualKey = rk.fullKey || (rk as any).key || '';
           return {
             id: rk.id || `key-${idx + 1}`,
             label: rk.label || `API Key ${idx + 1}`,
