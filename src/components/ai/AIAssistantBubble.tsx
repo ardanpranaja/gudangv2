@@ -30,7 +30,7 @@ const INITIAL_GREETING =
 const QUICK_PROMPTS = [
   'Bagaimana alur setelah permintaan diajukan?',
   'Apa arti status READY dan KOSONG?',
-  'Kenapa alasan wajib minimal 10 karakter?',
+  'Kenapa alasan wajib diisi?',
   'Kapan barang yang saya minta bisa diambil?',
 ];
 
@@ -422,7 +422,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
                     <strong>Pilih barang</strong> (status <code>[READY]</code> / <code>[KOSONG]</code>)
                   </li>
                   <li>
-                    <strong>Isi jumlah &amp; alasan</strong> (min. 10 karakter)
+                    <strong>Isi jumlah &amp; alasan</strong> (wajib diisi)
                   </li>
                   <li>
                     <strong>Klik Ajukan Permintaan</strong>
