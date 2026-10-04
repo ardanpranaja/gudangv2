@@ -65,7 +65,7 @@ export const DashboardPage: React.FC = () => {
 
   const lowStockItems = stocks.filter((s) => s.isLowStock);
   const activeMembersCount = members.filter((m) => m.STATUS === 'AKTIF').length;
-  const recentTransactions = transactions.slice(0, 6);
+  const recentTransactions = transactions.slice(-6).reverse();
   const pendingRequests = requests.filter((r) => (r.STATUS || '').toUpperCase() === 'MENUNGGU').length;
 
   const formatDateTime = (iso?: string): string => {
