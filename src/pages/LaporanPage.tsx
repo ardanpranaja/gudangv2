@@ -6,7 +6,7 @@ import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { ItemStock, Transaksi, MasterMember } from '../types';
+import { ItemStock, Transaksi } from '../types';
 import { getAdminConsumableBadge } from '../utils/consumableConfig';
 import {
   FileSpreadsheet,
@@ -24,7 +24,6 @@ export const LaporanPage: React.FC = () => {
 
   const [stocks, setStocks] = useState<ItemStock[]>([]);
   const [transactions, setTransactions] = useState<Transaksi[]>([]);
-  const [members, setMembers] = useState<MasterMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -36,14 +35,12 @@ export const LaporanPage: React.FC = () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const [stockData, txData, memData] = await Promise.all([
+      const [stockData, txData] = await Promise.all([
         api.getStock(),
         api.getTransactions(),
-        api.getMembers(),
       ]);
       setStocks(stockData);
       setTransactions(txData);
-      setMembers(memData);
     } catch (err: any) {
       setIsError(true);
       setErrorMessage(err.message || 'Gagal memuat data laporan dari backend.');
