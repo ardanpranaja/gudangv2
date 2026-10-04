@@ -25,6 +25,9 @@ interface SearchableSelectProps {
   /** Bila true, trigger selalu tampil sebagai placeholder bersih (tanpa ID/nama/badge)
       walau sudah ada opsi terpilih. Untuk form crew yang menampilkan hasil di kartu terpisah. */
   minimalTrigger?: boolean;
+  /** Bila true, badge ID (value) ditampilkan di samping label pada trigger & opsi dropdown.
+      Default false — ID disembunyikan agar tampilan pencarian lebih rapi (hanya nama). */
+  showId?: boolean;
 }
 
 export const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -39,6 +42,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   emptyMessage = 'Tidak ditemukan data yang cocok',
   size = 'md',
   minimalTrigger = false,
+  showId = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -194,9 +198,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         <div className="flex-1 truncate">
           {selectedOption && !minimalTrigger ? (
             <div className="flex items-center gap-2 truncate">
-              <span className="font-mono text-[11px] font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
-                {selectedOption.value}
-              </span>
+              {showId && (
+                <span className="font-mono text-[11px] font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
+                  {selectedOption.value}
+                </span>
+              )}
               <span className="font-medium text-slate-900 truncate">
                 {selectedOption.label}
               </span>
@@ -312,9 +318,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[11px] font-semibold text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 shrink-0">
-                          {opt.value}
-                        </span>
+                        {showId && (
+                          <span className="font-mono text-[11px] font-semibold text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 shrink-0">
+                            {opt.value}
+                          </span>
+                        )}
                         <span className="font-medium text-slate-900 truncate">
                           {opt.label}
                         </span>
