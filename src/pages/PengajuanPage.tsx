@@ -868,8 +868,9 @@ export const PengajuanPage: React.FC = () => {
                         setEligibilityResult(null);
                       }}
                       options={memberOptions}
-                      placeholder="Ketik atau pilih nama Anda..."
+                      placeholder="Cari nama Anda..."
                       searchPlaceholder="Cari nama atau jabatan pemohon..."
+                      minimalTrigger
                       required
                     />
 
@@ -883,9 +884,6 @@ export const PengajuanPage: React.FC = () => {
                           <div className="min-w-0">
                             <div className="font-semibold text-slate-900 flex items-center gap-1.5 truncate">
                               <span className="truncate">{selectedMemberObj.NAMA_MEMBER}</span>
-                              <span className="text-[10px] font-mono text-slate-500 shrink-0 font-normal">
-                                [{selectedMemberObj.ID_MEMBER}]
-                              </span>
                             </div>
                             <div className="text-[11px] text-slate-600 truncate">
                               {selectedMemberObj.JABATAN || 'Personil Lapangan'}
@@ -931,8 +929,9 @@ export const PengajuanPage: React.FC = () => {
                         setEligibilityResult(null);
                       }}
                       options={itemOptions}
-                      placeholder="Ketik atau pilih barang..."
+                      placeholder="Cari barang..."
                       searchPlaceholder="Cari nama barang atau kategori..."
+                      minimalTrigger
                       required
                     />
 
