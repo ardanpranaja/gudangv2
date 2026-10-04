@@ -44,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     {
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'ai-assistant', label: 'AI Assistant', icon: Bot, badge: 'AI' },
+        { id: 'ai-assistant', label: 'Uti AI', icon: Bot, badge: 'AI' },
       ],
     },
     {
@@ -115,7 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <div className="w-6 h-6 bg-white text-slate-900 font-bold text-xs rounded flex items-center justify-center font-mono">
               GP
             </div>
-            <span className="font-semibold text-sm tracking-tight text-white">Gudang Presisi</span>
+            <span className="font-semibold text-sm tracking-tight text-white">Kegudangaja</span>
           </div>
           <button
             onClick={onClose}

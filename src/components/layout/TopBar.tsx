@@ -21,7 +21,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
             <Boxes className="w-4 h-4 text-emerald-400" />
           </div>
           <span className="text-base font-bold tracking-tight text-slate-900">
-            Gudang Presisi
+            Kegudangaja
           </span>
         </div>
 
@@ -59,7 +59,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
           className="text-base font-bold tracking-tight text-slate-900 hover:text-slate-800 flex items-center gap-2"
         >
           <Boxes className="w-5 h-5 text-emerald-600 hidden sm:block" />
-          <span>Gudang Presisi</span>
+          <span>Kegudangaja</span>
         </button>
       </div>
 

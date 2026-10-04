@@ -73,7 +73,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
         {/* Brand Title with subtle shimmer */}
         <div className="space-y-1.5">
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
-            <span>Gudang Presisi</span>
+            <span>Kegudangaja</span>
           </h1>
           <p className="text-xs text-slate-400 font-medium tracking-wide uppercase">
             Sistem Inventaris &amp; Logistik Terintegrasi
