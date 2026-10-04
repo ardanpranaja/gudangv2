@@ -153,8 +153,21 @@ export const AIConfigPanel: React.FC = () => {
 
   // Initial Load & Event Listeners
   useEffect(() => {
-    syncStateFromService();
-    loadModels(false);
+    let isMounted = true;
+
+    const loadCentral = async () => {
+      try {
+        await aiService.loadCentralKeys();
+      } catch (err) {
+        console.warn('Gagal memuat kunci terpusat:', err);
+      }
+      if (isMounted) {
+        syncStateFromService();
+        loadModels(false);
+      }
+    };
+
+    loadCentral();
 
     const handleKeyChanged = () => {
       syncStateFromService();
@@ -170,20 +183,40 @@ export const AIConfigPanel: React.FC = () => {
       }
     };
 
+    const handleFailover = (e: Event) => {
+      const customEvt = e as CustomEvent<{
+        fromLabel: string;
+        toLabel: string;
+        fromKeyId?: string;
+        toKeyId?: string;
+      }>;
+      if (customEvt.detail?.fromLabel && customEvt.detail?.toLabel) {
+        addToast(
+          'warning',
+          'Failover Kunci Otomatis',
+          `Kunci "${customEvt.detail.fromLabel}" kuota habis, beralih ke "${customEvt.detail.toLabel}".`
+        );
+        syncStateFromService();
+      }
+    };
+
     window.addEventListener('gemini-key-changed', handleKeyChanged);
     window.addEventListener('gemini-model-changed', handleModelChanged);
+    window.addEventListener('gemini-key-failover', handleFailover);
     window.addEventListener('storage', syncStateFromService);
     window.addEventListener('focus', syncStateFromService);
 
     return () => {
+      isMounted = false;
       window.removeEventListener('gemini-key-changed', handleKeyChanged);
       window.removeEventListener('gemini-model-changed', handleModelChanged);
+      window.removeEventListener('gemini-key-failover', handleFailover);
       window.removeEventListener('storage', syncStateFromService);
       window.removeEventListener('focus', syncStateFromService);
     };
-  }, [loadModels, syncStateFromService]);
+  }, [addToast, loadModels, syncStateFromService]);
 
-  // Handle switching active API Key
+  // Handle switching active API Key centrally
   const handleKeySelectionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setTestResult(null);
@@ -203,8 +236,8 @@ export const AIConfigPanel: React.FC = () => {
     } else {
       const target = savedKeys.find((k) => k.id === value);
       if (target) {
-        aiService.setApiKey(target.fullKey);
-        addToast('success', 'API Key Diganti', `Kunci aktif: ${target.maskedKey}`);
+        await aiService.setActiveCentralKey(target.id);
+        addToast('success', 'API Key Aktif Diperbarui', `Kunci aktif: ${target.label} (${target.maskedKey})`);
       }
     }
 
@@ -212,7 +245,7 @@ export const AIConfigPanel: React.FC = () => {
     await loadModels(true);
   };
 
-  // Handle Saving New API Key
+  // Handle Saving New API Key Centrally
   const handleSaveNewKey = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanKey = newKeyInput.trim();
@@ -232,17 +265,20 @@ export const AIConfigPanel: React.FC = () => {
         throw new Error('API Key tidak valid. Silakan periksa kembali kunci dari Google AI Studio.');
       }
 
-      // 2. Persist key without duplicates
-      const savedEntry = aiService.saveApiKey(cleanKey, newKeyLabel.trim() || undefined);
-      const updatedKeys = aiService.getSavedApiKeys();
-      setSavedKeys(updatedKeys);
+      // 2. Persist key centrally to backend database
+      const savedEntry = await aiService.saveCentralApiKey(cleanKey, newKeyLabel.trim() || undefined);
+      syncStateFromService();
       setSelectedKeyId(savedEntry.id);
       setIsAddingNewKey(false);
       setNewKeyInput('');
       setNewKeyLabel('');
       setShowNewKey(false);
 
-      addToast('success', 'API Key Berhasil Disimpan', `Kunci aktif: ${savedEntry.maskedKey}`);
+      addToast(
+        'success',
+        'API Key Tersimpan Terpusat',
+        `Kunci "${savedEntry.label}" (${savedEntry.maskedKey}) tersimpan di database dan berlaku untuk semua perangkat.`
+      );
 
       // 3. Refresh models dynamically using new key
       await loadModels(true);
@@ -255,28 +291,26 @@ export const AIConfigPanel: React.FC = () => {
     }
   };
 
-  // Handle Deleting a Saved API Key
-  const handleDeleteKey = (keyIdToDelete: string, e?: React.MouseEvent) => {
+  // Handle Deleting a Saved API Key Centrally
+  const handleDeleteKey = async (keyIdToDelete: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     const target = savedKeys.find((k) => k.id === keyIdToDelete);
     if (!target) return;
 
-    if (window.confirm(`Hapus API Key tersimpan (${target.maskedKey})?`)) {
-      aiService.removeSavedApiKey(keyIdToDelete);
-      const updated = aiService.getSavedApiKeys();
-      setSavedKeys(updated);
-
-      if (selectedKeyId === keyIdToDelete) {
-        if (updated.length > 0) {
-          setSelectedKeyId(updated[0].id);
-          aiService.setApiKey(updated[0].fullKey);
-        } else {
-          setSelectedKeyId('__env__');
-          aiService.setApiKey('');
-        }
+    if (
+      window.confirm(
+        `Hapus API Key "${target.label}" (${target.maskedKey}) dari database pusat? Tindakan ini berlaku untuk semua perangkat.`
+      )
+    ) {
+      try {
+        await aiService.removeCentralApiKey(keyIdToDelete);
+        syncStateFromService();
+        addToast('info', 'Kunci Dihapus', `API Key ${target.maskedKey} telah dihapus dari database.`);
         loadModels(true);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Gagal menghapus kunci dari database.';
+        addToast('error', 'Gagal Hapus Kunci', msg);
       }
-      addToast('info', 'Kunci Dihapus', `API Key ${target.maskedKey} telah dihapus.`);
     }
   };
 
@@ -295,7 +329,7 @@ export const AIConfigPanel: React.FC = () => {
     addToast('success', 'Daftar Model Diperbarui', 'Daftar model Gemini terbaru berhasil dimuat dari API.');
   };
 
-  // Handle Testing Connection
+  // Handle Testing Connection (Tests explicitly selected key in dropdown per Requirement 5)
   const handleTestConnection = async () => {
     aiService.setModel(selectedModel);
 
@@ -304,9 +338,14 @@ export const AIConfigPanel: React.FC = () => {
     setTestResult(null);
 
     try {
-      const res = await aiService.testConnection((_attempt, _max, text) => {
-        setTestingProgressText(text);
-      }, selectedModel);
+      const explicitKeyToTest = activeKeyObj ? activeKeyObj.fullKey : undefined;
+      const res = await aiService.testConnection(
+        (_attempt, _max, text) => {
+          setTestingProgressText(text);
+        },
+        selectedModel,
+        explicitKeyToTest
+      );
       setTestResult(res);
 
       if (res.success) {
@@ -379,10 +418,24 @@ export const AIConfigPanel: React.FC = () => {
         {/* SECTION 1: API KEYS MANAGEMENT */}
         {/* ===================================================================== */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="block font-medium text-slate-700">
-              Pengelolaan API Key Gemini:
-            </label>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <label className="block font-semibold text-slate-800">
+                  Pengelolaan API Key Gemini:
+                </label>
+                {activeKeyObj && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    Aktif: {activeKeyObj.label}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 inline shrink-0" />
+                <span>Tersimpan terpusat di database — berlaku untuk semua perangkat.</span>
+              </p>
+            </div>
             <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
               <Key className="w-3 h-3 text-slate-400" />
               <span>
@@ -404,7 +457,7 @@ export const AIConfigPanel: React.FC = () => {
                   </h4>
                   <p className="text-slate-500 text-[11px] leading-relaxed">
                     Untuk menggunakan AI Assistant GudangV2 secara optimal dengan kuota penuh Anda sendiri,
-                    tambahkan API Key resmi dari Google AI Studio.
+                    tambahkan API Key resmi dari Google AI Studio. Kunci akan tersimpan terpusat di database untuk seluruh perangkat.
                   </p>
                 </div>
               </div>
@@ -430,8 +483,9 @@ export const AIConfigPanel: React.FC = () => {
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <span className="text-[11px] text-slate-400">
-                  *Kunci disimpan lokal di browser dan tidak pernah dibagikan.
+                <span className="text-[11px] text-slate-500 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Tersimpan terpusat di database — berlaku untuk semua perangkat.</span>
                 </span>
                 <button
                   type="button"
@@ -455,11 +509,15 @@ export const AIConfigPanel: React.FC = () => {
                   <option value="__env__">
                     ⚙️ Kunci Server Environment (Default / Otomatis)
                   </option>
-                  {savedKeys.map((k, idx) => (
-                    <option key={k.id} value={k.id}>
-                      🔑 {k.label || `API Key ${idx + 1}`} •••• ({k.maskedKey})
-                    </option>
-                  ))}
+                  {savedKeys.map((k, idx) => {
+                    const inCooldown = aiService.isKeyInCooldown(k.id);
+                    return (
+                      <option key={k.id} value={k.id}>
+                        🔑 {k.label || `API Key ${idx + 1}`} •••• ({k.maskedKey})
+                        {inCooldown ? ' [Cooldown Kuota 10 Mnt]' : ''}
+                      </option>
+                    );
+                  })}
                   <option value="__add_new__" className="font-semibold text-emerald-700">
                     + Masukkan API Key Baru...
                   </option>

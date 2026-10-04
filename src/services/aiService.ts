@@ -9,6 +9,7 @@ import {
   StructuredToolResult,
 } from '../types/ai';
 import { AI_TOOL_DECLARATIONS, executeAITool, extractEntitiesFromToolResult } from './aiTools';
+import { api } from './api';
 
 const STORAGE_KEY_GEMINI_KEY = 'GP_GEMINI_API_KEY';
 const STORAGE_KEY_GEMINI_SAVED_KEYS = 'GP_GEMINI_SAVED_KEYS';
@@ -120,14 +121,25 @@ export function maskApiKey(key: string): string {
   return `••••••••••${last4}`;
 }
 
+export class QuotaExceededError extends Error {
+  constructor(message: string = 'Kuota Gemini API telah terlampaui.') {
+    super(message);
+    this.name = 'QuotaExceededError';
+  }
+}
+
 export class AIService {
   private customApiKey: string = '';
   private savedKeys: SavedApiKey[] = [];
   private selectedModel: string = 'gemini-3.7-flash';
   private availableModels: AIModelInfo[] = [];
+  private quotaCooldown = new Map<string, number>();
 
   constructor() {
     this.loadConfig();
+    if (typeof window !== 'undefined') {
+      void this.loadCentralKeys().catch((e) => console.error('[aiService] loadCentralKeys gagal:', e));
+    }
   }
 
   private loadConfig() {
@@ -144,7 +156,6 @@ export class AIService {
           }
         }
 
-        // If we have an active key but no saved keys array yet, seed it into savedKeys
         if (this.customApiKey && this.savedKeys.length === 0) {
           this.savedKeys.push({
             id: `key-${Date.now()}`,
@@ -182,6 +193,255 @@ export class AIService {
     }
   }
 
+  /**
+   * Loads central Gemini API keys from backend spreadsheet.
+   * - Backend is source of truth.
+   * - LocalStorage acts as offline read cache.
+   * - One-time auto migration if backend is empty but localStorage has saved keys.
+   * - Sets active key to first key if customApiKey is empty or not in list.
+   */
+  public async loadCentralKeys(): Promise<void> {
+    try {
+      const res = await api.getGeminiKeys();
+      const remoteKeys = Array.isArray(res?.keys) ? res.keys : [];
+
+      // Auto one-time migration: if backend has 0 keys but localStorage has keys
+      if (remoteKeys.length === 0 && this.savedKeys.length > 0) {
+        try {
+          await api.saveGeminiKeys(this.savedKeys);
+        } catch (migErr) {
+          console.warn('[aiService] Gagal migrasi keys lokal ke backend:', migErr);
+        }
+        return;
+      }
+
+      if (remoteKeys.length > 0) {
+        this.savedKeys = remoteKeys.map((rk, idx) => {
+          const actualKey = rk.fullKey || (rk as any).key || '';
+          return {
+            id: rk.id || `key-${idx + 1}`,
+            label: rk.label || `API Key ${idx + 1}`,
+            maskedKey: maskApiKey(actualKey),
+            fullKey: actualKey,
+            createdAt: new Date().toISOString(),
+          };
+        });
+
+        this.persistSavedKeys();
+
+        const activeExists = this.savedKeys.some((k) => k.fullKey === this.customApiKey);
+        if (!activeExists && this.savedKeys.length > 0) {
+          this.setApiKey(this.savedKeys[0].fullKey);
+        }
+      } else {
+        this.savedKeys = [];
+        this.persistSavedKeys();
+        if (!this.savedKeys.some((k) => k.fullKey === this.customApiKey)) {
+          this.setApiKey('');
+        }
+      }
+    } catch (err: unknown) {
+      console.warn('[aiService] Gagal memuat keys dari backend, menggunakan cache lokal:', err);
+    }
+  }
+
+  /**
+   * Sets the active key centrally and updates primary key order
+   */
+  public async setActiveCentralKey(keyId: string): Promise<void> {
+    const target = this.savedKeys.find((k) => k.id === keyId);
+    if (!target) return;
+
+    this.setApiKey(target.fullKey);
+
+    // Reorder: place active key at the head so it persists as default
+    const others = this.savedKeys.filter((k) => k.id !== keyId);
+    this.savedKeys = [target, ...others];
+    this.persistSavedKeys();
+
+    try {
+      await api.saveGeminiKeys(this.savedKeys);
+    } catch (err) {
+      console.warn('[aiService] Gagal update urutan key terpusat ke backend:', err);
+    }
+  }
+
+  /**
+   * Saves a new or updated API Key centrally to GAS backend sheet PENGATURAN
+   */
+  public async saveCentralApiKey(rawKey: string, customLabel?: string): Promise<SavedApiKey> {
+    const clean = (rawKey || '').trim();
+    if (!clean) {
+      throw new Error('Kunci API tidak boleh kosong.');
+    }
+
+    const existingIndex = this.savedKeys.findIndex((k) => k.fullKey === clean);
+    let targetEntry: SavedApiKey;
+
+    if (existingIndex >= 0) {
+      targetEntry = this.savedKeys[existingIndex];
+      if (customLabel && customLabel.trim()) {
+        targetEntry.label = customLabel.trim();
+      }
+      this.savedKeys.splice(existingIndex, 1);
+      this.savedKeys.unshift(targetEntry);
+    } else {
+      const keyIndex = this.savedKeys.length + 1;
+      targetEntry = {
+        id: `key-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        maskedKey: maskApiKey(clean),
+        label: customLabel?.trim() || `API Key ${keyIndex} (${maskApiKey(clean)})`,
+        fullKey: clean,
+        createdAt: new Date().toISOString(),
+      };
+      this.savedKeys.unshift(targetEntry);
+    }
+
+    this.persistSavedKeys();
+    this.setApiKey(clean);
+
+    // Persist to backend spreadsheet PENGATURAN
+    await api.saveGeminiKeys(this.savedKeys);
+
+    return targetEntry;
+  }
+
+  /**
+   * Removes an API Key centrally from GAS backend sheet PENGATURAN
+   */
+  public async removeCentralApiKey(id: string): Promise<void> {
+    const target = this.savedKeys.find((k) => k.id === id);
+    this.savedKeys = this.savedKeys.filter((k) => k.id !== id);
+    this.persistSavedKeys();
+
+    if (target && target.fullKey === this.customApiKey) {
+      if (this.savedKeys.length > 0) {
+        this.setApiKey(this.savedKeys[0].fullKey);
+      } else {
+        this.setApiKey('');
+      }
+    }
+
+    // Persist removal to backend spreadsheet PENGATURAN
+    await api.saveGeminiKeys(this.savedKeys);
+  }
+
+  /**
+   * Persists current savedKeys to backend spreadsheet centrally
+   */
+  public async persistCentralKeys(): Promise<void> {
+    await api.saveGeminiKeys(this.savedKeys);
+    this.persistSavedKeys();
+  }
+
+  public isKeyInCooldown(keyId: string): boolean {
+    if (!keyId) return false;
+    const expiry = this.quotaCooldown.get(keyId);
+    if (!expiry) return false;
+    if (Date.now() > expiry) {
+      this.quotaCooldown.delete(keyId);
+      return false;
+    }
+    return true;
+  }
+
+  public markKeyCooldown(keyId: string) {
+    if (!keyId) return;
+    this.quotaCooldown.set(keyId, Date.now() + 10 * 60 * 1000);
+  }
+
+  private notifyFailover(fromKey: SavedApiKey, toKey: SavedApiKey) {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('gemini-key-failover', {
+          detail: {
+            fromLabel: fromKey.label || fromKey.maskedKey,
+            toLabel: toKey.label || toKey.maskedKey,
+            fromKeyId: fromKey.id,
+            toKeyId: toKey.id,
+          },
+        })
+      );
+    }
+  }
+
+  public getCandidateKeys(): SavedApiKey[] {
+    let ordered: SavedApiKey[] = [];
+
+    if (this.savedKeys.length > 0) {
+      const activeEntry = this.savedKeys.find((k) => k.fullKey === this.customApiKey);
+      const others = this.savedKeys.filter((k) => k.fullKey !== this.customApiKey);
+      if (activeEntry) {
+        ordered = [activeEntry, ...others];
+      } else {
+        ordered = [...this.savedKeys];
+      }
+    } else if (this.customApiKey) {
+      ordered = [
+        {
+          id: 'local-active-key',
+          maskedKey: maskApiKey(this.customApiKey),
+          label: `API Key (${maskApiKey(this.customApiKey)})`,
+          fullKey: this.customApiKey,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+    }
+
+    return ordered.filter((k) => !this.isKeyInCooldown(k.id));
+  }
+
+  /**
+   * Failover wrapper: tries active key first, then remaining keys.
+   * Catches QuotaExceededError, sets 10-minute cooldown, switches to next key.
+   * Throws QuotaExceededError if all keys exhausted.
+   */
+  private async withKeyFailover<T>(task: (key: string) => Promise<T>): Promise<T> {
+    const candidateKeys = this.getCandidateKeys();
+
+    if (candidateKeys.length === 0) {
+      if (this.savedKeys.length > 0 && this.savedKeys.every((k) => this.isKeyInCooldown(k.id))) {
+        throw new QuotaExceededError(
+          'Semua kunci API Gemini habis kuotanya (sedang dalam cooldown 10 menit).'
+        );
+      }
+      return await task('');
+    }
+
+    let lastQuotaError: QuotaExceededError | null = null;
+
+    for (let i = 0; i < candidateKeys.length; i++) {
+      const candidate = candidateKeys[i];
+      try {
+        const result = await task(candidate.fullKey);
+        if (candidate.fullKey && candidate.fullKey !== this.customApiKey) {
+          this.setApiKey(candidate.fullKey);
+        }
+        return result;
+      } catch (err: unknown) {
+        if (err instanceof QuotaExceededError) {
+          if (candidate.id) {
+            this.markKeyCooldown(candidate.id);
+          }
+          lastQuotaError = err;
+          const nextCandidate = candidateKeys[i + 1];
+          if (nextCandidate) {
+            this.notifyFailover(candidate, nextCandidate);
+            continue;
+          } else {
+            throw new QuotaExceededError('Semua kunci API Gemini habis kuotanya.');
+          }
+        }
+        throw err;
+      }
+    }
+
+    if (lastQuotaError) {
+      throw lastQuotaError;
+    }
+    throw new Error('Gagal memproses permintaan dengan kunci API yang tersedia.');
+  }
+
   public getSavedApiKeys(): SavedApiKey[] {
     return [...this.savedKeys];
   }
@@ -208,7 +468,6 @@ export class AIService {
     }
 
     if (hasChanged) {
-      // Clear cached models so fresh discovery occurs for new key
       this.availableModels = [];
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
         localStorage.removeItem(STORAGE_KEY_GEMINI_CACHED_MODELS);
@@ -220,16 +479,12 @@ export class AIService {
     }
   }
 
-  /**
-   * Save an API key into persistent storage without duplicates and make it active
-   */
   public saveApiKey(rawKey: string, customLabel?: string): SavedApiKey {
     const clean = (rawKey || '').trim();
     if (!clean) {
       throw new Error('Kunci API tidak boleh kosong.');
     }
 
-    // Check if key already exists
     const existingIndex = this.savedKeys.findIndex((k) => k.fullKey === clean);
     let targetEntry: SavedApiKey;
 
@@ -256,15 +511,11 @@ export class AIService {
     return targetEntry;
   }
 
-  /**
-   * Remove a saved API key by ID
-   */
   public removeSavedApiKey(id: string) {
     const target = this.savedKeys.find((k) => k.id === id);
     this.savedKeys = this.savedKeys.filter((k) => k.id !== id);
     this.persistSavedKeys();
 
-    // If the active key was removed, switch to another saved key or reset
     if (target && target.fullKey === this.customApiKey) {
       if (this.savedKeys.length > 0) {
         this.setApiKey(this.savedKeys[0].fullKey);
@@ -278,10 +529,6 @@ export class AIService {
     return this.selectedModel;
   }
 
-  /**
-   * Returns a friendly display name for a given modelId from available models,
-   * cached models, or a fallback formatted name. Never returns an empty string.
-   */
   public getModelDisplayName(modelId?: string): string {
     const targetId = (modelId || this.selectedModel || '').trim();
     if (!targetId) return 'Gemini Model';
@@ -334,61 +581,6 @@ export class AIService {
     return [...this.availableModels];
   }
 
-  /**
-   * Dynamically fetch all compatible models for the active API key
-   */
-  public async fetchAvailableModels(forceRefresh = false): Promise<AIModelInfo[]> {
-    if (!forceRefresh && this.availableModels.length > 0) {
-      return this.availableModels;
-    }
-
-    try {
-      const res = await fetch(this.getApiUrl('/api/ai/models'), {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok && data.success && Array.isArray(data.models)) {
-        this.availableModels = data.models;
-
-        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-          try {
-            localStorage.setItem(
-              STORAGE_KEY_GEMINI_CACHED_MODELS,
-              JSON.stringify(this.availableModels)
-            );
-          } catch {
-            // Safe storage quota fallback
-          }
-        }
-
-        // Check if selected model is present in discovered models
-        const modelExists = this.availableModels.some((m) => m.id === this.selectedModel);
-        if (!modelExists && this.availableModels.length > 0) {
-          // If current model is not present, pick gemini-3.7-flash or the first valid model
-          const preferred = this.availableModels.find((m) => m.id === 'gemini-3.7-flash') || this.availableModels[0];
-          this.setModel(preferred.id);
-        }
-
-        return this.availableModels;
-      }
-
-      if (!res.ok) {
-        const errorMsg = data.error || 'Gagal mengambil daftar model dari Gemini API.';
-        throw new Error(errorMsg);
-      }
-    } catch (err: unknown) {
-      if (this.availableModels.length > 0) {
-        return this.availableModels;
-      }
-      throw err;
-    }
-
-    return this.availableModels;
-  }
-
   private getHeaders(explicitApiKey?: string): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -408,11 +600,70 @@ export class AIService {
   }
 
   /**
-   * Safe chat caller with exponential backoff & jitter for transient errors (503, 429, etc.)
+   * Fetch available models with key failover (on 429/QUOTA)
    */
-  private async callChatWithRetry(
+  public async fetchAvailableModels(forceRefresh = false, explicitApiKey?: string): Promise<AIModelInfo[]> {
+    if (!forceRefresh && this.availableModels.length > 0 && !explicitApiKey) {
+      return this.availableModels;
+    }
+
+    if (explicitApiKey !== undefined) {
+      return this.executeFetchAvailableModels(explicitApiKey);
+    }
+
+    return this.withKeyFailover((key) => this.executeFetchAvailableModels(key));
+  }
+
+  private async executeFetchAvailableModels(key: string): Promise<AIModelInfo[]> {
+    const res = await fetch(this.getApiUrl('/api/ai/models'), {
+      method: 'GET',
+      headers: this.getHeaders(key || undefined),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (data.category === 'QUOTA' || res.status === 429) {
+      throw new QuotaExceededError('Kuota Gemini API telah terlampaui.');
+    }
+
+    if (res.ok && data.success && Array.isArray(data.models)) {
+      this.availableModels = data.models;
+
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        try {
+          localStorage.setItem(
+            STORAGE_KEY_GEMINI_CACHED_MODELS,
+            JSON.stringify(this.availableModels)
+          );
+        } catch {
+          // safe storage fallback
+        }
+      }
+
+      const modelExists = this.availableModels.some((m) => m.id === this.selectedModel);
+      if (!modelExists && this.availableModels.length > 0) {
+        const preferred =
+          this.availableModels.find((m) => m.id === 'gemini-3.7-flash') ||
+          this.availableModels[0];
+        this.setModel(preferred.id);
+      }
+
+      return this.availableModels;
+    }
+
+    const errorMsg = data.error || 'Gagal mengambil daftar model dari Gemini API.';
+    throw new Error(errorMsg);
+  }
+
+  /**
+   * Single model call with retry for transient errors (503/504/500).
+   * Short-circuits 429/QUOTA directly into QuotaExceededError without retry on the same key.
+   */
+  private async callChatSingleModel(
     body: Record<string, unknown>,
-    onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void
+    model: string,
+    onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void,
+    explicitApiKey?: string
   ): Promise<any> {
     const maxClientRetries = 3;
     let attempt = 0;
@@ -423,9 +674,9 @@ export class AIService {
       try {
         res = await fetch(this.getApiUrl('/api/ai/chat'), {
           method: 'POST',
-          headers: this.getHeaders(),
+          headers: this.getHeaders(explicitApiKey || undefined),
           body: JSON.stringify({
-            model: this.selectedModel,
+            model,
             ...body,
           }),
         });
@@ -451,16 +702,37 @@ export class AIService {
         return data;
       }
 
-      // Check if transient error (503, 429, 504, 500)
+      const isQuota = data.category === 'QUOTA' || res.status === 429;
+      if (isQuota) {
+        // C.1 QUOTA short-circuit: lempar QuotaExceededError langsung tanpa retry di key yang sama
+        throw new QuotaExceededError(
+          'Kuota Gemini API telah terlampaui. Silakan periksa batas penggunaan API Anda.'
+        );
+      }
+
+      // Check for 404 (Model not found)
+      const is404 =
+        res.status === 404 ||
+        data.statusCode === 404 ||
+        data.category === 'NOT_FOUND' ||
+        (typeof data.error === 'string' && data.error.toLowerCase().includes('not found'));
+      if (is404) {
+        const err: any = new Error(data.error || `Model ${model} tidak ditemukan (404).`);
+        err.status = 404;
+        err.statusCode = 404;
+        err.is404 = true;
+        throw err;
+      }
+
+      // Transient non-quota error (503, 504, 500)
       const isTransient =
         data.isTransient ||
         res.status === 503 ||
-        res.status === 429 ||
         res.status === 504 ||
         res.status === 500;
       const isUnavailable = data.category === 'UNAVAILABLE' || res.status === 503;
 
-      if (isTransient && attempt <= maxClientRetries) {
+      if (isTransient && !isQuota && attempt <= maxClientRetries) {
         const delay = calculateBackoffDelay(attempt);
         const retryMsg = isUnavailable
           ? `Gemini sedang sibuk. Mencoba kembali (${attempt}/${maxClientRetries})...`
@@ -473,15 +745,9 @@ export class AIService {
         continue;
       }
 
-      // Exhausted retries or non-transient error
       if (isUnavailable) {
         throw new Error(
           'Gemini sedang tidak tersedia sementara. Silakan coba kembali beberapa saat lagi.'
-        );
-      }
-      if (data.category === 'QUOTA' || res.status === 429) {
-        throw new Error(
-          'Kuota Gemini API telah terlampaui. Silakan periksa batas penggunaan API Anda.'
         );
       }
       if (data.category === 'INVALID_API_KEY' || res.status === 401) {
@@ -495,16 +761,87 @@ export class AIService {
   }
 
   /**
-   * Test connection to Gemini API with retry and specific status classification
+   * Single key chat with model fallback on 404 (up to 3 candidate models).
    */
-  public async testConnection(
+  private async callChatSingleKeyWithModelFallback(
+    body: Record<string, unknown>,
     onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void,
-    modelToTest?: string,
-    explicitKey?: string
+    explicitApiKey?: string
+  ): Promise<any> {
+    const modelsToTry: string[] = [this.selectedModel];
+    const fallbackCandidates = this.availableModels
+      .filter((m) => m.id !== this.selectedModel)
+      .slice(0, 3)
+      .map((m) => m.id);
+
+    if (fallbackCandidates.length === 0) {
+      ['gemini-3.7-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'].forEach((id) => {
+        if (id !== this.selectedModel && modelsToTry.length < 4) {
+          modelsToTry.push(id);
+        }
+      });
+    } else {
+      modelsToTry.push(...fallbackCandidates);
+    }
+
+    let lastError: unknown = null;
+
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const model = modelsToTry[i];
+      try {
+        const data = await this.callChatSingleModel(body, model, onRetryProgress, explicitApiKey);
+        if (i > 0) {
+          this.setModel(model);
+        }
+        return {
+          ...data,
+          usedModel: model,
+          fallbackModelUsed: i > 0 ? model : undefined,
+        };
+      } catch (err: any) {
+        lastError = err;
+        if (err instanceof QuotaExceededError) {
+          throw err;
+        }
+        if (err?.is404 || err?.status === 404 || err?.statusCode === 404) {
+          if (i < modelsToTry.length - 1) {
+            console.warn(`[aiService] Model ${model} 404, mencoba model berikutnya: ${modelsToTry[i + 1]}`);
+            continue;
+          }
+        }
+        throw err;
+      }
+    }
+
+    throw lastError || new Error('Gagal memproses chat.');
+  }
+
+  /**
+   * Safe chat caller wrapped with failover across candidate keys and model fallback on 404
+   */
+  private async callChatWithRetry(
+    body: Record<string, unknown>,
+    onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void,
+    explicitApiKey?: string
+  ): Promise<any> {
+    if (explicitApiKey !== undefined) {
+      return this.callChatSingleKeyWithModelFallback(body, onRetryProgress, explicitApiKey);
+    }
+    return this.withKeyFailover((key) =>
+      this.callChatSingleKeyWithModelFallback(body, onRetryProgress, key)
+    );
+  }
+
+  /**
+   * Executes test connection for a single key. Short-circuits on QUOTA/429.
+   */
+  private async executeTestConnectionSingleKey(
+    keyToTest: string | undefined,
+    testModel: string,
+    onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void
   ): Promise<{ success: boolean; category: GeminiErrorCategory; message: string; statusCode?: number }> {
     const maxRetries = 2;
     let attempt = 0;
-    const testModel = modelToTest || this.selectedModel || 'gemini-3.7-flash';
 
     while (true) {
       attempt++;
@@ -512,7 +849,7 @@ export class AIService {
       try {
         res = await fetch(this.getApiUrl('/api/ai/test'), {
           method: 'POST',
-          headers: this.getHeaders(explicitKey),
+          headers: this.getHeaders(keyToTest || undefined),
           body: JSON.stringify({ model: testModel }),
         });
       } catch {
@@ -534,10 +871,17 @@ export class AIService {
       }
 
       const category = (data.category as GeminiErrorCategory) || 'UNKNOWN';
-      const isTransient =
-        data.isTransient || res.status === 503 || res.status === 429 || res.status === 504;
+      const isQuota = category === 'QUOTA' || res.status === 429;
 
-      if (isTransient && attempt <= maxRetries) {
+      if (isQuota) {
+        // C.1 QUOTA short-circuit: lewati retry untuk quota, lempar QuotaExceededError
+        throw new QuotaExceededError('Kuota Gemini API telah terlampaui (429).');
+      }
+
+      const isTransient =
+        data.isTransient || res.status === 503 || res.status === 504 || res.status === 500;
+
+      if (isTransient && !isQuota && attempt <= maxRetries) {
         const delay = calculateBackoffDelay(attempt);
         if (onRetryProgress) {
           onRetryProgress(
@@ -560,16 +904,6 @@ export class AIService {
         };
       }
 
-      if (category === 'QUOTA' || res.status === 429) {
-        return {
-          success: false,
-          category: 'QUOTA',
-          statusCode: 429,
-          message:
-            'Kuota Gemini API telah terlampaui (429). Silakan periksa limit kuota akun Anda.',
-        };
-      }
-
       if (category === 'INVALID_API_KEY' || res.status === 401) {
         return {
           success: false,
@@ -585,6 +919,59 @@ export class AIService {
         category,
         statusCode: res.status,
         message: data.error || 'Uji koneksi gagal diproses oleh server.',
+      };
+    }
+  }
+
+  /**
+   * Test connection with key failover on 429/QUOTA
+   */
+  public async testConnection(
+    onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void,
+    modelToTest?: string,
+    explicitKey?: string
+  ): Promise<{ success: boolean; category: GeminiErrorCategory; message: string; statusCode?: number }> {
+    const testModel = modelToTest || this.selectedModel || 'gemini-3.7-flash';
+
+    if (explicitKey !== undefined) {
+      try {
+        return await this.executeTestConnectionSingleKey(explicitKey, testModel, onRetryProgress);
+      } catch (err: unknown) {
+        if (err instanceof QuotaExceededError) {
+          return {
+            success: false,
+            category: 'QUOTA',
+            statusCode: 429,
+            message: err.message,
+          };
+        }
+        return {
+          success: false,
+          category: 'UNKNOWN',
+          statusCode: 500,
+          message: err instanceof Error ? err.message : 'Uji koneksi gagal.',
+        };
+      }
+    }
+
+    try {
+      return await this.withKeyFailover(async (key) => {
+        return await this.executeTestConnectionSingleKey(key, testModel, onRetryProgress);
+      });
+    } catch (err: unknown) {
+      if (err instanceof QuotaExceededError) {
+        return {
+          success: false,
+          category: 'QUOTA',
+          statusCode: 429,
+          message: err.message,
+        };
+      }
+      return {
+        success: false,
+        category: 'UNKNOWN',
+        statusCode: 500,
+        message: err instanceof Error ? err.message : 'Uji koneksi gagal.',
       };
     }
   }
