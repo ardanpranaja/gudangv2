@@ -257,8 +257,8 @@ export const PengajuanPage: React.FC = () => {
       return;
     }
 
-    if (!formAlasan.trim() || formAlasan.trim().length < 10) {
-      addToast('error', 'Alasan Terlalu Singkat', 'Alasan permohonan wajib diisi minimal 10 karakter.');
+    if (!formAlasan.trim()) {
+      addToast('error', 'Validasi Gagal', 'Alasan permohonan wajib diisi.');
       return;
     }
 
@@ -1198,30 +1198,23 @@ export const PengajuanPage: React.FC = () => {
                       <div className="flex items-center gap-2.5">
                         <div
                           className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
-                            formAlasan.trim().length >= 10
+                            formAlasan.trim().length > 0
                               ? 'bg-emerald-600 text-white shadow-2xs'
                               : 'bg-slate-200 text-slate-700'
                           }`}
                         >
-                          {formAlasan.trim().length >= 10 ? <Check className="w-4 h-4 text-white" /> : '4'}
+                          {formAlasan.trim().length > 0 ? <Check className="w-4 h-4 text-white" /> : '4'}
                         </div>
                         <div>
                           <h4 className="font-semibold text-slate-900">
                             Alasan Permintaan <span className="text-rose-500">*</span>
                           </h4>
                           <p className="text-[11px] text-slate-500">
-                            Wajib diisi minimal 10 karakter untuk pertimbangan admin
+                            Wajib diisi untuk pertimbangan admin
                           </p>
                         </div>
                       </div>
 
-                      <span
-                        className={`text-[11px] font-mono shrink-0 ${
-                          formAlasan.trim().length >= 10 ? 'text-emerald-700 font-semibold' : 'text-slate-400'
-                        }`}
-                      >
-                        {formAlasan.trim().length} / 10 karakter
-                      </span>
                     </div>
 
                     <textarea
@@ -1334,7 +1327,7 @@ export const PengajuanPage: React.FC = () => {
                 <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1">
                   <div className="font-semibold text-slate-800">Tips Pengisian:</div>
                   <p className="leading-relaxed">
-                    Pastikan nama pemohon sesuai dengan lantai tugas Anda. Alasan minimal 10 karakter membantu admin memverifikasi urgensi pengambilan.
+                    Pastikan nama pemohon sesuai dengan lantai tugas Anda. Alasan yang jelas membantu admin memverifikasi urgensi pengambilan.
                   </p>
                 </div>
               </div>
