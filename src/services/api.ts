@@ -297,6 +297,19 @@ class ApiService {
   }
 
   /**
+   * Mesin: GET action=items lalu filter hanya KATEGORI='MESIN'.
+   * Disiapkan untuk fitur Pemakaian Mesin di masa datang.
+   * (getItems() mengecualikan MESIN dari list barang umum.)
+   */
+  public async getMesinItems(): Promise<MasterItem[]> {
+    const data = await this.get<GasItemsResponse>('items');
+    if (!data || !Array.isArray(data.items)) {
+      throw new GasApiError('Format response items dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+    }
+    return data.items.filter((it: any) => String(it.KATEGORI || '').toUpperCase() === 'MESIN');
+  }
+
+  /**
    * Members: GET action=members -> normalized data.members
    */
   public async getMembers(): Promise<MasterMember[]> {
