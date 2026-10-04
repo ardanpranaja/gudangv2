@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Package,
   Users,
-  Sliders,
   ArrowDownLeft,
   ArrowUpRight,
   RotateCcw,
@@ -53,7 +52,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       items: [
         { id: 'items', label: 'Barang', icon: Package },
         { id: 'members', label: 'Member', icon: Users },
-        { id: 'limits', label: 'Limit Member', icon: Sliders },
+        // Disembunyikan sementara: backend member limit nonaktif (v13) sampai ada keputusan workaround.
+        // { id: 'limits', label: 'Limit Member', icon: Sliders },
       ],
     },
     {
