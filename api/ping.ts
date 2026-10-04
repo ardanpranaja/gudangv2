@@ -1,13 +1,6 @@
-/* Diagnostik: uji rantai import mandiri di dalam api/ (_lib/gemini -> _lib/errorClassifier + @google/genai) */
-import { getGeminiClient, classifyError } from './_lib/gemini';
+/* Diagnostik: hanya package import @google/genai, tanpa relative import */
+import { GoogleGenAI } from '@google/genai';
 
-export default async function handler(req: any, res: any): Promise<void> {
-  void getGeminiClient;
-  const c = classifyError(new Error('tes diagnostik'));
-  res.status(200).json({
-    ok: true,
-    category: c.category,
-    hasKeyHeader: !!(req.headers && req.headers['x-gemini-api-key']),
-    nodeVersion: process.version,
-  });
+export default async function handler(_req: any, res: any): Promise<void> {
+  res.status(200).json({ ok: true, sdkLoaded: typeof GoogleGenAI === 'function' });
 }
