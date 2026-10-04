@@ -167,13 +167,13 @@ export const BarangKeluarPage: React.FC = () => {
           'warning',
           'Memerlukan Pengajuan Approval',
           eligibility.reason ||
-            'Pengambilan sebelum masa pakai selesai atau melebihi limit harus melalui Pengajuan Pengambilan.'
+            'Pengambilan sebelum masa pakai selesai harus melalui Pengajuan Pengambilan.'
         );
       } else {
         addToast(
           'error',
           'Pengambilan Tidak Diizinkan',
-          `Pengambilan tidak dapat dilakukan. Alasan: ${eligibility.reason || 'Jumlah melebihi batas maksimum member.'}`
+          `Pengambilan tidak dapat dilakukan. Alasan: ${eligibility.reason || 'Tidak memenuhi syarat pengambilan.'}`
         );
       }
       return;
@@ -247,7 +247,7 @@ export const BarangKeluarPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl">
       <PageHeader
         title="Pengeluaran Barang Keluar"
-        description="Owner page transaksi BARANG_KELUAR untuk distribusi item kepada Member. Memeriksa kelayakan batas kuota dan masa pakai via API GAS."
+        description="Owner page transaksi BARANG_KELUAR untuk distribusi item kepada Member. Memeriksa kelayakan masa pakai via API GAS."
       />
 
       {lastSubmittedTx && (
@@ -396,7 +396,7 @@ export const BarangKeluarPage: React.FC = () => {
                         Hasil Evaluasi Backend: Memerlukan Pengajuan Approval
                       </div>
                       <div className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
-                        {eligibility.reason || 'Pengambilan di luar batas kuota / masa pakai belum selesai.'}
+                        {eligibility.reason || 'Pengambilan di luar ketentuan masa pakai.'}
                       </div>
                       {eligibility.dueDate && (
                         <div className="text-[11px] font-mono text-amber-900 mt-1">
@@ -435,7 +435,7 @@ export const BarangKeluarPage: React.FC = () => {
                         Pengambilan Tidak Dapat Dilakukan
                       </div>
                       <div className="text-[11px] text-rose-800 mt-0.5 leading-relaxed">
-                        Alasan: {eligibility.reason || 'Jumlah melebihi batas maksimum member.'}
+                        Alasan: {eligibility.reason || 'Tidak memenuhi syarat pengambilan.'}
                       </div>
                     </div>
                   </div>
@@ -445,7 +445,7 @@ export const BarangKeluarPage: React.FC = () => {
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-emerald-900 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span className="text-[11px]">
-                  Member memenuhi syarat pengambilan dari backend GAS. Kuota dan masa pakai valid.
+                  Member memenuhi syarat pengambilan dari backend GAS. Masa pakai valid.
                 </span>
               </div>
             ) : null}
