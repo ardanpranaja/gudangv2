@@ -7,6 +7,7 @@ import { ErrorState } from '../components/common/ErrorState';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { ItemStock, Transaksi, MasterMember } from '../types';
+import { getAdminConsumableBadge } from '../utils/consumableConfig';
 import {
   FileSpreadsheet,
   Printer,
@@ -228,7 +229,12 @@ export const LaporanPage: React.FC = () => {
                       </td>
                       <td className="py-2 px-3 text-slate-600">{t.NAMA_MEMBER || '-'}</td>
                       <td className="py-2 px-3 font-mono font-bold text-slate-900 text-right tabular-nums">
-                        {t.JUMLAH}
+                        <div>{t.JUMLAH}</div>
+                        {getAdminConsumableBadge(t.ID_ITEM, Number(t.JUMLAH || 0)) && (
+                          <div className="text-[10px] font-sans font-medium text-teal-700">
+                            {getAdminConsumableBadge(t.ID_ITEM, Number(t.JUMLAH || 0))}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}

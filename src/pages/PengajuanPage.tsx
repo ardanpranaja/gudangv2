@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
 import { DataTable, Column } from '../components/common/DataTable';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { SearchableSelect, SearchableSelectOption } from '../components/common/SearchableSelect';
 import { AIAssistantBubble } from '../components/ai/AIAssistantBubble';
+import { ConsumableForm } from './ConsumablePage';
+import { getAdminConsumableBadge } from '../utils/consumableConfig';
 import { useApp } from '../context/AppContext';
 import { api, normalizeGasErrorMessage } from '../services/api';
 import {
@@ -33,6 +35,7 @@ import {
   Send,
   Layers,
   HelpCircle,
+  ShoppingCart,
 } from 'lucide-react';
 
 export const PengajuanPage: React.FC = () => {
@@ -57,6 +60,16 @@ export const PengajuanPage: React.FC = () => {
   // ---------------------------------------------------------------------------
   // CREW FORM STATE
   // ---------------------------------------------------------------------------
+  // Tab switcher in Crew View: 'general' (Barang Standar) vs 'consumable' (Tisu & Plastik)
+  const [crewFormType, setCrewFormType] = useState<'general' | 'consumable'>('general');
+  const [lastConsumableItem, setLastConsumableItem] = useState<MasterItem | null>(null);
+  const [lastConsumableReady, setLastConsumableReady] = useState<boolean | null>(null);
+
+  const handleConsumableLastItemChange = useCallback((itm: MasterItem | null, ready: boolean) => {
+    setLastConsumableItem(itm);
+    setLastConsumableReady(ready);
+  }, []);
+
   const [selectedMemberId, setSelectedMemberId] = useState(pageParams.memberId || '');
   const [selectedItemId, setSelectedItemId] = useState(pageParams.itemId || '');
   const [formJumlah, setFormJumlah] = useState<number>(pageParams.jumlah || 1);
@@ -98,6 +111,12 @@ export const PengajuanPage: React.FC = () => {
     items.forEach((i) => map.set(i.ID_ITEM, i));
     return map;
   }, [items]);
+
+  const stockMap = useMemo(() => {
+    const map = new Map<string, ItemStock>();
+    stocks.forEach((s) => map.set(s.idItem, s));
+    return map;
+  }, [stocks]);
 
   // Searchable select options for members (Name, Jabatan, Lantai badge)
   const memberOptions: SearchableSelectOption[] = useMemo(() => {
@@ -469,9 +488,17 @@ export const PengajuanPage: React.FC = () => {
       align: 'right',
       render: (r) => {
         const item = itemMap.get(r.ID_ITEM);
+        const badge = getAdminConsumableBadge(r.ID_ITEM, Number(r.JUMLAH || 0));
         return (
-          <div className="font-bold text-slate-900 tabular-nums">
-            {r.JUMLAH} <span className="text-[11px] font-normal text-slate-500">{item?.SATUAN || 'UNIT'}</span>
+          <div className="text-right">
+            <div className="font-bold text-slate-900 tabular-nums">
+              {r.JUMLAH} <span className="text-[11px] font-normal text-slate-500">{item?.SATUAN || 'UNIT'}</span>
+            </div>
+            {badge && (
+              <div className="text-[10px] text-teal-700 font-medium">
+                {badge}
+              </div>
+            )}
           </div>
         );
       },
@@ -527,11 +554,17 @@ export const PengajuanPage: React.FC = () => {
       sortable: true,
       render: (r) => {
         const itm = itemMap.get(r.ID_ITEM);
+        const badge = getAdminConsumableBadge(r.ID_ITEM, Number(r.JUMLAH || 0));
         return (
           <div>
             <div className="font-semibold text-slate-900">{itm?.NAMA_ITEM || r.ID_ITEM}</div>
-            <div className="text-xs font-bold text-emerald-700 mt-0.5">
-              Siapkan: {r.JUMLAH} {itm?.SATUAN || 'UNIT'}
+            <div className="text-xs font-bold text-emerald-700 mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <span>Siapkan: {r.JUMLAH} {itm?.SATUAN || 'UNIT'}</span>
+              {badge && (
+                <span className="text-[11px] font-normal text-teal-800 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
+                  {badge}
+                </span>
+              )}
             </div>
           </div>
         );
@@ -656,11 +689,17 @@ export const PengajuanPage: React.FC = () => {
       sortable: true,
       render: (r) => {
         const itm = itemMap.get(r.ID_ITEM);
+        const badge = getAdminConsumableBadge(r.ID_ITEM, Number(r.JUMLAH || 0));
         return (
           <div>
             <div className="font-medium text-slate-900">{itm?.NAMA_ITEM || r.ID_ITEM}</div>
-            <div className="text-[11px] text-slate-600 font-mono font-semibold">
-              {r.JUMLAH} {itm?.SATUAN || 'UNIT'}
+            <div className="text-[11px] text-slate-600 font-mono font-semibold flex items-center gap-1.5 flex-wrap">
+              <span>{r.JUMLAH} {itm?.SATUAN || 'UNIT'}</span>
+              {badge && (
+                <span className="text-[10px] font-sans text-teal-700 font-medium bg-teal-50 px-1 py-0.2 rounded border border-teal-200">
+                  {badge}
+                </span>
+              )}
             </div>
           </div>
         );
@@ -787,8 +826,54 @@ export const PengajuanPage: React.FC = () => {
       {/* ===================================================================== */}
       {activeTab === 'crew' && (
         <div className="space-y-6">
-          {/* Form Permintaan & Panduan Singkat Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* Sub-tab Switcher: Permintaan Barang vs Tisu & Plastik */}
+          <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+            <button
+              type="button"
+              onClick={() => setCrewFormType('general')}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+                crewFormType === 'general'
+                  ? 'bg-slate-900 text-white shadow-xs'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <Package className="w-3.5 h-3.5" />
+              <span>Permintaan Barang</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCrewFormType('consumable')}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+                crewFormType === 'consumable'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              <span>Tisu &amp; Plastik (Consumable)</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-200 text-[10px] font-bold">
+                Multi-Item
+              </span>
+            </button>
+          </div>
+
+          {crewFormType === 'consumable' ? (
+            <ConsumableForm
+              members={members}
+              items={items}
+              stocks={stocks}
+              memberMap={memberMap}
+              itemMap={itemMap}
+              stockMap={stockMap}
+              selectedMemberId={selectedMemberId}
+              setSelectedMemberId={setSelectedMemberId}
+              onSuccess={loadRequests}
+              onLastItemChange={handleConsumableLastItemChange}
+            />
+          ) : (
+            /* Form Permintaan & Panduan Singkat Grid */
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             {/* LEFT / MAIN COLUMN: FORM CARD */}
             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
               {/* Header Gradient */}
@@ -1196,6 +1281,7 @@ export const PengajuanPage: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
 
           {/* Riwayat Permintaan Saya (Crew History) */}
           <div className="space-y-3">
@@ -1474,8 +1560,8 @@ export const PengajuanPage: React.FC = () => {
       {(role === 'MEMBER' || activeTab === 'crew') && (
         <AIAssistantBubble
           selectedMember={selectedMemberObj}
-          selectedItem={selectedItemObj}
-          isItemReady={isSelectedItemReady}
+          selectedItem={crewFormType === 'consumable' ? (lastConsumableItem || selectedItemObj) : selectedItemObj}
+          isItemReady={crewFormType === 'consumable' ? (lastConsumableReady ?? isSelectedItemReady) : isSelectedItemReady}
         />
       )}
     </div>
