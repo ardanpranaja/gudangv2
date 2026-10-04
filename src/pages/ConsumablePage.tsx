@@ -265,8 +265,8 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
       addToast('warning', 'Keranjang Kosong', 'Tambahkan minimal satu item consumable ke keranjang.');
       return;
     }
-    if (formAlasan.trim().length < 10) {
-      addToast('warning', 'Alasan Kurang Panjang', 'Alasan permohonan wajib diisi minimal 10 karakter.');
+    if (!formAlasan.trim()) {
+      addToast('warning', 'Alasan Kosong', 'Alasan permohonan wajib diisi.');
       return;
     }
 
@@ -721,18 +721,10 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                         Alasan Permintaan Consumable <span className="text-rose-500">*</span>
                       </h4>
                       <p className="text-[11px] text-slate-500">
-                        Satu alasan berlaku untuk seluruh item di dalam keranjang (min. 10 karakter)
+                        Satu alasan berlaku untuk seluruh item di dalam keranjang
                       </p>
                     </div>
                   </div>
-
-                  <span
-                    className={`text-[11px] font-mono shrink-0 ${
-                      formAlasan.trim().length >= 10 ? 'text-emerald-700 font-semibold' : 'text-slate-400'
-                    }`}
-                  >
-                    {formAlasan.trim().length} / 10 karakter
-                  </span>
                 </div>
 
                 <textarea
@@ -759,7 +751,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
                 <button
                   type="submit"
-                  disabled={isSubmitting || cart.length === 0 || !selectedMemberId || formAlasan.trim().length < 10}
+                  disabled={isSubmitting || cart.length === 0 || !selectedMemberId || !formAlasan.trim()}
                   className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs hover:shadow"
                 >
                   {isSubmitting ? (
