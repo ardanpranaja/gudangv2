@@ -10,7 +10,7 @@ export const AIAssistantPage: React.FC = () => {
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
       <PageHeader
-        title="AI Assistant GudangV2"
+        title="Uti AI"
         description="Asisten operasional gudang berbasis Gemini dengan dukungan Voice & Chat, rekam riwayat percakapan persisten, dan resolusi entitas kontekstual."
         actions={
           <button

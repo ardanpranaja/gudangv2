@@ -405,7 +405,7 @@ export const AIConfigPanel: React.FC = () => {
       <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
         <div className="flex items-center gap-2 text-slate-900">
           <Bot className="w-4 h-4 text-emerald-600" />
-          <h3 className="text-sm font-semibold">Konfigurasi AI Assistant (Gemini API)</h3>
+          <h3 className="text-sm font-semibold">Konfigurasi Uti AI (Gemini API)</h3>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
@@ -456,7 +456,7 @@ export const AIConfigPanel: React.FC = () => {
                     Belum Ada API Key Gemini Tersimpan
                   </h4>
                   <p className="text-slate-500 text-[11px] leading-relaxed">
-                    Untuk menggunakan AI Assistant GudangV2 secara optimal dengan kuota penuh Anda sendiri,
+                    Untuk menggunakan Uti AI secara optimal dengan kuota penuh Anda sendiri,
                     tambahkan API Key resmi dari Google AI Studio. Kunci akan tersimpan terpusat di database untuk seluruh perangkat.
                   </p>
                 </div>
