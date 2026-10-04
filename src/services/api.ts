@@ -722,22 +722,21 @@ class ApiService {
    * Get Central Gemini API Keys from backend spreadsheet (sheet PENGATURAN)
    * GET ?action=get_gemini_keys
    */
-  public async getGeminiKeys(): Promise<{ keys: Array<{ id: string; label: string; fullKey: string; key?: string }> }> {
-    const data = await this.get<{ keys?: Array<{ id?: string; label?: string; fullKey?: string; key?: string }> }>('get_gemini_keys');
+  public async getGeminiKeys(): Promise<{ keys: Array<{ id: string; label: string; fullKey: string }> }> {
+    const data = await this.get<{ keys?: Array<{ id?: string; label?: string; fullKey?: string }> }>('get_gemini_keys');
     const rawKeys = Array.isArray(data?.keys) ? data.keys : Array.isArray(data) ? data : [];
     return {
       keys: rawKeys.map((k, idx) => ({
         id: k.id || `key-${idx + 1}`,
         label: k.label || `API Key ${idx + 1}`,
-        fullKey: k.fullKey || k.key || '',
-        key: k.key || k.fullKey || '',
+        fullKey: k.fullKey || '',
       })),
     };
   }
 
   /**
    * Save Central Gemini API Keys to backend spreadsheet (sheet PENGATURAN)
-   * POST { action: 'save_gemini_keys', keys: [{ id, label, key, fullKey }] }
+   * POST { action: 'save_gemini_keys', keys: [{ id, label, fullKey }] }
    */
   public async saveGeminiKeys(keys: SavedApiKey[]): Promise<{ count: number }> {
     return this.post<{ count: number }>({
@@ -745,7 +744,6 @@ class ApiService {
       keys: keys.map((k) => ({
         id: k.id,
         label: k.label,
-        key: k.fullKey,
         fullKey: k.fullKey,
       })),
     });

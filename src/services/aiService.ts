@@ -217,7 +217,7 @@ export class AIService {
 
       if (remoteKeys.length > 0) {
         this.savedKeys = remoteKeys.map((rk, idx) => {
-          const actualKey = rk.fullKey || (rk as any).key || '';
+          const actualKey = rk.fullKey || '';
           return {
             id: rk.id || `key-${idx + 1}`,
             label: rk.label || `API Key ${idx + 1}`,
