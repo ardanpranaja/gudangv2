@@ -34,6 +34,8 @@ import {
   GasRequestsResponse,
   CreateMemberLimitInput,
   UpdateMemberLimitInput,
+  UpdateMemberInput,
+  UpdateItemInput,
   MemberLimitResult,
   GasLimitPayload,
 } from '../types';
@@ -542,6 +544,8 @@ class ApiService {
       TANGGAL: String(r.TANGGAL || '').trim(),
       ID_MEMBER: String(r.ID_MEMBER || '').trim(),
       ID_ITEM: String(r.ID_ITEM || '').trim(),
+      NAMA_MEMBER: r.NAMA_MEMBER ? String(r.NAMA_MEMBER).trim() : undefined,
+      NAMA_ITEM: r.NAMA_ITEM ? String(r.NAMA_ITEM).trim() : undefined,
       JUMLAH: Number(r.JUMLAH || 0),
       TANGGAL_TERAKHIR_AMBIL: r.TANGGAL_TERAKHIR_AMBIL ? String(r.TANGGAL_TERAKHIR_AMBIL).trim() : '',
       TANGGAL_SEHARUSNYA: r.TANGGAL_SEHARUSNYA ? String(r.TANGGAL_SEHARUSNYA).trim() : '',
@@ -652,6 +656,44 @@ class ApiService {
     };
 
     return this.post<ActionResult>(payload);
+  }
+
+  /**
+   * Update Member: POST action=update_member
+   * Payload: { action: 'update_member', ID_MEMBER, NAMA_MEMBER?, JABATAN?, NO_HP?, LANTAI?, STATUS? }
+   */
+  public async updateMember(input: UpdateMemberInput): Promise<{ message?: string; member?: MasterMember; [key: string]: unknown }> {
+    const payload: Record<string, unknown> = {
+      action: 'update_member',
+      ID_MEMBER: input.idMember,
+    };
+    if (input.namaMember !== undefined) payload.NAMA_MEMBER = input.namaMember;
+    if (input.jabatan !== undefined) payload.JABATAN = input.jabatan;
+    if (input.noHp !== undefined) payload.NO_HP = input.noHp;
+    if (input.lantai !== undefined) payload.LANTAI = input.lantai;
+    if (input.status !== undefined) payload.STATUS = input.status;
+
+    return this.post(payload);
+  }
+
+  /**
+   * Update Item: POST action=update_item
+   * Payload: { action: 'update_item', ID_ITEM, NAMA_ITEM?, KATEGORI?, SATUAN?, MASA_PAKAI_BULAN?, MIN_STOK?, LOKASI?, STATUS? }
+   */
+  public async updateItem(input: UpdateItemInput): Promise<{ message?: string; item?: MasterItem; [key: string]: unknown }> {
+    const payload: Record<string, unknown> = {
+      action: 'update_item',
+      ID_ITEM: input.idItem,
+    };
+    if (input.namaItem !== undefined) payload.NAMA_ITEM = input.namaItem;
+    if (input.kategori !== undefined) payload.KATEGORI = input.kategori;
+    if (input.satuan !== undefined) payload.SATUAN = input.satuan;
+    if (input.masaPakaiBulan !== undefined) payload.MASA_PAKAI_BULAN = Number(input.masaPakaiBulan);
+    if (input.minStok !== undefined) payload.MIN_STOK = Number(input.minStok);
+    if (input.lokasi !== undefined) payload.LOKASI = input.lokasi;
+    if (input.status !== undefined) payload.STATUS = input.status;
+
+    return this.post(payload);
   }
 
   /**

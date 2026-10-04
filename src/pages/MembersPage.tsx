@@ -4,12 +4,12 @@ import { DataTable, Column } from '../components/common/DataTable';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { DetailDrawer } from '../components/common/DetailDrawer';
 import { useApp } from '../context/AppContext';
-import { api } from '../services/api';
-import { MasterMember, MemberLimit, MemberHistorySummary } from '../types';
-import { Eye, History, Sliders, Loader2, Info } from 'lucide-react';
+import { api, normalizeGasErrorMessage } from '../services/api';
+import { MasterMember, MemberLimit, MemberHistorySummary, UpdateMemberInput } from '../types';
+import { Eye, History, Sliders, Loader2, Info, Pencil, X, Check } from 'lucide-react';
 
 export const MembersPage: React.FC = () => {
-  const { navigateTo, refreshKey } = useApp();
+  const { navigateTo, refreshKey, addToast } = useApp();
 
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [limits, setLimits] = useState<MemberLimit[]>([]);
@@ -25,6 +25,17 @@ export const MembersPage: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<MasterMember | null>(null);
   const [memberHistorySummary, setMemberHistorySummary] = useState<MemberHistorySummary | null>(null);
   const [isLoadingDrawerSummary, setIsLoadingDrawerSummary] = useState(false);
+
+  // Edit Member Modal State
+  const [editingMember, setEditingMember] = useState<MasterMember | null>(null);
+  const [editForm, setEditForm] = useState({
+    namaMember: '',
+    jabatan: '',
+    noHp: '',
+    lantai: '',
+    status: 'AKTIF' as 'AKTIF' | 'NONAKTIF',
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -59,6 +70,72 @@ export const MembersPage: React.FC = () => {
       setMemberHistorySummary(null);
     } finally {
       setIsLoadingDrawerSummary(false);
+    }
+  };
+
+  // Open Edit Modal
+  const handleOpenEdit = (m: MasterMember) => {
+    setEditingMember(m);
+    setEditForm({
+      namaMember: m.NAMA_MEMBER || '',
+      jabatan: m.JABATAN || '',
+      noHp: m.NO_HP || '',
+      lantai: m.LANTAI || '',
+      status: m.STATUS === 'NONAKTIF' ? 'NONAKTIF' : 'AKTIF',
+    });
+  };
+
+  // Save Edit Member
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+    if (!editForm.namaMember.trim()) {
+      addToast('warning', 'Validasi Gagal', 'Nama Member wajib diisi.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const input: UpdateMemberInput = {
+        idMember: editingMember.ID_MEMBER,
+      };
+
+      if (editForm.namaMember.trim() !== (editingMember.NAMA_MEMBER || '')) {
+        input.namaMember = editForm.namaMember.trim();
+      }
+      if (editForm.jabatan.trim() !== (editingMember.JABATAN || '')) {
+        input.jabatan = editForm.jabatan.trim();
+      }
+      if (editForm.noHp.trim() !== (editingMember.NO_HP || '')) {
+        input.noHp = editForm.noHp.trim();
+      }
+      if (editForm.lantai.trim() !== (editingMember.LANTAI || '')) {
+        input.lantai = editForm.lantai.trim();
+      }
+      if (editForm.status !== editingMember.STATUS) {
+        input.status = editForm.status;
+      }
+
+      const changedKeys = Object.keys(input).filter((k) => k !== 'idMember');
+      if (changedKeys.length === 0) {
+        addToast('info', 'Tidak Ada Perubahan', 'Tidak ada data member yang diubah.');
+        setEditingMember(null);
+        return;
+      }
+
+      const res = await api.updateMember(input);
+      addToast(
+        'success',
+        'Member Diperbarui',
+        res.message || `Data member ${editingMember.ID_MEMBER} berhasil diperbarui.`
+      );
+      setEditingMember(null);
+      await loadData();
+    } catch (err: unknown) {
+      const msg = normalizeGasErrorMessage(err, undefined, 'Gagal memperbarui data member.');
+      addToast('error', 'Gagal Simpan', msg);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -110,6 +187,13 @@ export const MembersPage: React.FC = () => {
       align: 'center',
       render: (m) => (
         <div className="flex items-center justify-center gap-1.5">
+          <button
+            onClick={() => handleOpenEdit(m)}
+            className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors"
+            title="Ubah Info Member"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
           <button
             onClick={() => handleOpenDetail(m)}
             className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors"
@@ -320,6 +404,127 @@ export const MembersPage: React.FC = () => {
           </div>
         )}
       </DetailDrawer>
+
+      {/* Edit Member Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xl max-w-lg w-full overflow-hidden animate-scaleIn">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Ubah Info Member</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[11px] text-slate-500">ID Member:</span>
+                    <span className="font-mono text-[11px] font-semibold text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
+                      {editingMember.ID_MEMBER}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingMember(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="p-6 space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700">
+                  Nama Member <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.namaMember}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, namaMember: e.target.value }))}
+                  placeholder="Nama lengkap member..."
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="block font-medium text-slate-700">Jabatan:</label>
+                  <input
+                    type="text"
+                    value={editForm.jabatan}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, jabatan: e.target.value }))}
+                    placeholder="Contoh: CREW, SPV, TL, SM..."
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 bg-white uppercase"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block font-medium text-slate-700">Penempatan Lantai:</label>
+                  <input
+                    type="text"
+                    value={editForm.lantai}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, lantai: e.target.value }))}
+                    placeholder="Contoh: 1, 2, 3, Dasar..."
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="block font-medium text-slate-700">No. Handphone:</label>
+                  <input
+                    type="text"
+                    value={editForm.noHp}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, noHp: e.target.value }))}
+                    placeholder="Contoh: 08123456789..."
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 font-mono bg-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block font-medium text-slate-700">Status Keanggotaan:</label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        status: e.target.value as 'AKTIF' | 'NONAKTIF',
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 bg-white font-medium"
+                  >
+                    <option value="AKTIF">AKTIF</option>
+                    <option value="NONAKTIF">NONAKTIF</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={() => setEditingMember(null)}
+                  className="px-4 py-2 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving || !editForm.namaMember.trim()}
+                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all inline-flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+                >
+                  {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  <span>{isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

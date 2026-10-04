@@ -31,6 +31,7 @@ import {
   Sparkles,
   TrendingUp,
   Check,
+  X,
   Building2,
   Send,
   Layers,
@@ -83,10 +84,6 @@ export const PengajuanPage: React.FC = () => {
   // ADMIN & PICKING LIST STATE
   // ---------------------------------------------------------------------------
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [quickRequestId, setQuickRequestId] = useState('');
-  const [quickApproverId, setQuickApproverId] = useState('ADMIN');
-  const [quickNote, setQuickNote] = useState('');
-  const [isProcessingApproval, setIsProcessingApproval] = useState(false);
   const [processingStatusId, setProcessingStatusId] = useState<string | null>(null);
 
   // Stock availability map: item ID -> boolean (is STOK_SAAT_INI > 0)
@@ -291,42 +288,40 @@ export const PengajuanPage: React.FC = () => {
   // ---------------------------------------------------------------------------
   // HANDLERS: ADMIN APPROVAL & PICKING STATUS UPDATES
   // ---------------------------------------------------------------------------
-  const handleProcessApproval = async (type: 'APPROVE' | 'REJECT') => {
+  const handleApproval = async (type: 'APPROVE' | 'REJECT', requestId: string) => {
     if (!canPerformAction('APPROVAL')) {
       addToast('error', 'Akses Ditolak', 'Hanya Admin yang memiliki hak akses persetujuan/penolakan pengajuan.');
       return;
     }
 
-    if (!quickRequestId.trim()) {
-      addToast('error', 'Validasi Gagal', 'Pilih atau masukkan ID Pengajuan terlebih dahulu.');
+    if (!requestId || !requestId.trim()) {
+      addToast('error', 'Validasi Gagal', 'ID Pengajuan tidak valid.');
       return;
     }
 
-    setIsProcessingApproval(true);
+    setProcessingStatusId(requestId);
     try {
       if (type === 'APPROVE') {
         const res = await api.approveRequest({
-          requestId: quickRequestId.trim(),
-          approverId: quickApproverId.trim() || 'ADMIN',
-          note: quickNote.trim() || 'Disetujui untuk disiapkan',
+          requestId: requestId.trim(),
+          approverId: 'ADMIN',
+          note: 'Disetujui untuk disiapkan',
         });
         addToast('success', 'Pengajuan Disetujui', res?.message || 'Pengajuan disetujui & masuk antrean penyiapan.');
       } else {
         const res = await api.rejectRequest({
-          requestId: quickRequestId.trim(),
-          approverId: quickApproverId.trim() || 'ADMIN',
-          note: quickNote.trim() || 'Ditolak',
+          requestId: requestId.trim(),
+          approverId: 'ADMIN',
+          note: 'Ditolak',
         });
         addToast('info', 'Pengajuan Ditolak', res?.message || 'Pengajuan telah ditolak.');
       }
-      setQuickRequestId('');
-      setQuickNote('');
       await loadRequests();
     } catch (err: unknown) {
       const msg = normalizeGasErrorMessage(err, undefined, 'Gagal memproses approval.');
       addToast('error', 'Gagal Memproses Permintaan', msg);
     } finally {
-      setIsProcessingApproval(false);
+      setProcessingStatusId(null);
     }
   };
 
@@ -736,26 +731,82 @@ export const PengajuanPage: React.FC = () => {
     },
     {
       key: 'AKSI',
-      header: 'Aksi',
+      header: 'Aksi Status',
       align: 'center',
       render: (r) => {
-        if (r.STATUS.toUpperCase() === 'MENUNGGU' && canPerformAction('APPROVAL')) {
+        const st = (r.STATUS || '').toUpperCase();
+        const isBusy = processingStatusId === r.ID_PENGAJUAN;
+
+        if (st === 'MENUNGGU') {
+          if (!canPerformAction('APPROVAL')) {
+            return <span className="text-slate-400 text-xs italic">-</span>;
+          }
           return (
-            <button
-              type="button"
-              onClick={() => {
-                setQuickRequestId(r.ID_PENGAJUAN);
-                setQuickNote(`Proses permohonan ${r.ID_MEMBER}`);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded inline-flex items-center gap-1 transition-colors"
-            >
-              <span>Review</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-1.5 min-w-[150px]">
+              <button
+                type="button"
+                disabled={isBusy}
+                onClick={() => handleApproval('APPROVE', r.ID_PENGAJUAN)}
+                className="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors inline-flex items-center gap-1 shadow-2xs disabled:opacity-50"
+                title="Setujui pengajuan & kurangi stok"
+              >
+                {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                <span>Setujui</span>
+              </button>
+              <button
+                type="button"
+                disabled={isBusy}
+                onClick={() => {
+                  const confirmed = window.confirm(`Tolak pengajuan ${r.ID_PENGAJUAN}? Tindakan ini tidak dapat dibatalkan.`);
+                  if (confirmed) {
+                    handleApproval('REJECT', r.ID_PENGAJUAN);
+                  }
+                }}
+                className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-300 rounded-md transition-colors inline-flex items-center gap-1 disabled:opacity-50"
+                title="Tolak pengajuan permohonan"
+              >
+                {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                <span>Tolak</span>
+              </button>
+            </div>
           );
         }
-        return null;
+
+        if (st === 'DISETUJUI') {
+          return (
+            <div className="flex items-center justify-center min-w-[130px]">
+              <button
+                type="button"
+                disabled={isBusy}
+                onClick={() => handleUpdateStatus(r.ID_PENGAJUAN, 'DIPROSES')}
+                className="px-2.5 py-1 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-md transition-colors inline-flex items-center gap-1 shadow-2xs disabled:opacity-50 whitespace-nowrap"
+                title="Mulai proses penyiapan fisik barang"
+              >
+                {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
+                <span>Mulai Siapkan →</span>
+              </button>
+            </div>
+          );
+        }
+
+        if (st === 'DIPROSES') {
+          return (
+            <div className="flex items-center justify-center min-w-[110px]">
+              <button
+                type="button"
+                disabled={isBusy}
+                onClick={() => handleUpdateStatus(r.ID_PENGAJUAN, 'SELESAI')}
+                className="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors inline-flex items-center gap-1 shadow-2xs disabled:opacity-50 whitespace-nowrap"
+                title="Barang telah diserahkan ke personil (Selesai)"
+              >
+                {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                <span>Selesai ✓</span>
+              </button>
+            </div>
+          );
+        }
+
+        return <span className="text-slate-400 text-xs italic">-</span>;
       },
     },
   ];
@@ -1439,90 +1490,77 @@ export const PengajuanPage: React.FC = () => {
             />
           </div>
 
-          {/* FORM APPROVAL / REJECTION ADMIN */}
-          {canPerformAction('APPROVAL') && (
-            <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-slate-900">
-                  <FileCheck2 className="w-4 h-4 text-slate-700" />
-                  <h3 className="text-sm font-semibold">Persetujuan / Penolakan Pengajuan (Approval)</h3>
-                </div>
-                <span className="text-[11px] font-mono text-slate-400">POST approve_request / reject_request</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">
-                    ID Pengajuan (ID_PENGAJUAN) <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={quickRequestId}
-                    onChange={(e) => setQuickRequestId(e.target.value)}
-                    placeholder="Contoh: REQ-202610-0001"
-                    className="w-full px-3 py-2 border border-slate-200 rounded font-mono text-xs focus:ring-1 focus:ring-slate-900 text-slate-800 uppercase"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">
-                    ID Approver (ID_APPROVER)
-                  </label>
-                  <input
-                    type="text"
-                    value={quickApproverId}
-                    onChange={(e) => setQuickApproverId(e.target.value)}
-                    placeholder="ADMIN"
-                    className="w-full px-3 py-2 border border-slate-200 rounded font-mono text-xs focus:ring-1 focus:ring-slate-900 text-slate-800"
-                  />
-                </div>
-              </div>
-
-              <div className="text-xs">
-                <label className="block font-medium text-slate-700 mb-1">
-                  Catatan Approver:
-                </label>
-                <textarea
-                  rows={2}
-                  value={quickNote}
-                  onChange={(e) => setQuickNote(e.target.value)}
-                  placeholder="Catatan persetujuan / alasan penolakan..."
-                  className="w-full px-3 py-2 border border-slate-200 rounded text-xs focus:ring-1 focus:ring-slate-900 text-slate-800"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2.5">
-                <button
-                  type="button"
-                  disabled={isProcessingApproval || !quickRequestId.trim()}
-                  onClick={() => handleProcessApproval('REJECT')}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {isProcessingApproval ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <AlertCircle className="w-3.5 h-3.5" />}
-                  <span>Tolak (Reject)</span>
-                </button>
-                <button
-                  type="button"
-                  disabled={isProcessingApproval || !quickRequestId.trim()}
-                  onClick={() => handleProcessApproval('APPROVE')}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {isProcessingApproval ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                  <span>Setujui (Approve)</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* TABEL SELURUH RIWAYAT PENGAJUAN */}
+          {/* TABEL SELURUH RIWAYAT PENGAJUAN — KELOLA STATUS */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-slate-600" />
-                <h3 className="text-sm font-semibold text-slate-900">Semua Riwayat Pengajuan</h3>
-                <span className="px-2 py-0.5 text-[11px] font-mono bg-slate-100 text-slate-700 rounded-full border border-slate-200">
-                  {filteredAllRequests.length} data
-                </span>
+            {/* Header & Legend Panel */}
+            <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                      Daftar Pengajuan — Kelola Status
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Pembaruan status langsung per baris untuk operasional gudang yang cepat
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <span className="px-2.5 py-1 text-xs font-mono font-bold bg-slate-100 text-slate-700 rounded-lg border border-slate-200">
+                    {filteredAllRequests.length} data
+                  </span>
+                  <button
+                    type="button"
+                    onClick={loadRequests}
+                    disabled={isRequestsLoading}
+                    className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 inline-flex items-center gap-1.5 text-xs font-medium"
+                    title="Muat Ulang Data"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isRequestsLoading ? 'animate-spin text-emerald-600' : ''}`} />
+                    <span className="hidden sm:inline">Muat Ulang</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Legend Alur Status & Penjelasan Efek Tombol */}
+              <div className="p-3 bg-slate-50/90 rounded-lg border border-slate-200/80 text-xs space-y-2">
+                <div className="flex items-center gap-2 flex-wrap text-slate-700 font-medium">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Alur Status:
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 font-semibold text-[11px]">
+                    MENUNGGU
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-800 font-semibold text-[11px]">
+                    DISETUJUI
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="px-2 py-0.5 rounded bg-orange-50 border border-orange-200 text-orange-800 font-semibold text-[11px]">
+                    DIPROSES
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold text-[11px]">
+                    SELESAI
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-600 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span>
+                    <strong className="text-emerald-700">Setujui</strong> = stok berkurang &amp; masuk picking list
+                  </span>
+                  <span className="text-slate-300">•</span>
+                  <span>
+                    <strong className="text-orange-700">Mulai Siapkan</strong> = masuk antrean penyiapan
+                  </span>
+                  <span className="text-slate-300">•</span>
+                  <span>
+                    <strong className="text-emerald-700">Selesai</strong> = barang diserahkan
+                  </span>
+                </div>
               </div>
             </div>
 

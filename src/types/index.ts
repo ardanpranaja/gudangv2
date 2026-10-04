@@ -160,6 +160,8 @@ export interface PengajuanPengambilan {
   TANGGAL: string;
   ID_MEMBER: string;
   ID_ITEM: string;
+  NAMA_MEMBER?: string;
+  NAMA_ITEM?: string;
   JUMLAH: number;
   TANGGAL_TERAKHIR_AMBIL?: string;
   TANGGAL_SEHARUSNYA?: string;
@@ -226,12 +228,32 @@ export interface SystemHealth {
 
 export interface TransactionInput {
   itemId: string;
-  type: 'BARANG_MASUK' | 'BARANG_KELUAR' | 'PINJAM' | 'KEMBALI';
+  type: 'BARANG_MASUK' | 'BARANG_KELUAR' | 'PINJAM' | 'KEMBALI' | 'PENYESUAIAN';
   jumlah: number;
   memberId?: string;
   keterangan?: string;
   tanggal?: string;
   noDokumen?: string;
+}
+
+export interface UpdateMemberInput {
+  idMember: string;
+  namaMember?: string;
+  jabatan?: string;
+  noHp?: string;
+  lantai?: string;
+  status?: 'AKTIF' | 'NONAKTIF';
+}
+
+export interface UpdateItemInput {
+  idItem: string;
+  namaItem?: string;
+  kategori?: string;
+  satuan?: string;
+  masaPakaiBulan?: number;
+  minStok?: number;
+  lokasi?: string;
+  status?: 'AKTIF' | 'NONAKTIF';
 }
 
 export interface PickupRequestInput {
