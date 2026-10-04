@@ -64,9 +64,9 @@ export const PengaturanPage: React.FC = () => {
 
   const handleTestConnection = async () => {
     setIsTesting(true);
-    await refreshHealth();
+    const fresh = await refreshHealth();
     setIsTesting(false);
-    addToast('info', 'Uji Koneksi Selesai', `Status backend GAS: ${health.status}`);
+    addToast('info', 'Uji Koneksi Selesai', `Status backend GAS: ${fresh?.status ?? health.status}`);
   };
 
   const handleFetchDebug = async () => {
