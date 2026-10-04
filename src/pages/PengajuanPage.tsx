@@ -73,7 +73,7 @@ export const PengajuanPage: React.FC = () => {
 
   const [selectedMemberId, setSelectedMemberId] = useState(pageParams.memberId || '');
   const [selectedItemId, setSelectedItemId] = useState(pageParams.itemId || '');
-  const [formJumlah, setFormJumlah] = useState<number>(pageParams.jumlah || 1);
+  const [formJumlah, setFormJumlah] = useState<number | ''>(pageParams.jumlah || '');
   const [formAlasan, setFormAlasan] = useState('');
   const [isCheckingEligibility, setIsCheckingEligibility] = useState(false);
   const [eligibilityResult, setEligibilityResult] = useState<PickupEligibilityResult | null>(null);
@@ -209,11 +209,15 @@ export const PengajuanPage: React.FC = () => {
       addToast('warning', 'Pilih Data', 'Pilih nama member dan barang yang diajukan.');
       return;
     }
+    if (formJumlah === '' || !isFinite(Number(formJumlah)) || Number(formJumlah) <= 0) {
+      addToast('warning', 'Jumlah Belum Diisi', 'Isi jumlah barang yang diminta (minimal 1) terlebih dahulu.');
+      return;
+    }
 
     setIsCheckingEligibility(true);
     setEligibilityResult(null);
     try {
-      const res = await api.getPickupEligibility(selectedMemberId, selectedItemId, formJumlah);
+      const res = await api.getPickupEligibility(selectedMemberId, selectedItemId, Number(formJumlah));
       setEligibilityResult(res);
       if (res.allowed && !res.early) {
         addToast('success', 'Kelayakan Terpenuhi', 'Pengambilan memenuhi jadwal dan kuota limit.');
@@ -247,8 +251,8 @@ export const PengajuanPage: React.FC = () => {
       return;
     }
 
-    if (formJumlah <= 0) {
-      addToast('error', 'Validasi Gagal', 'Jumlah barang yang diminta harus lebih dari 0.');
+    if (formJumlah === '' || !isFinite(Number(formJumlah)) || Number(formJumlah) <= 0) {
+      addToast('error', 'Validasi Gagal', 'Jumlah barang yang diminta wajib diisi dan harus lebih dari 0.');
       return;
     }
 
@@ -1097,12 +1101,12 @@ export const PengajuanPage: React.FC = () => {
                     <div className="flex items-center gap-2.5">
                       <div
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
-                          formJumlah >= 1
+                          Number(formJumlah) >= 1
                             ? 'bg-emerald-600 text-white shadow-2xs'
                             : 'bg-slate-200 text-slate-700'
                         }`}
                       >
-                        {formJumlah >= 1 ? <Check className="w-4 h-4 text-white" /> : '3'}
+                        {Number(formJumlah) >= 1 ? <Check className="w-4 h-4 text-white" /> : '3'}
                       </div>
                       <div>
                         <h4 className="font-semibold text-slate-900">
@@ -1121,8 +1125,10 @@ export const PengajuanPage: React.FC = () => {
                           type="number"
                           min={1}
                           value={formJumlah}
+                          placeholder="Isi jumlah…"
                           onChange={(e) => {
-                            setFormJumlah(Math.max(1, Number(e.target.value)));
+                            const v = e.target.value;
+                            setFormJumlah(v === '' ? '' : Math.max(1, Number(v)));
                             setEligibilityResult(null);
                           }}
                           required
