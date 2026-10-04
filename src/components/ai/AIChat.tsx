@@ -11,6 +11,7 @@ import { aiService } from '../../services/aiService';
 import { aiLiveService } from '../../services/aiLiveService';
 import { aiConversationService } from '../../services/aiConversationService';
 import { AIMessage } from './AIMessage';
+import { AIAvatarIcon } from './AIAvatarIcon';
 import { AIVoiceButton } from './AIVoiceButton';
 import { AILiveOverlay } from './AILiveOverlay';
 import { useApp } from '../../context/AppContext';
@@ -713,8 +714,8 @@ export const AIChat: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-md">
-                <Bot className="w-6 h-6 text-emerald-400" />
+              <div className="animate-float">
+                <AIAvatarIcon size="xl" showStatusDot status="online" />
               </div>
               <div className="max-w-md space-y-1">
                 <h3 className="text-sm font-bold text-slate-900">

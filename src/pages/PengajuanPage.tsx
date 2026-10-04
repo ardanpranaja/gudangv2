@@ -1476,8 +1476,8 @@ export const PengajuanPage: React.FC = () => {
         </div>
       )}
 
-      {/* Floating AI Assistant Bubble (Member Mode Only) */}
-      {role === 'MEMBER' && (
+      {/* Floating AI Assistant Bubble (Member Mode or Crew Form Tab) */}
+      {(role === 'MEMBER' || activeTab === 'crew') && (
         <AIAssistantBubble
           selectedMember={selectedMemberObj}
           selectedItem={selectedItemObj}

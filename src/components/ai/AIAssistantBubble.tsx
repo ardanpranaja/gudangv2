@@ -13,6 +13,7 @@ import {
   Package,
   Layers,
 } from 'lucide-react';
+import { AIAvatarIcon } from './AIAvatarIcon';
 import { aiService, MEMBER_SYSTEM_INSTRUCTION } from '../../services/aiService';
 import { MasterMember, MasterItem } from '../../types';
 import { AIMessage } from '../../types/ai';
@@ -198,15 +199,15 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
           {/* Header */}
           <div className="px-4 py-3 bg-slate-900 text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-emerald-600/90 flex items-center justify-center text-white shrink-0 shadow-xs">
-                <Bot className="w-4 h-4 text-white" />
-              </div>
+              <AIAvatarIcon size="sm" status={isLoading ? 'busy' : 'online'} isThinking={isLoading} showStatusDot />
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-xs font-bold truncate">Asisten Gudang Presisi</h3>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                 </div>
-                <p className="text-[10px] text-slate-300 truncate">Pemandu Permintaan Barang</p>
+                <p className="text-[10px] text-slate-300 truncate">
+                  {isLoading ? 'Sedang merespons...' : 'Online • Siap membantu'}
+                </p>
               </div>
             </div>
 
@@ -269,8 +270,8 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
                   className={`flex gap-2.5 ${isAssistant ? 'justify-start' : 'justify-end'}`}
                 >
                   {isAssistant && (
-                    <div className="w-6 h-6 rounded-full bg-slate-900 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                      <Sparkles className="w-3 h-3" />
+                    <div className="mt-0.5 shrink-0">
+                      <AIAvatarIcon size="xs" />
                     </div>
                   )}
 
@@ -312,12 +313,12 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
             {/* Loading Indicator */}
             {isLoading && (
               <div className="flex gap-2.5 justify-start">
-                <div className="w-6 h-6 rounded-full bg-slate-900 text-emerald-400 flex items-center justify-center shrink-0 shadow-2xs">
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                <div className="mt-0.5 shrink-0">
+                  <AIAvatarIcon size="xs" isThinking status="busy" />
                 </div>
-                <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs px-3.5 py-2 text-slate-500 text-xs flex items-center gap-1.5">
+                <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs px-3.5 py-2 text-slate-500 text-xs flex items-center gap-1.5 shadow-2xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Asisten sedang mengetik...</span>
+                  <span>Asisten sedang mengetik respons...</span>
                 </div>
               </div>
             )}
@@ -388,8 +389,8 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
             <div className="relative mb-3 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-3.5 text-xs text-slate-700 animate-fadeIn select-none">
               {/* Header with Title & Close button */}
               <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
-                <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <div className="flex items-center gap-2 font-bold text-slate-900">
+                  <AIAvatarIcon size="xs" />
                   <span>Petunjuk Form Permintaan</span>
                 </div>
                 <button
@@ -438,26 +439,31 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
             </div>
           )}
 
-          {/* Floating Avatar Button with Pulse Animation */}
-          <button
-            type="button"
-            onClick={() => setIsOpen(true)}
-            className="group relative w-14 h-14 rounded-full bg-gradient-to-tr from-slate-950 via-slate-900 to-emerald-900 text-white shadow-xl hover:shadow-2xl border-2 border-emerald-400/40 hover:border-emerald-400 flex items-center justify-center transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer"
-            aria-label="Buka Asisten AI Gudang"
-            title="Tanya Asisten AI Gudang Presisi"
-          >
-            {/* Gentle Outer Pulse Glow */}
-            <span className="absolute -inset-1 rounded-full bg-emerald-500/20 group-hover:bg-emerald-500/30 animate-pulse pointer-events-none" />
+          {/* Floating Avatar Button with Float & Glow Animation */}
+          <div className="relative animate-float">
+            <button
+              type="button"
+              onClick={() => setIsOpen(true)}
+              className="group relative w-14 h-14 rounded-full bg-gradient-to-tr from-slate-950 via-slate-900 to-emerald-950 text-white shadow-2xl hover:shadow-emerald-500/25 border-2 border-emerald-400/50 hover:border-emerald-300 flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer overflow-visible"
+              aria-label="Buka Asisten AI Gudang"
+              title="Tanya Asisten AI Gudang Presisi"
+            >
+              {/* Outer Pulse Glow Halo */}
+              <span className="absolute -inset-2 rounded-full bg-emerald-500/20 group-hover:bg-emerald-400/35 blur-xs transition-all pointer-events-none" />
 
-            {/* Inner Icon */}
-            <div className="relative flex items-center justify-center">
-              <Bot className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-              <Sparkles className="w-3 h-3 text-emerald-300 absolute -top-1 -right-1 animate-spin-slow" />
-            </div>
+              {/* Inner High-Fidelity Robot Mascot */}
+              <AIAvatarIcon size="md" className="group-hover:scale-105 transition-transform" />
 
-            {/* Online Status Dot */}
-            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-950 shadow-xs" />
-          </button>
+              {/* Orbiting Sparkle Accent */}
+              <Sparkles className="w-3.5 h-3.5 text-emerald-300 absolute -top-1 -right-1 animate-spin-slow drop-shadow-sm pointer-events-none" />
+
+              {/* Pulsing Online Status Badge */}
+              <span className="absolute bottom-0 right-0 flex items-center justify-center pointer-events-none">
+                <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-slate-950 shadow-xs" />
+              </span>
+            </button>
+          </div>
         </div>
       )}
     </div>

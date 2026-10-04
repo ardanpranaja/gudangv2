@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AIMessage as AIMessageType, AIConfirmationData } from '../../types/ai';
 import { AIConfirmation } from './AIConfirmation';
+import { AIAvatarIcon } from './AIAvatarIcon';
 import { Bot, User, Wrench, ChevronDown, ChevronUp, Check, AlertCircle } from 'lucide-react';
 
 interface AIMessageProps {
@@ -82,8 +83,8 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
   return (
     <div className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-xs">
-          <Bot className="w-4 h-4 text-emerald-400" />
+        <div className="mt-0.5 shrink-0">
+          <AIAvatarIcon size="sm" />
         </div>
       )}
 

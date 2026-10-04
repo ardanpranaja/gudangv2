@@ -3,6 +3,7 @@
 @theme {
   --animate-fadeIn: fadeIn 0.3s ease-out;
   --animate-spin-slow: spinSlow 3s linear infinite;
+  --animate-float: float 3s ease-in-out infinite;
 
   @keyframes fadeIn {
     from {
@@ -16,6 +17,15 @@
   @keyframes spinSlow {
     to {
       transform: rotate(360deg);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-6px);
     }
   }
 }
