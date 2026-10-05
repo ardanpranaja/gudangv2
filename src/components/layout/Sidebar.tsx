@@ -112,14 +112,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Brand header */}
         <div className="h-14 px-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 bg-white text-slate-900 font-bold text-xs rounded flex items-center justify-center font-mono">
+            <div className="w-6 h-6 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-bold text-xs rounded flex items-center justify-center font-mono">
               KG
             </div>
             <span className="font-semibold text-sm tracking-tight text-white">Kegudangaja</span>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded text-slate-400 hover:text-white lg:hidden"
+            className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-white lg:hidden"
             aria-label="Tutup navigasi"
           >
             <X className="w-5 h-5" />
@@ -135,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             return (
               <div key={gIdx} className="space-y-1">
                 {group.groupName && (
-                  <div className="px-3 pb-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                  <div className="px-3 pb-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     {group.groupName}
                   </div>
                 )}
@@ -152,12 +152,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors text-left ${
                         isActive
                           ? 'bg-slate-800 text-white font-semibold shadow-xs'
-                          : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                          : 'text-slate-400 dark:text-slate-500 hover:bg-slate-800/60 hover:text-slate-200'
                       }`}
                     >
                       <Icon
                         className={`w-4 h-4 shrink-0 ${
-                          isActive ? 'text-white' : 'text-slate-400'
+                          isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'
                         }`}
                       />
                       <span className="flex-1 truncate">{item.label}</span>
@@ -175,12 +175,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer info */}
-        <div className="p-3.5 border-t border-slate-800 bg-slate-950/40 text-[11px] text-slate-400 flex items-center justify-between">
+        <div className="p-3.5 border-t border-slate-800 bg-slate-950/40 text-[11px] text-slate-400 dark:text-slate-500 flex items-center justify-between">
           <div className="truncate">
             <div className="text-slate-300 font-medium truncate">1 Gudang Utama</div>
-            <div className="text-slate-400 font-mono text-[10px]">Spreadsheet + GAS</div>
+            <div className="text-slate-400 dark:text-slate-500 font-mono text-[10px]">Spreadsheet + GAS</div>
           </div>
-          <span className="font-mono text-[10px] text-slate-400">v1.0</span>
+          <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">v1.0</span>
         </div>
       </aside>
     </>
