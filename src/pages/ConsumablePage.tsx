@@ -350,7 +350,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
       {/* Form Permintaan & Panduan Singkat Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT / MAIN COLUMN: FORM CARD */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
           {/* Header Gradient */}
           <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-950 text-white p-5 sm:p-6 border-b border-slate-800">
             <div className="flex items-center justify-between gap-3">
@@ -406,7 +406,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                           {submissionResult.createdIds.map((id, idx) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 rounded bg-white border border-emerald-300 text-emerald-800 shadow-2xs"
+                              className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-emerald-300 text-emerald-800 shadow-2xs"
                             >
                               {id}
                             </span>
@@ -434,20 +434,20 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* =============================================================== */}
             {/* STEP 1: PILIH NAMA */}
             {/* =============================================================== */}
-            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/50 space-y-3 dark:bg-slate-800/60">
               <div className="flex items-center gap-2.5">
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
-                    selectedMemberId ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-slate-200 text-slate-700'
+                    selectedMemberId ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-slate-200 text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   {selectedMemberId ? <Check className="w-4 h-4 text-white" /> : '1'}
                 </div>
                 <div>
-                  <h4 className="font-semibold text-slate-900">
+                  <h4 className="font-semibold text-slate-900 dark:text-slate-100">
                     Pilih Nama Anda <span className="text-rose-500">*</span>
                   </h4>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     Cari nama pemohon sesuai penempatan lantai tugas
                   </p>
                 </div>
@@ -471,16 +471,16 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                       {selectedMemberObj.NAMA_MEMBER.charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-semibold text-slate-900 truncate">
+                      <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">
                         {selectedMemberObj.NAMA_MEMBER}
                       </div>
-                      <div className="text-[11px] text-slate-600 truncate">
+                      <div className="text-[11px] text-slate-600 dark:text-slate-400 truncate">
                         {selectedMemberObj.JABATAN || 'Personil Lapangan'}
                       </div>
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs">
                       <Building2 className="w-3.5 h-3.5 text-emerald-600" />
                       <span>{selectedMemberObj.LANTAI ? `Lantai ${selectedMemberObj.LANTAI}` : 'Lantai -'}</span>
                     </span>
@@ -492,35 +492,35 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* =============================================================== */}
             {/* STEP 2: KERANJANG TISU & PLASTIK */}
             {/* =============================================================== */}
-            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-4">
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/50 space-y-4 dark:bg-slate-800/60">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div
                     className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
-                      cart.length > 0 ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-slate-200 text-slate-700'
+                      cart.length > 0 ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-slate-200 text-slate-700 dark:text-slate-200'
                     }`}
                   >
                     {cart.length > 0 ? <Check className="w-4 h-4 text-white" /> : '2'}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900">
+                    <h4 className="font-semibold text-slate-900 dark:text-slate-100">
                       Keranjang Tisu &amp; Plastik <span className="text-rose-500">*</span>
                     </h4>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       Pilih barang, tentukan satuan dan jumlah, lalu tambahkan ke daftar pesanan
                     </p>
                   </div>
                 </div>
 
-                <span className="px-2.5 py-0.5 rounded-full bg-slate-200 font-bold text-slate-700 text-[11px]">
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-200 font-bold text-slate-700 dark:text-slate-200 text-[11px]">
                   {cart.length} item di keranjang
                 </span>
               </div>
 
               {/* Sub-form: Tambah Item */}
-              <div className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-3.5 shadow-2xs">
+              <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-3.5 shadow-2xs">
                 <div className="space-y-1">
-                  <label className="block text-[11px] font-semibold text-slate-700">
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-200">
                     Pilih Item Consumable (14 Item Khusus):
                   </label>
                   <SearchableSelect
@@ -536,12 +536,12 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                 {/* Info Card when item selected */}
                 {selectedItemId && currentConfig && (
                   <div className="space-y-3 pt-1 border-t border-slate-100 animate-fadeIn">
-                    <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
                       <div className="min-w-0">
-                        <div className="font-semibold text-slate-900 truncate">
+                        <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">
                           {currentItemObj?.NAMA_ITEM || currentConfig.name}
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
                           {currentConfig.category === 'TISU'
                             ? `Kategori Tisu (${currentConfig.subCategory}) • 1 box = ${currentConfig.unitsPerBox} ${currentConfig.masterUnit}`
                             : `Plastik Sampah ${currentConfig.subCategory} • 1 pack = ${currentConfig.unitsPerPack} lembar`}
@@ -564,16 +564,16 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                       {/* Unit Choice */}
                       <div className="space-y-1">
-                        <label className="block text-[11px] font-medium text-slate-700">Satuan Pesan:</label>
+                        <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-200">Satuan Pesan:</label>
                         {currentConfig.category === 'PLASTIK' ? (
-                          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200">
+                          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
                             <button
                               type="button"
                               onClick={() => setSelectedUnit('lembar')}
                               className={`flex-1 py-1 rounded text-center font-semibold text-xs transition-colors ${
                                 selectedUnit === 'lembar'
-                                  ? 'bg-white text-emerald-800 shadow-2xs'
-                                  : 'text-slate-600 hover:text-slate-900'
+                                  ? 'bg-white dark:bg-slate-900 text-emerald-800 shadow-2xs'
+                                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                               }`}
                             >
                               Lembar
@@ -583,15 +583,15 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                               onClick={() => setSelectedUnit('pack')}
                               className={`flex-1 py-1 rounded text-center font-semibold text-xs transition-colors ${
                                 selectedUnit === 'pack'
-                                  ? 'bg-white text-emerald-800 shadow-2xs'
-                                  : 'text-slate-600 hover:text-slate-900'
+                                  ? 'bg-white dark:bg-slate-900 text-emerald-800 shadow-2xs'
+                                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                               }`}
                             >
                               Pack
                             </button>
                           </div>
                         ) : (
-                          <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-semibold uppercase text-xs">
+                          <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 font-semibold uppercase text-xs">
                             {currentConfig.masterUnit}
                           </div>
                         )}
@@ -599,13 +599,13 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
                       {/* Quantity Input */}
                       <div className="space-y-1">
-                        <label className="block text-[11px] font-medium text-slate-700">Jumlah:</label>
+                        <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-200">Jumlah:</label>
                         <input
                           type="number"
                           min={1}
                           value={inputQty}
                           onChange={(e) => setInputQty(Math.max(1, Number(e.target.value)))}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 font-mono text-slate-900 bg-white"
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-slate-900 font-mono text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900"
                         />
                       </div>
 
@@ -645,15 +645,15 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
               {/* Cart Items List */}
               <div className="space-y-2 pt-1">
-                <div className="text-[11px] font-bold text-slate-700">
+                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-200">
                   Daftar Pesanan Siap Dikirim ({cart.length} item):
                 </div>
 
                 {cart.length === 0 ? (
-                  <div className="p-4 rounded-xl border border-dashed border-slate-300 text-center text-slate-400 space-y-1 bg-white">
+                  <div className="p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 text-center text-slate-400 dark:text-slate-500 space-y-1 bg-white dark:bg-slate-900">
                     <ShoppingCart className="w-6 h-6 mx-auto text-slate-300" />
-                    <p className="font-medium text-xs text-slate-600">Keranjang masih kosong</p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="font-medium text-xs text-slate-600 dark:text-slate-400">Keranjang masih kosong</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
                       Pilih tisu atau plastik di atas lalu klik &ldquo;Tambah ke Daftar&rdquo;
                     </p>
                   </div>
@@ -662,23 +662,23 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                     {cart.map((item, idx) => (
                       <div
                         key={idx}
-                        className="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-3 shadow-2xs hover:border-slate-300 transition-colors animate-fadeIn"
+                        className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3 shadow-2xs hover:border-slate-300 transition-colors animate-fadeIn"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
                             {idx + 1}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-semibold text-slate-900 truncate">{item.name}</div>
-                            <div className="text-[11px] text-slate-500 flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-slate-800">
+                            <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">{item.name}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-slate-800 dark:text-slate-200">
                                 Pesan: {item.orderQty} {item.orderUnit}
                               </span>
                               <span className="text-slate-300">•</span>
                               <span className="text-teal-700 font-medium bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">
                                 {item.conversionText}
                               </span>
-                              <span className="text-slate-400 text-[10px] font-mono">
+                              <span className="text-slate-400 dark:text-slate-500 text-[10px] font-mono">
                                 (Backend: {item.sendQty} {item.config.masterUnit})
                               </span>
                             </div>
@@ -688,7 +688,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                         <button
                           type="button"
                           onClick={() => handleRemoveFromCart(idx)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+                          className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
                           title="Hapus item dari keranjang"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -704,23 +704,23 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* STEP 3: ALASAN & KIRIM SEMUA */}
             {/* =============================================================== */}
             <form onSubmit={handleSubmitAll} className="space-y-4">
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/50 space-y-3 dark:bg-slate-800/60">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div
                       className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                         formAlasan.trim().length > 0
                           ? 'bg-emerald-600 text-white shadow-2xs'
-                          : 'bg-slate-200 text-slate-700'
+                          : 'bg-slate-200 text-slate-700 dark:text-slate-200'
                       }`}
                     >
                       {formAlasan.trim().length > 0 ? <Check className="w-4 h-4 text-white" /> : '3'}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900">
+                      <h4 className="font-semibold text-slate-900 dark:text-slate-100">
                         Alasan Permintaan Consumable <span className="text-rose-500">*</span>
                       </h4>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
                         Satu alasan berlaku untuk seluruh item di dalam keranjang
                       </p>
                     </div>
@@ -733,13 +733,13 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                   onChange={(e) => setFormAlasan(e.target.value)}
                   placeholder="Contoh: Kebutuhan operasional tisu toilet dan plastik sampah pembersihan area lantai 2..."
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 text-xs bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 dark:text-slate-100 text-xs bg-white dark:bg-slate-900"
                 />
               </div>
 
               {/* Submit Action Bar */}
               <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-slate-100">
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">
                   {cart.length > 0 ? (
                     <span>
                       Total <strong>{cart.length} jenis item</strong> akan dikirimkan berurutan ke backend GAS.
@@ -773,38 +773,38 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
         {/* RIGHT COLUMN: PANDUAN KONVERSI PANEL */}
         <div className="lg:col-span-1 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4 text-xs">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs space-y-4 text-xs">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
                 <HelpCircle className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 text-xs">Panduan Satuan &amp; Konversi</h3>
-                <p className="text-[10px] text-slate-500">Standar isi box tisu &amp; pack plastik</p>
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Panduan Satuan &amp; Konversi</h3>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">Standar isi box tisu &amp; pack plastik</p>
               </div>
             </div>
 
             {/* Konversi Tisu */}
             <div className="space-y-2">
-              <div className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+              <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5 text-teal-600" />
                 <span>Standar Konversi Tisu:</span>
               </div>
-              <ul className="space-y-1.5 text-[11px] text-slate-600">
-                <li className="p-2 rounded-lg bg-slate-50 border border-slate-200 flex justify-between items-center">
-                  <span className="font-semibold text-slate-900">Tissue Roll</span>
+              <ul className="space-y-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                <li className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Tissue Roll</span>
                   <span className="font-mono text-emerald-700 font-bold">1 box = 100 roll</span>
                 </li>
-                <li className="p-2 rounded-lg bg-slate-50 border border-slate-200 flex justify-between items-center">
-                  <span className="font-semibold text-slate-900">Tissue Roll Jumbo</span>
+                <li className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Tissue Roll Jumbo</span>
                   <span className="font-mono text-emerald-700 font-bold">1 box = 16 roll</span>
                 </li>
-                <li className="p-2 rounded-lg bg-slate-50 border border-slate-200 flex justify-between items-center">
-                  <span className="font-semibold text-slate-900">Tissue Hand Towel</span>
+                <li className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Tissue Hand Towel</span>
                   <span className="font-mono text-emerald-700 font-bold">1 box = 24 pack</span>
                 </li>
-                <li className="p-2 rounded-lg bg-slate-50 border border-slate-200 flex justify-between items-center">
-                  <span className="font-semibold text-slate-900">Tissue Kotak</span>
+                <li className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Tissue Kotak</span>
                   <span className="font-mono text-emerald-700 font-bold">1 box = 40 pack</span>
                 </li>
               </ul>
@@ -812,21 +812,21 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
             {/* Konversi Plastik Sampah */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+              <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                 <Package className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Standar Plastik Sampah:</span>
               </div>
-              <ul className="space-y-1.5 text-[11px] text-slate-600">
-                <li className="p-2 rounded-lg bg-slate-50 border border-slate-200 flex justify-between items-center">
-                  <span className="font-semibold text-slate-900">Ukuran 50x75</span>
+              <ul className="space-y-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                <li className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Ukuran 50x75</span>
                   <span className="font-mono text-emerald-700 font-bold">1 pack = 24 lembar</span>
                 </li>
-                <li className="p-2 rounded-lg bg-slate-50 border border-slate-200 flex justify-between items-center">
-                  <span className="font-semibold text-slate-900">Ukuran 60x100</span>
+                <li className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Ukuran 60x100</span>
                   <span className="font-mono text-emerald-700 font-bold">1 pack = 12 lembar</span>
                 </li>
-                <li className="p-2 rounded-lg bg-slate-50 border border-slate-200 flex justify-between items-center">
-                  <span className="font-semibold text-slate-900">Ukuran 90x120</span>
+                <li className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">Ukuran 90x120</span>
                   <span className="font-mono text-emerald-700 font-bold">1 pack = 6 lembar</span>
                 </li>
               </ul>
