@@ -39,6 +39,20 @@ export const AI_TOOL_DECLARATIONS = [
     },
   },
   {
+    name: 'get_product_knowledge',
+    description: 'Cari pengetahuan produk barang gudang: cara pakai, takaran/dosis, dan peringatan keselamatan. TIDAK menampilkan angka stok.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        query: {
+          type: 'STRING',
+          description: 'Kata kunci nama barang (misal "floor cleaner", "tiner").',
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
     name: 'get_members',
     description: 'Ambil daftar master member gudang (ID_MEMBER, NAMA_MEMBER, DIVISI, JABATAN, JENIS_MEMBER, STATUS).',
     parameters: {
@@ -380,6 +394,30 @@ export async function executeAITool(
             total: filtered.length,
             items: mapped,
           },
+        };
+      }
+
+      case 'get_product_knowledge': {
+        const items = await api.getItems();
+        const query = typeof args.query === 'string' ? args.query.toLowerCase().trim() : '';
+        if (!query) {
+          return { success: false, errorCode: 'MISSING_PARAMETER', message: 'Parameter query wajib diisi.' };
+        }
+        const filtered = items.filter(
+          (i) =>
+            i.NAMA_ITEM.toLowerCase().includes(query) ||
+            (i.KATEGORI && i.KATEGORI.toLowerCase().includes(query))
+        );
+        const mapped = filtered.slice(0, 5).map((i) => ({
+          nama: i.NAMA_ITEM,
+          kategori: i.KATEGORI,
+          caraPakai: i.CARA_PAKAI || '',
+          takaran: i.TAKARAN || '',
+          perhatian: i.PERHATIAN || '',
+        }));
+        return {
+          success: true,
+          data: { total: filtered.length, items: mapped },
         };
       }
 
