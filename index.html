@@ -18,6 +18,12 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <script>
+      try {
+        var t = localStorage.getItem('kegudangaja-theme');
+        if (t !== 'light') document.documentElement.classList.add('dark');
+      } catch (e) {}
+    </script>
+    <script>
       (function() {
         try {
           var origFetch = window.fetch;

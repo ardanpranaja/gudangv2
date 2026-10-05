@@ -11,7 +11,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
   const displayStatus = rawStatus.length > 0 ? rawStatus : '-';
   const normalized = displayStatus.toUpperCase();
 
-  let colorClasses = 'text-slate-600 bg-slate-100 border-slate-200';
+  let colorClasses = 'text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
   let Icon = Clock;
 
   switch (normalized) {
@@ -19,21 +19,21 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     case 'SELESAI':
     case 'TERSEDIA':
     case 'BAIK':
-      colorClasses = 'text-emerald-700 bg-emerald-50 border-emerald-200';
+      colorClasses = 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800';
       Icon = CheckCircle2;
       break;
     case 'DISETUJUI':
-      colorClasses = 'text-blue-700 bg-blue-50 border-blue-200';
+      colorClasses = 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800';
       Icon = CheckCircle2;
       break;
     case 'DIPROSES':
-      colorClasses = 'text-orange-700 bg-orange-50 border-orange-200';
+      colorClasses = 'text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/60 border-orange-200 dark:border-orange-800';
       Icon = Clock;
       break;
     case 'MENUNGGU':
     case 'SEDANG_DIGUNAKAN':
     case 'MAINTENANCE':
-      colorClasses = 'text-amber-700 bg-amber-50 border-amber-200';
+      colorClasses = 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800';
       Icon = AlertTriangle;
       break;
     case 'NONAKTIF':
@@ -41,22 +41,22 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     case 'DIBATALKAN':
     case 'RUSAK':
     case 'TIDAK_AKTIF':
-      colorClasses = 'text-rose-700 bg-rose-50 border-rose-200';
+      colorClasses = 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800';
       Icon = XCircle;
       break;
     case 'SM':
     case 'SPV':
     case 'TL':
-      colorClasses = 'text-blue-700 bg-blue-50 border-blue-200';
+      colorClasses = 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800';
       Icon = ShieldCheck;
       break;
     case 'CREW':
     case 'VENDOR':
-      colorClasses = 'text-slate-700 bg-slate-100 border-slate-200';
+      colorClasses = 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
       Icon = CheckCircle2;
       break;
     default:
-      colorClasses = 'text-slate-700 bg-slate-50 border-slate-200';
+      colorClasses = 'text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
       Icon = CheckCircle2;
   }
 

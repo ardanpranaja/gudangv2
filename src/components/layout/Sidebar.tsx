@@ -113,7 +113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="h-14 px-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 bg-white text-slate-900 font-bold text-xs rounded flex items-center justify-center font-mono">
-              GP
+              KG
             </div>
             <span className="font-semibold text-sm tracking-tight text-white">Kegudangaja</span>
           </div>

@@ -26,41 +26,41 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  let btnColor = 'bg-slate-900 hover:bg-slate-800 text-white';
+  let btnColor = 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500';
   if (variant === 'danger') {
-    btnColor = 'bg-rose-600 hover:bg-rose-700 text-white';
+    btnColor = 'bg-rose-600 hover:bg-rose-700 text-white dark:bg-rose-600 dark:hover:bg-rose-500';
   } else if (variant === 'warning') {
-    btnColor = 'bg-amber-600 hover:bg-amber-700 text-white';
+    btnColor = 'bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-600 dark:hover:bg-amber-500';
   }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="min-h-screen px-4 text-center flex items-center justify-center">
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity" onClick={onClose} />
+        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 backdrop-blur-xs transition-opacity" onClick={onClose} />
 
-        <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white shadow-xl rounded-lg border border-slate-200 relative z-10">
+        <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-slate-900 shadow-xl rounded-lg border border-slate-200 dark:border-slate-800 relative z-10">
           <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2.5 text-slate-900">
-              <AlertCircle className={`w-5 h-5 ${variant === 'danger' ? 'text-rose-600' : 'text-amber-600'}`} />
+            <div className="flex items-center gap-2.5 text-slate-900 dark:text-slate-100">
+              <AlertCircle className={`w-5 h-5 ${variant === 'danger' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}`} />
               <h3 className="text-base font-semibold">{title}</h3>
             </div>
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <p className="text-xs text-slate-600 leading-relaxed mb-6">{message}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-6">{message}</p>
 
           <div className="flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors disabled:opacity-50"
+              className="px-3.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
             >
               {cancelLabel}
             </button>

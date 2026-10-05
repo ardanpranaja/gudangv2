@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --animate-fadeIn: fadeIn 0.3s ease-out;
   --animate-spin-slow: spinSlow 3s linear infinite;

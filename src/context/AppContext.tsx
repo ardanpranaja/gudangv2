@@ -28,6 +28,8 @@ export interface ToastMessage {
   message?: string;
 }
 
+export type ThemeMode = 'light' | 'dark';
+
 interface AppContextType {
   currentPage: PageId;
   navigateTo: (page: PageId, params?: Record<string, any>) => void;
@@ -51,6 +53,9 @@ interface AppContextType {
   triggerRefresh: () => void;
   canAccessPage: (page: PageId) => boolean;
   canPerformAction: (actionType: 'TRANSACTION' | 'MASTER_MUTATION' | 'APPROVAL' | 'SETTINGS' | 'REQUEST') => boolean;
+  theme: ThemeMode;
+  toggleTheme: () => void;
+  setTheme: (theme: ThemeMode) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -71,6 +76,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [refreshKey, setRefreshKey] = useState<number>(0);
 
+  // Theme state: default 'dark' unless explicitly saved as 'light'
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('kegudangaja-theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      localStorage.setItem('kegudangaja-theme', theme);
+    }
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
+
+  const setTheme = useCallback((newTheme: ThemeMode) => {
+    setThemeState(newTheme);
+  }, []);
+
   // Check health periodically & on mount
   const refreshHealth = useCallback(async () => {
     try {
@@ -78,7 +111,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setHealth(res);
       return res;
     } catch {
-      const offline = {
+      const offline: SystemHealth = {
         status: 'OFFLINE',
         version: '1.2.4',
         error: 'Tidak dapat menghubungi backend',
@@ -222,6 +255,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         triggerRefresh,
         canAccessPage,
         canPerformAction,
+        theme,
+        toggleTheme,
+        setTheme,
       }}
     >
       {children}

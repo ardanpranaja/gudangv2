@@ -528,27 +528,27 @@ export const AIChat: React.FC = () => {
   });
 
   return (
-    <div className="flex h-[calc(100vh-14rem)] min-h-[540px] bg-slate-50/50 rounded-xl border border-slate-200 overflow-hidden shadow-xs relative">
+    <div className="flex h-[calc(100vh-14rem)] min-h-[540px] bg-slate-50/50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs relative transition-colors">
       {/* --------------------------------------------------------------------- */}
       {/* HISTORY SIDEBAR (Collapsible / Responsive Drawer) */}
       {/* --------------------------------------------------------------------- */}
       <div
-        className={`bg-white border-r border-slate-200 flex flex-col z-20 transition-all duration-200 absolute md:static inset-y-0 left-0 ${
+        className={`bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-20 transition-all duration-200 absolute md:static inset-y-0 left-0 ${
           isHistoryOpen
             ? 'w-72 shadow-lg md:shadow-none translate-x-0'
             : 'w-0 md:w-64 -translate-x-full md:translate-x-0 overflow-hidden'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="p-3 border-b border-slate-200 flex items-center justify-between gap-2 bg-slate-50/70">
-          <div className="flex items-center gap-1.5 font-semibold text-xs text-slate-800">
-            <History className="w-3.5 h-3.5 text-slate-500" />
+        <div className="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 bg-slate-50/70 dark:bg-slate-850/60">
+          <div className="flex items-center gap-1.5 font-semibold text-xs text-slate-800 dark:text-slate-200">
+            <History className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             <span>Riwayat Percakapan</span>
           </div>
           <button
             type="button"
             onClick={handleNewChat}
-            className="px-2.5 py-1 bg-slate-900 text-white rounded text-xs font-medium hover:bg-slate-800 transition-colors inline-flex items-center gap-1 shadow-2xs"
+            className="px-2.5 py-1 bg-slate-900 dark:bg-emerald-600 text-white rounded text-xs font-medium hover:bg-slate-800 dark:hover:bg-emerald-500 transition-colors inline-flex items-center gap-1 shadow-2xs"
             title="Mulai Percakapan Baru"
           >
             <Plus className="w-3 h-3" />
@@ -557,21 +557,21 @@ export const AIChat: React.FC = () => {
         </div>
 
         {/* Search in History */}
-        <div className="p-2 border-b border-slate-100">
+        <div className="p-2 border-b border-slate-100 dark:border-slate-800">
           <div className="relative">
-            <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3 h-3 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={historySearchQuery}
               onChange={(e) => setHistorySearchQuery(e.target.value)}
               placeholder="Cari riwayat chat..."
-              className="w-full pl-7 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900"
+              className="w-full pl-7 pr-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:focus:ring-slate-400 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-colors"
             />
             {historySearchQuery && (
               <button
                 type="button"
                 onClick={() => setHistorySearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -582,7 +582,7 @@ export const AIChat: React.FC = () => {
         {/* Conversation List */}
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {filteredConversations.length === 0 ? (
-            <div className="text-center py-8 px-3 text-xs text-slate-400">
+            <div className="text-center py-8 px-3 text-xs text-slate-400 dark:text-slate-500">
               {historySearchQuery ? 'Tidak ada hasil pencarian.' : 'Belum ada riwayat percakapan.'}
             </div>
           ) : (
@@ -601,20 +601,20 @@ export const AIChat: React.FC = () => {
                   onClick={() => handleOpenConversation(c.id)}
                   className={`group px-2.5 py-2 rounded-lg cursor-pointer transition-all text-xs flex items-center justify-between gap-2 ${
                     isActive
-                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-950 font-medium'
-                      : 'hover:bg-slate-100/80 text-slate-700 border border-transparent'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200 font-medium'
+                      : 'hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-transparent'
                   }`}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 truncate">
                       <MessageSquare
                         className={`w-3.5 h-3.5 shrink-0 ${
-                          isActive ? 'text-emerald-600' : 'text-slate-400 group-hover:text-slate-600'
+                          isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
                         }`}
                       />
                       <span className="truncate">{c.title || 'Percakapan'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5 pl-5">
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 pl-5">
                       <span>{dateStr}</span>
                       <span>•</span>
                       <span>{c.messages?.length || 0} pesan</span>
@@ -624,7 +624,7 @@ export const AIChat: React.FC = () => {
                   <button
                     type="button"
                     onClick={(e) => handleDeleteConversation(c.id, e)}
-                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-600 p-1 rounded transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-1 rounded transition-opacity"
                     title="Hapus percakapan"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -637,19 +637,19 @@ export const AIChat: React.FC = () => {
 
         {/* Active Entity Context Badge in Sidebar */}
         {(conversationContext.activeMember || conversationContext.activeItem) && (
-          <div className="p-2.5 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-600 space-y-1">
-            <div className="font-semibold text-slate-700 text-[10px] uppercase tracking-wider">
+          <div className="p-2.5 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
+            <div className="font-semibold text-slate-700 dark:text-slate-300 text-[10px] uppercase tracking-wider">
               Konteks Aktif Sesi
             </div>
             {conversationContext.activeMember && (
-              <div className="flex items-center gap-1.5 text-slate-700 truncate">
-                <UserCheck className="w-3 h-3 text-emerald-600 shrink-0" />
+              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200 truncate">
+                <UserCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="truncate font-medium">{conversationContext.activeMember.name}</span>
               </div>
             )}
             {conversationContext.activeItem && (
-              <div className="flex items-center gap-1.5 text-slate-700 truncate">
-                <Package className="w-3 h-3 text-teal-600 shrink-0" />
+              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200 truncate">
+                <Package className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
                 <span className="truncate font-medium">{conversationContext.activeItem.name}</span>
               </div>
             )}
@@ -660,15 +660,15 @@ export const AIChat: React.FC = () => {
       {/* --------------------------------------------------------------------- */}
       {/* MAIN CHAT AREA */}
       {/* --------------------------------------------------------------------- */}
-      <div className="flex-1 flex flex-col min-w-0 bg-white">
+      <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 transition-colors">
         {/* Chat Subheader */}
-        <div className="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between gap-3 shrink-0">
+        <div className="px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             {/* Toggle History Button (Mobile/Desktop) */}
             <button
               type="button"
               onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-              className="md:hidden p-1.5 rounded hover:bg-slate-100 text-slate-600 transition-colors"
+              className="md:hidden p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
               title="Toggle Riwayat"
             >
               <History className="w-4 h-4" />
@@ -684,14 +684,14 @@ export const AIChat: React.FC = () => {
               }`}
             />
             <div className="min-w-0">
-              <span className="text-xs font-semibold text-slate-800 block truncate">
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 block truncate">
                 {liveStatus !== 'DISCONNECTED'
                   ? `Gemini Live Voice (${liveStatus})`
                   : activeModelId
                   ? `Uti AI Terhubung (${aiService.getModelDisplayName(activeModelId)})`
                   : 'Uti AI — Model belum dipilih'}
               </span>
-              <span className="text-[10px] text-slate-400 block truncate">
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 block truncate">
                 {conversationTitle}
               </span>
             </div>
@@ -701,7 +701,7 @@ export const AIChat: React.FC = () => {
             <button
               type="button"
               onClick={handleNewChat}
-              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium transition-colors inline-flex items-center gap-1"
+              className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded text-xs font-medium transition-colors inline-flex items-center gap-1"
               title="Buat Chat Baru"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -711,17 +711,17 @@ export const AIChat: React.FC = () => {
         </div>
 
         {/* Messages Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40 dark:bg-slate-950/40">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
               <div className="animate-float">
                 <AIAvatarIcon size="xl" showStatusDot status="online" />
               </div>
               <div className="max-w-md space-y-1">
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                   Ada yang bisa dibantu untuk operasional gudang hari ini?
                 </h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   Tanyakan posisi stok barang, validasi kuota limit member, cek mutasi kartu stok,
                   atau siapkan draf transaksi dengan mengetik pesan atau menggunakan percakapan suara realtime (Gemini Live).
                 </p>
@@ -729,7 +729,7 @@ export const AIChat: React.FC = () => {
 
               {/* Quick Suggestions Chips */}
               <div className="w-full max-w-lg pt-2">
-                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <div className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                   Contoh Perintah Cepat
                 </div>
                 <div className="flex flex-wrap justify-center gap-1.5">
@@ -738,7 +738,7 @@ export const AIChat: React.FC = () => {
                       key={idx}
                       type="button"
                       onClick={() => handleSendMessage(item)}
-                      className="text-xs px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-colors shadow-2xs text-left"
+                      className="text-xs px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors shadow-2xs text-left"
                     >
                       {item}
                     </button>
@@ -759,12 +759,12 @@ export const AIChat: React.FC = () => {
           {/* Loading / Tool executing indicator in chat mode */}
           {isLoading && (
             <div className="flex gap-3 justify-start animate-fadeIn">
-              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-slate-800 text-white flex items-center justify-center shrink-0">
                 <Bot className="w-4 h-4 text-emerald-400" />
               </div>
-              <div className="bg-white border border-slate-200 rounded-xl rounded-tl-none p-3.5 shadow-xs flex items-center gap-2.5 text-xs text-slate-600">
-                <Loader2 className={`w-4 h-4 animate-spin ${retryStatus ? 'text-amber-500' : 'text-slate-800'}`} />
-                <span className={retryStatus ? 'text-amber-700 font-medium' : ''}>
+              <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl rounded-tl-none p-3.5 shadow-xs flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                <Loader2 className={`w-4 h-4 animate-spin ${retryStatus ? 'text-amber-500' : 'text-slate-800 dark:text-slate-200'}`} />
+                <span className={retryStatus ? 'text-amber-700 dark:text-amber-300 font-medium' : ''}>
                   {retryStatus || (activeTool ? `Memeriksa data ${activeTool}...` : 'Sedang berpikir...')}
                 </span>
               </div>
@@ -785,7 +785,7 @@ export const AIChat: React.FC = () => {
         />
 
         {/* Input Form Bar */}
-        <div className="p-3 bg-white border-t border-slate-200">
+        <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -801,12 +801,12 @@ export const AIChat: React.FC = () => {
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Ketik instruksi gudang, stok, limit member, atau draf transaksi..."
                 disabled={isLoading}
-                className="w-full pl-3.5 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900 transition-all placeholder:text-slate-400"
+                className="w-full pl-3.5 pr-10 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:focus:ring-slate-400 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim() || isLoading}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-slate-900 text-white rounded-md hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-slate-900 transition-all"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-slate-900 dark:bg-emerald-600 text-white rounded-md hover:bg-slate-800 dark:hover:bg-emerald-500 disabled:opacity-30 disabled:hover:bg-slate-900 dark:disabled:hover:bg-emerald-600 transition-all"
                 title="Kirim Pesan"
               >
                 <Send className="w-3.5 h-3.5" />

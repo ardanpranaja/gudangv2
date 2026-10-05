@@ -16,7 +16,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const isMemberMode = role === 'MEMBER';
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased flex flex-col transition-colors">
       {/* Sidebar Navigation (Admin Mode Only) */}
       {!isMemberMode && (
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -41,22 +41,22 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       {/* Toast notifications container */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
         {toasts.map((toast) => {
-          let border = 'border-slate-200 bg-white text-slate-800';
+          let border = 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100';
           let Icon = Info;
-          let iconColor = 'text-blue-500';
+          let iconColor = 'text-blue-500 dark:text-blue-400';
 
           if (toast.type === 'success') {
-            border = 'border-emerald-200 bg-emerald-50/90 text-emerald-900';
+            border = 'border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/90 dark:bg-emerald-950/90 text-emerald-900 dark:text-emerald-100';
             Icon = CheckCircle2;
-            iconColor = 'text-emerald-600';
+            iconColor = 'text-emerald-600 dark:text-emerald-400';
           } else if (toast.type === 'error') {
-            border = 'border-rose-200 bg-rose-50/90 text-rose-900';
+            border = 'border-rose-200 dark:border-rose-800/80 bg-rose-50/90 dark:bg-rose-950/90 text-rose-900 dark:text-rose-100';
             Icon = AlertCircle;
-            iconColor = 'text-rose-600';
+            iconColor = 'text-rose-600 dark:text-rose-400';
           } else if (toast.type === 'warning') {
-            border = 'border-amber-200 bg-amber-50/90 text-amber-900';
+            border = 'border-amber-200 dark:border-amber-800/80 bg-amber-50/90 dark:bg-amber-950/90 text-amber-900 dark:text-amber-100';
             Icon = AlertTriangle;
-            iconColor = 'text-amber-600';
+            iconColor = 'text-amber-600 dark:text-amber-400';
           }
 
           return (
