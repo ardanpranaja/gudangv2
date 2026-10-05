@@ -165,7 +165,7 @@ export const PinjamPage: React.FC = () => {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => navigateTo('bincard', { itemId: lastSubmittedTx.ID_ITEM })}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-emerald-300 text-emerald-900 rounded font-medium hover:bg-emerald-100 transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-emerald-300 text-emerald-900 rounded font-medium hover:bg-emerald-100 transition-colors"
             >
               <ScrollText className="w-3.5 h-3.5" />
               <span>Lihat Bin Card</span>
@@ -182,10 +182,10 @@ export const PinjamPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Form Container */}
-        <div className="md:col-span-2 bg-white rounded-lg border border-slate-200 p-6">
+        <div className="md:col-span-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
           <form onSubmit={handleSubmit} className="space-y-5 text-xs">
             <div>
-              <label className="block font-medium text-slate-700 mb-1">
+              <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
                 Pilih Member Peminjam <span className="text-rose-500">*</span>
               </label>
               <SearchableSelect
@@ -200,7 +200,7 @@ export const PinjamPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-medium text-slate-700 mb-1">
+              <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
                 Pilih Barang / Alat yang Dipinjam <span className="text-rose-500">*</span>
               </label>
               <SearchableSelect
@@ -216,7 +216,7 @@ export const PinjamPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block font-medium text-slate-700 mb-1">
+                <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Jumlah Dipinjam <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
@@ -227,16 +227,16 @@ export const PinjamPage: React.FC = () => {
                     disabled={isSubmitting}
                     value={jumlah}
                     onChange={(e) => setJumlah(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 font-mono text-xs pr-16"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 dark:text-slate-200 font-mono text-xs pr-16"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-xs">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-mono text-xs">
                     {selectedItem?.SATUAN || 'UNIT'}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">
+                <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Tanggal Pinjam <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -245,13 +245,13 @@ export const PinjamPage: React.FC = () => {
                   disabled={isSubmitting}
                   value={tanggal}
                   onChange={(e) => setTanggal(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 dark:text-slate-200 text-xs"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-medium text-slate-700 mb-1">
+              <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
                 Tujuan Peminjaman & Lokasi Kerja <span className="text-rose-500">*</span>
               </label>
               <textarea
@@ -261,12 +261,12 @@ export const PinjamPage: React.FC = () => {
                 value={keterangan}
                 onChange={(e) => setKeterangan(e.target.value)}
                 placeholder="Contoh: Peminjaman untuk pembersihan karpet ruang serbaguna lantai 2, rencana selesai sore ini."
-                className="w-full px-3 py-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 text-xs"
+                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 dark:text-slate-200 text-xs"
               />
             </div>
 
-            <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-[11px] text-slate-400">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 dark:text-slate-500">
                 Pencatatan dikirim langsung via POST action=transaction ke GAS.
               </span>
               <button
@@ -292,19 +292,19 @@ export const PinjamPage: React.FC = () => {
 
         {/* Sidebar Info */}
         <div className="space-y-4">
-          <div className="bg-white rounded-lg border border-slate-200 p-4 space-y-3 text-xs">
-            <h4 className="font-semibold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-1.5">
-              <Boxes className="w-4 h-4 text-slate-600" />
+          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-3 text-xs">
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 border-b border-slate-100 pb-2 flex items-center gap-1.5">
+              <Boxes className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               <span>Ketersediaan Stok</span>
             </h4>
 
             {selectedItem && (
               <div className="space-y-2">
                 <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Stok di Gudang (GAS)</span>
+                  <span className="text-slate-500 dark:text-slate-400">Stok di Gudang (GAS)</span>
                   <span
                     className={`font-mono font-semibold tabular-nums ${
-                      isOutOfStock ? 'text-rose-600' : 'text-slate-900'
+                      isOutOfStock ? 'text-rose-600' : 'text-slate-900 dark:text-slate-100'
                     }`}
                   >
                     {currentStock} {selectedItem.SATUAN}
