@@ -5,7 +5,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { DetailDrawer } from '../components/common/DetailDrawer';
 import { useApp } from '../context/AppContext';
 import { api, normalizeGasErrorMessage } from '../services/api';
-import { MasterItem, UpdateItemInput } from '../types';
+import { MasterItem, UpdateItemInput, ItemStock } from '../types';
 import { Eye, ScrollText, Boxes, Info, Pencil, X, Check, Loader2 } from 'lucide-react';
 
 export const ItemsPage: React.FC = () => {
@@ -13,6 +13,7 @@ export const ItemsPage: React.FC = () => {
 
   const [items, setItems] = useState<MasterItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [stocks, setStocks] = useState<ItemStock[]>([]);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -40,8 +41,12 @@ export const ItemsPage: React.FC = () => {
     setIsLoading(true);
     setIsError(false);
     try {
-      const data = await api.getItems();
-      setItems(data);
+      const [itemsData, stockData] = await Promise.all([
+        api.getItems(),
+        api.getStock(),
+      ]);
+      setItems(itemsData);
+      setStocks(stockData);
     } catch (err: any) {
       setIsError(true);
       setErrorMessage(err.message || 'Gagal memuat daftar master barang.');
@@ -187,6 +192,25 @@ export const ItemsPage: React.FC = () => {
           {item.MIN_STOK}
         </span>
       ),
+    },
+    {
+      key: 'STOK_SAAT_INI',
+      header: 'Stok Saat Ini',
+      sortable: true,
+      align: 'right',
+      render: (item) => {
+        const st = stocks.find((x) => x.idItem === item.ID_ITEM);
+        const qty = st ? st.stok : 0;
+        const isLow = qty <= Number(item.MIN_STOK || 0);
+        return (
+          <span
+            className={`font-mono tabular-nums font-bold ${isLow ? 'text-rose-600' : 'text-slate-900 dark:text-slate-100'}`}
+            title={st ? `Stok live dari backend` : 'Stok belum termuat'}
+          >
+            {qty}
+          </span>
+        );
+      },
     },
     {
       key: 'STATUS',
