@@ -195,7 +195,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
       {/* 1. CHAT PANEL (WHEN OPEN)                                             */}
       {/* --------------------------------------------------------------------- */}
       {isOpen && (
-        <div className="w-[calc(100vw-2rem)] sm:w-[380px] h-[520px] max-h-[85vh] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 flex flex-col overflow-hidden animate-fadeIn transition-colors">
+        <div className="w-[calc(100vw-2rem)] sm:w-[380px] h-[520px] max-h-[85vh] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700/90 dark:border-slate-800 flex flex-col overflow-hidden animate-fadeIn transition-colors dark:border-slate-700">
           {/* Header */}
           <div className="px-4 py-3 bg-slate-900 dark:bg-slate-950 text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -233,11 +233,11 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
 
           {/* Active Context Bar (Informational Chip) */}
           {(selectedMember || selectedItem) && (
-            <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2 overflow-x-auto text-[10px] text-slate-600 dark:text-slate-300">
+            <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2 overflow-x-auto text-[10px] text-slate-600 dark:text-slate-400 dark:text-slate-300">
               <span className="font-semibold text-slate-400 dark:text-slate-500 shrink-0">Konteks Form:</span>
               {selectedMember && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-800 dark:text-slate-200 shrink-0">
-                  <User className="w-2.5 h-2.5 text-slate-400" />
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-800 dark:text-slate-200 shrink-0">
+                  <User className="w-2.5 h-2.5 text-slate-400 dark:text-slate-500" />
                   <span className="max-w-[120px] truncate">{selectedMember.NAMA_MEMBER}</span>
                   {selectedMember.LANTAI && (
                     <span className="text-[9px] text-slate-400 dark:text-slate-500">Lt.{selectedMember.LANTAI}</span>
@@ -245,8 +245,8 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
                 </span>
               )}
               {selectedItem && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-800 dark:text-slate-200 shrink-0">
-                  <Package className="w-2.5 h-2.5 text-slate-400" />
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-800 dark:text-slate-200 shrink-0">
+                  <Package className="w-2.5 h-2.5 text-slate-400 dark:text-slate-500" />
                   <span className="max-w-[120px] truncate">{selectedItem.NAMA_ITEM}</span>
                   <span
                     className={`text-[9px] font-bold ${
@@ -261,7 +261,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
           )}
 
           {/* Message List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-50/50 dark:bg-slate-950/40">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-50 dark:bg-slate-800/60/50 dark:bg-slate-950/40 dark:bg-slate-800/60">
             {messages.map((m) => {
               const isAssistant = m.role === 'assistant';
               return (
@@ -278,7 +278,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
                   <div
                     className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed text-xs shadow-2xs whitespace-pre-wrap ${
                       isAssistant
-                        ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-xs'
+                        ? 'bg-white dark:bg-slate-900 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-xs'
                         : 'bg-slate-900 dark:bg-emerald-600 text-white rounded-tr-xs'
                     }`}
                   >
@@ -301,7 +301,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
                       key={idx}
                       type="button"
                       onClick={() => handleSendMessage(promptText)}
-                      className="text-left px-2.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] text-slate-700 dark:text-slate-200 transition-colors"
+                      className="text-left px-2.5 py-1.5 bg-white dark:bg-slate-900 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] text-slate-700 dark:text-slate-200 transition-colors"
                     >
                       {promptText}
                     </button>
@@ -316,7 +316,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
                 <div className="mt-0.5 shrink-0">
                   <AIAvatarIcon size="xs" isThinking status="busy" />
                 </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-xs px-3.5 py-2 text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1.5 shadow-2xs">
+                <div className="bg-white dark:bg-slate-900 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-xs px-3.5 py-2 text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1.5 shadow-2xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span>Asisten sedang mengetik respons...</span>
                 </div>
@@ -345,8 +345,8 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
           )}
 
           {/* Input Footer */}
-          <div className="p-2.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 focus-within:border-slate-800 dark:focus-within:border-slate-400 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all">
+          <div className="p-2.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 dark:border-slate-800">
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/60 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 focus-within:border-slate-800 dark:focus-within:border-slate-400 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all">
               <textarea
                 ref={inputRef}
                 rows={1}
@@ -386,7 +386,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
         <div className="relative flex flex-col items-end">
           {/* Greeting / Instruction Speech Bubble Tooltip */}
           {showTooltip && (
-            <div className="relative mb-3 w-72 sm:w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200/90 dark:border-slate-800 p-3.5 text-xs text-slate-700 dark:text-slate-300 animate-fadeIn select-none">
+            <div className="relative mb-3 w-72 sm:w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700/90 dark:border-slate-800 p-3.5 text-xs text-slate-700 dark:text-slate-200 dark:text-slate-300 animate-fadeIn select-none dark:border-slate-700">
               {/* Header with Title & Close button */}
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100">
@@ -435,7 +435,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
               </div>
 
               {/* Pointer Triangle Arrow pointing down towards avatar */}
-              <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-200 dark:border-slate-800 rotate-45" />
+              <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-200 dark:border-slate-700 dark:border-slate-800 rotate-45" />
             </div>
           )}
 
