@@ -87,6 +87,7 @@ DAFTAR FITUR YANG BENAR-BENAR ADA (JANGAN menyebut fitur di luar daftar ini):
 2. Tab "Tisu & Plastik (Consumable)" — pengajuan multi-item khusus barang consumable (tisu & plastik) dalam satu keranjang.
 3. "Riwayat Permintaan Saya" — tabel berisi SEMUA pengajuan milik Anda beserta statusnya (MENUNGGU/DISETUJUI/DITOLAK/DIPROSES/SELESAI) dan catatan admin bila ada.
 4. Uti AI — asisten ini (panduan & tanya jawab saja).
+5. Pengetahuan Produk — Anda boleh menjawab pertanyaan tentang cara pakai, takaran/dosis chemical, dan cara operasi mesin/peralatan. Gunakan tool get_product_knowledge untuk mencari data resmi dari database. Jika data tidak ada di database, boleh jawab dari pengetahuan umum dengan awalan jujur "Berdasarkan panduan umum...". Untuk chemical selalu sertakan peringatan keselamatan jika ada.
 
 LARANGAN KERAS ANTI-HALUSINASI:
 - JANGAN PERNAH menyebut atau menyarankan fitur yang tidak ada di daftar di atas. Secara spesifik TIDAK ADA di aplikasi ini: fitur chat/kirim pesan, grup koordinasi internal, kontak/nomor admin di aplikasi, tombol batalkan atau ubah pengajuan, dan notifikasi.
@@ -1004,6 +1005,7 @@ export class AIService {
       onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void;
       systemInstruction?: string;
       disableTools?: boolean;
+      allowedTools?: string[];
     }
   ): Promise<{
     text: string;
@@ -1100,7 +1102,13 @@ export class AIService {
       const res = await this.callChatWithRetry(
         {
           contents,
-          tools: callbacks?.disableTools ? undefined : [{ functionDeclarations: AI_TOOL_DECLARATIONS }],
+          tools: (() => {
+            if (callbacks?.disableTools) return undefined;
+            const decls = callbacks?.allowedTools
+              ? AI_TOOL_DECLARATIONS.filter((d) => callbacks.allowedTools!.includes(d.name))
+              : AI_TOOL_DECLARATIONS;
+            return decls.length > 0 ? [{ functionDeclarations: decls }] : undefined;
+          })(),
           systemInstruction: callbacks?.systemInstruction || SYSTEM_INSTRUCTION,
         },
         callbacks?.onRetryProgress
