@@ -16,9 +16,9 @@ export const AIAssistantPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigateTo('pengaturan')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-50 transition-colors shadow-2xs"
           >
-            <Settings className="w-3.5 h-3.5 text-slate-500" />
+            <Settings className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             <span>Pengaturan AI</span>
           </button>
         }
