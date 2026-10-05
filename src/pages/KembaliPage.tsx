@@ -136,14 +136,14 @@ export const KembaliPage: React.FC = () => {
       />
 
       {lastSubmittedTx && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start justify-between text-xs text-emerald-900 animate-fadeIn">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start justify-between text-xs text-emerald-900 animate-fadeIn dark:bg-emerald-950/40 dark:text-emerald-100 dark:border-emerald-800">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <div className="font-semibold text-sm text-emerald-950">
+              <div className="font-semibold text-sm text-emerald-950 dark:text-emerald-100">
                 Pengembalian Berhasil Disimpan di GAS
               </div>
-              <p className="mt-1 text-emerald-800">
+              <p className="mt-1 text-emerald-800 dark:text-emerald-200">
                 Dokumen <span className="font-mono font-bold">{lastSubmittedTx.NO_DOKUMEN}</span> telah
                 diterbitkan untuk member <span className="font-semibold">{lastSubmittedTx.NAMA_MEMBER}</span>.
               </p>
@@ -152,14 +152,14 @@ export const KembaliPage: React.FC = () => {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => navigateTo('bincard', { itemId: lastSubmittedTx.ID_ITEM })}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 rounded font-medium hover:bg-emerald-100 transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 rounded font-medium hover:bg-emerald-100 transition-colors dark:bg-emerald-900/40 dark:text-emerald-100 dark:border-emerald-700 dark:hover:bg-emerald-900/40"
             >
               <ScrollText className="w-3.5 h-3.5" />
               <span>Lihat Bin Card</span>
             </button>
             <button
               onClick={() => setLastSubmittedTx(null)}
-              className="text-emerald-700 hover:text-emerald-900 px-2 py-1"
+              className="text-emerald-700 hover:text-emerald-900 px-2 py-1 dark:text-emerald-300"
             >
               Tutup
             </button>
