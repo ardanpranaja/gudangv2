@@ -381,6 +381,31 @@ export const ItemsPage: React.FC = () => {
               </div>
             </div>
 
+            {(selectedItem.CARA_PAKAI || selectedItem.TAKARAN || selectedItem.PERHATIAN) && (
+              <div className="space-y-3">
+                <h4 className="font-semibold text-stone-900 dark:text-stone-100 border-b border-stone-200 dark:border-stone-700 pb-1.5">
+                  Pengetahuan Produk
+                </h4>
+                {selectedItem.CARA_PAKAI && (
+                  <div className="py-1 border-b border-stone-100">
+                    <div className="text-stone-500 dark:text-stone-400 text-[11px] font-medium mb-0.5">Cara Pakai</div>
+                    <div className="text-stone-800 dark:text-stone-200 leading-relaxed">{selectedItem.CARA_PAKAI}</div>
+                  </div>
+                )}
+                {selectedItem.TAKARAN && selectedItem.TAKARAN !== '-' && (
+                  <div className="py-1 border-b border-stone-100">
+                    <div className="text-stone-500 dark:text-stone-400 text-[11px] font-medium mb-0.5">Takaran</div>
+                    <div className="font-mono font-semibold text-stone-800 dark:text-stone-200">{selectedItem.TAKARAN}</div>
+                  </div>
+                )}
+                {selectedItem.PERHATIAN && (
+                  <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                    <span className="font-semibold">Perhatian: </span>{selectedItem.PERHATIAN}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="p-3 bg-stone-50 dark:bg-stone-800/60 rounded border border-stone-200 dark:border-stone-700 text-[11px] text-stone-500 dark:text-stone-400 space-y-1">
               <div>ID Item Permanen: <span className="font-mono font-semibold text-stone-700 dark:text-stone-200">{selectedItem.ID_ITEM}</span></div>
             </div>
