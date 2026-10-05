@@ -381,8 +381,8 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
               <div
                 className={`p-4 rounded-xl border animate-fadeIn ${
                   submissionResult.success
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
-                    : 'bg-amber-50 border-amber-200 text-amber-950'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-950 dark:text-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800'
+                    : 'bg-amber-50 border-amber-200 text-amber-950 dark:text-amber-100 dark:bg-amber-950/40 dark:border-amber-800'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -406,7 +406,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                           {submissionResult.createdIds.map((id, idx) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 rounded bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-800 shadow-2xs"
+                              className="px-2 py-0.5 rounded bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-800 shadow-2xs dark:text-emerald-200 dark:border-emerald-700"
                             >
                               {id}
                             </span>
@@ -415,8 +415,8 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                       </div>
                     )}
                     {submissionResult.failedItems.length > 0 && (
-                      <div className="text-xs text-rose-800 mt-2 space-y-1">
-                        <span className="font-semibold text-rose-900">
+                      <div className="text-xs text-rose-800 mt-2 space-y-1 dark:text-rose-200">
+                        <span className="font-semibold text-rose-900 dark:text-rose-100">
                           {submissionResult.failedItems.length} Item Gagal Terkirim (Tersimpan di Keranjang):
                         </span>
                         <ul className="list-disc list-inside space-y-0.5">
@@ -438,7 +438,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
               <div className="flex items-center gap-2.5">
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
-                    selectedMemberId ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-stone-200 text-stone-700 dark:text-stone-200'
+                    selectedMemberId ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                   }`}
                 >
                   {selectedMemberId ? <Check className="w-4 h-4 text-white" /> : '1'}
@@ -465,7 +465,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
               {/* Kartu Identitas Ringkas Member */}
               {selectedMemberObj && (
-                <div className="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs animate-fadeIn">
+                <div className="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs animate-fadeIn dark:bg-emerald-950/40 dark:border-emerald-800">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                       {selectedMemberObj.NAMA_MEMBER.charAt(0)}
@@ -480,7 +480,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs dark:text-emerald-100 dark:border-emerald-700">
                       <Building2 className="w-3.5 h-3.5 text-emerald-600" />
                       <span>{selectedMemberObj.LANTAI ? `Lantai ${selectedMemberObj.LANTAI}` : 'Lantai -'}</span>
                     </span>
@@ -497,7 +497,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                 <div className="flex items-center gap-2.5">
                   <div
                     className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
-                      cart.length > 0 ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-stone-200 text-stone-700 dark:text-stone-200'
+                      cart.length > 0 ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                     }`}
                   >
                     {cart.length > 0 ? <Check className="w-4 h-4 text-white" /> : '2'}
@@ -512,7 +512,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                   </div>
                 </div>
 
-                <span className="px-2.5 py-0.5 rounded-full bg-stone-200 font-bold text-stone-700 dark:text-stone-200 text-[11px]">
+                <span className="px-2.5 py-0.5 rounded-full bg-stone-200 font-bold text-stone-700 dark:text-stone-200 text-[11px] dark:bg-stone-700">
                   {cart.length} item di keranjang
                 </span>
               </div>
@@ -549,11 +549,11 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                       </div>
                       <div className="shrink-0">
                         {currentItemReady ? (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-200 dark:border-emerald-800">
                             READY
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px] border border-rose-200">
+                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px] border border-rose-200 dark:bg-rose-900/40 dark:text-rose-200 dark:border-rose-800">
                             KOSONG
                           </span>
                         )}
@@ -572,7 +572,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                               onClick={() => setSelectedUnit('lembar')}
                               className={`flex-1 py-1 rounded text-center font-semibold text-xs transition-colors ${
                                 selectedUnit === 'lembar'
-                                  ? 'bg-white dark:bg-stone-900 text-emerald-800 shadow-2xs'
+                                  ? 'bg-white dark:bg-stone-900 text-emerald-800 shadow-2xs dark:text-emerald-200'
                                   : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
                               }`}
                             >
@@ -583,7 +583,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                               onClick={() => setSelectedUnit('pack')}
                               className={`flex-1 py-1 rounded text-center font-semibold text-xs transition-colors ${
                                 selectedUnit === 'pack'
-                                  ? 'bg-white dark:bg-stone-900 text-emerald-800 shadow-2xs'
+                                  ? 'bg-white dark:bg-stone-900 text-emerald-800 shadow-2xs dark:text-emerald-200'
                                   : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
                               }`}
                             >
@@ -625,15 +625,15 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
                     {/* Live Conversion Banner */}
                     {liveConversion && (
-                      <div className="p-2.5 rounded-lg bg-teal-50/70 border border-teal-200 text-teal-950 flex items-center justify-between text-xs">
+                      <div className="p-2.5 rounded-lg bg-teal-50/70 border border-teal-200 text-teal-950 dark:text-teal-100 flex items-center justify-between text-xs dark:bg-teal-950/40 dark:border-teal-800">
                         <div className="flex items-center gap-1.5">
-                          <Info className="w-4 h-4 text-teal-700 shrink-0" />
+                          <Info className="w-4 h-4 text-teal-700 shrink-0 dark:text-teal-300" />
                           <span>
                             <strong>Perhitungan Konversi:</strong> {liveConversion.conversionText}
                           </span>
                         </div>
                         {currentConfig.category === 'PLASTIK' && selectedUnit === 'lembar' && (
-                          <span className="text-[10px] text-teal-800 font-medium shrink-0">
+                          <span className="text-[10px] text-teal-800 font-medium shrink-0 dark:text-teal-200">
                             (Pembulatan ke atas: {liveConversion.sendQty} pack)
                           </span>
                         )}
@@ -675,7 +675,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                                 Pesan: {item.orderQty} {item.orderUnit}
                               </span>
                               <span className="text-stone-300">•</span>
-                              <span className="text-teal-700 font-medium bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">
+                              <span className="text-teal-700 font-medium bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800">
                                 {item.conversionText}
                               </span>
                               <span className="text-stone-400 dark:text-stone-500 text-[10px] font-mono">
@@ -688,7 +688,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                         <button
                           type="button"
                           onClick={() => handleRemoveFromCart(idx)}
-                          className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+                          className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 dark:bg-rose-950/40 dark:hover:bg-rose-950/40"
                           title="Hapus item dari keranjang"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -711,7 +711,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                       className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                         formAlasan.trim().length > 0
                           ? 'bg-emerald-600 text-white shadow-2xs'
-                          : 'bg-stone-200 text-stone-700 dark:text-stone-200'
+                          : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                       }`}
                     >
                       {formAlasan.trim().length > 0 ? <Check className="w-4 h-4 text-white" /> : '3'}
@@ -775,7 +775,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-700 p-5 shadow-xs space-y-4 text-xs">
             <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
-              <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 dark:bg-teal-950/40 dark:text-teal-300">
                 <HelpCircle className="w-4 h-4" />
               </div>
               <div>
@@ -793,19 +793,19 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
               <ul className="space-y-1.5 text-[11px] text-stone-600 dark:text-stone-400">
                 <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
                   <span className="font-semibold text-stone-900 dark:text-stone-100">Tissue Roll</span>
-                  <span className="font-mono text-emerald-700 font-bold">1 box = 100 roll</span>
+                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 box = 100 roll</span>
                 </li>
                 <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
                   <span className="font-semibold text-stone-900 dark:text-stone-100">Tissue Roll Jumbo</span>
-                  <span className="font-mono text-emerald-700 font-bold">1 box = 16 roll</span>
+                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 box = 16 roll</span>
                 </li>
                 <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
                   <span className="font-semibold text-stone-900 dark:text-stone-100">Tissue Hand Towel</span>
-                  <span className="font-mono text-emerald-700 font-bold">1 box = 24 pack</span>
+                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 box = 24 pack</span>
                 </li>
                 <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
                   <span className="font-semibold text-stone-900 dark:text-stone-100">Tissue Kotak</span>
-                  <span className="font-mono text-emerald-700 font-bold">1 box = 40 pack</span>
+                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 box = 40 pack</span>
                 </li>
               </ul>
             </div>
@@ -819,23 +819,23 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
               <ul className="space-y-1.5 text-[11px] text-stone-600 dark:text-stone-400">
                 <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
                   <span className="font-semibold text-stone-900 dark:text-stone-100">Ukuran 50x75</span>
-                  <span className="font-mono text-emerald-700 font-bold">1 pack = 24 lembar</span>
+                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 pack = 24 lembar</span>
                 </li>
                 <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
                   <span className="font-semibold text-stone-900 dark:text-stone-100">Ukuran 60x100</span>
-                  <span className="font-mono text-emerald-700 font-bold">1 pack = 12 lembar</span>
+                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 pack = 12 lembar</span>
                 </li>
                 <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
                   <span className="font-semibold text-stone-900 dark:text-stone-100">Ukuran 90x120</span>
-                  <span className="font-mono text-emerald-700 font-bold">1 pack = 6 lembar</span>
+                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 pack = 6 lembar</span>
                 </li>
               </ul>
             </div>
 
             {/* Aturan Kirim Plastik Note */}
-            <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/90 text-amber-950 text-[11px] space-y-1">
-              <div className="font-bold flex items-center gap-1 text-amber-900">
-                <Info className="w-3.5 h-3.5 text-amber-700" />
+            <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/90 text-amber-950 dark:text-amber-100 text-[11px] space-y-1 dark:bg-amber-950/40 dark:border-amber-800">
+              <div className="font-bold flex items-center gap-1 text-amber-900 dark:text-amber-100">
+                <Info className="w-3.5 h-3.5 text-amber-700 dark:text-amber-300" />
                 <span>Aturan Kirim Plastik:</span>
               </div>
               <p className="leading-relaxed">
