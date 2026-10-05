@@ -11,7 +11,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
   const displayStatus = rawStatus.length > 0 ? rawStatus : '-';
   const normalized = displayStatus.toUpperCase();
 
-  let colorClasses = 'text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
+  let colorClasses = 'text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700';
   let Icon = Clock;
 
   switch (normalized) {
@@ -52,11 +52,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
       break;
     case 'CREW':
     case 'VENDOR':
-      colorClasses = 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
+      colorClasses = 'text-stone-700 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700';
       Icon = CheckCircle2;
       break;
     default:
-      colorClasses = 'text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
+      colorClasses = 'text-stone-700 dark:text-stone-300 bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700';
       Icon = CheckCircle2;
   }
 
