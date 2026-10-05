@@ -147,7 +147,7 @@ export const AIAssistantBubble: React.FC<AIAssistantBubbleProps> = ({
         contextPayload,
         {
           systemInstruction: MEMBER_SYSTEM_INSTRUCTION,
-          disableTools: true, // Disable write tools and stock checks to prevent leaking stock numbers
+          allowedTools: ['get_product_knowledge'], // Hanya tool pengetahuan produk; tool stok/tulis tetap nonaktif agar angka stok tidak bocor
         }
       );
 
