@@ -37,7 +37,15 @@ import {
   Layers,
   HelpCircle,
   ShoppingCart,
+  Trash2,
 } from 'lucide-react';
+
+interface RequestCartItem {
+  id: string;
+  nama: string;
+  satuan: string;
+  jumlah: number;
+}
 
 export const PengajuanPage: React.FC = () => {
   const { pageParams, addToast, refreshKey, canPerformAction, role } = useApp();
@@ -80,6 +88,9 @@ export const PengajuanPage: React.FC = () => {
   const [eligibilityResult, setEligibilityResult] = useState<PickupEligibilityResult | null>(null);
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
   const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
+  const [requestCart, setRequestCart] = useState<RequestCartItem[]>([]);
+  const [cartSubmitProgress, setCartSubmitProgress] = useState<string | null>(null);
+  const [cartResult, setCartResult] = useState<{ success: boolean; createdIds: string[]; failedItems: string[] } | null>(null);
 
   // ---------------------------------------------------------------------------
   // ADMIN & PICKING LIST STATE
@@ -235,6 +246,47 @@ export const PengajuanPage: React.FC = () => {
     }
   };
 
+  const handleAddToCart = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMemberId || !selectedItemId) {
+      addToast('warning', 'Pilih Data', 'Pilih nama member dan barang yang diajukan.');
+      return;
+    }
+    if (!isSelectedItemReady) {
+      addToast('error', 'Stok Kosong', 'Stok barang saat ini kosong — tidak dapat diajukan.');
+      return;
+    }
+    if (formJumlah === '' || !isFinite(Number(formJumlah)) || Number(formJumlah) <= 0) {
+      addToast('error', 'Validasi Gagal', 'Jumlah barang yang diminta wajib diisi dan harus lebih dari 0.');
+      return;
+    }
+    const itemObj = itemMap.get(selectedItemId);
+    const existingIdx = requestCart.findIndex((c) => c.id === selectedItemId);
+    if (existingIdx >= 0) {
+      const updated = [...requestCart];
+      updated[existingIdx] = { ...updated[existingIdx], jumlah: updated[existingIdx].jumlah + Number(formJumlah) };
+      setRequestCart(updated);
+      addToast('info', 'Jumlah Digabungkan', `${itemObj?.NAMA_ITEM} kini ${updated[existingIdx].jumlah} ${itemObj?.SATUAN} di keranjang.`);
+    } else {
+      setRequestCart([
+        ...requestCart,
+        { id: selectedItemId, nama: itemObj?.NAMA_ITEM || selectedItemId, satuan: itemObj?.SATUAN || 'UNIT', jumlah: Number(formJumlah) },
+      ]);
+      addToast('success', 'Ditambahkan ke Keranjang', `${itemObj?.NAMA_ITEM} (${formJumlah} ${itemObj?.SATUAN}) ditambahkan.`);
+    }
+    setSelectedItemId('');
+    setFormJumlah('');
+    setEligibilityResult(null);
+    setSubmittedRequestId(null);
+    setCartResult(null);
+  };
+
+  const handleRemoveFromCart = (index: number) => {
+    const removed = requestCart[index];
+    setRequestCart(requestCart.filter((_, idx) => idx !== index));
+    if (removed) addToast('info', 'Item Dihapus', `${removed.nama} dikeluarkan dari keranjang.`);
+  };
+
   const handleCrewSubmitRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canPerformAction('REQUEST')) {
@@ -242,18 +294,13 @@ export const PengajuanPage: React.FC = () => {
       return;
     }
 
-    if (!selectedMemberId || !selectedItemId) {
-      addToast('error', 'Validasi Gagal', 'Nama pemohon dan barang wajib dipilih.');
+    if (!selectedMemberId) {
+      addToast('error', 'Validasi Gagal', 'Nama pemohon wajib dipilih.');
       return;
     }
 
-    if (!isSelectedItemReady) {
-      addToast('error', 'Stok Kosong', 'Stok barang saat ini kosong — tidak dapat diajukan.');
-      return;
-    }
-
-    if (formJumlah === '' || !isFinite(Number(formJumlah)) || Number(formJumlah) <= 0) {
-      addToast('error', 'Validasi Gagal', 'Jumlah barang yang diminta wajib diisi dan harus lebih dari 0.');
+    if (requestCart.length === 0) {
+      addToast('error', 'Validasi Gagal', 'Tambahkan minimal satu barang ke keranjang.');
       return;
     }
 
@@ -264,29 +311,49 @@ export const PengajuanPage: React.FC = () => {
 
     setIsSubmittingRequest(true);
     setSubmittedRequestId(null);
+    setCartResult(null);
+
+    const createdIds: string[] = [];
+    const failedItems: string[] = [];
+    const remainingCart: RequestCartItem[] = [];
+    const total = requestCart.length;
+
     try {
-      const res = await api.submitRequest({
-        memberId: selectedMemberId,
-        itemId: selectedItemId,
-        jumlah: Number(formJumlah),
-        alasan: formAlasan.trim(),
-      });
+      for (let i = 0; i < total; i++) {
+        const item = requestCart[i];
+        setCartSubmitProgress(`Mengirim item ${i + 1} dari ${total}: ${item.nama} (${item.jumlah} ${item.satuan})...`);
+        try {
+          const res = await api.submitRequest({
+            memberId: selectedMemberId,
+            itemId: item.id,
+            jumlah: item.jumlah,
+            alasan: formAlasan.trim(),
+          });
+          const newId = res.ID_PENGAJUAN || (res.request as any)?.ID_PENGAJUAN || 'REQ-BARU';
+          createdIds.push(newId);
+        } catch (err: unknown) {
+          const msg = normalizeGasErrorMessage(err, undefined, `Gagal mengajukan ${item.nama}`);
+          failedItems.push(`${item.nama}: ${msg}`);
+          remainingCart.push(item);
+        }
+      }
 
-      const newId = res.ID_PENGAJUAN || (res.request as any)?.ID_PENGAJUAN || 'REQ-BARU';
-      setSubmittedRequestId(newId);
-      addToast('success', 'Permintaan Berhasil Dikirim', `Pengajuan ${newId} telah tercatat di sistem.`);
+      if (failedItems.length === 0) {
+        setCartResult({ success: true, createdIds, failedItems: [] });
+        setRequestCart([]);
+        setFormAlasan('');
+        setEligibilityResult(null);
+        addToast('success', 'Semua Terkirim', `Berhasil mengajukan ${createdIds.length} permintaan ke gudang.`);
+      } else {
+        setCartResult({ success: false, createdIds, failedItems });
+        setRequestCart(remainingCart);
+        addToast('warning', 'Sebagian Gagal', `${createdIds.length} berhasil, ${failedItems.length} gagal (tetap di keranjang).`);
+      }
 
-      // Reset reason & eligibility
-      setFormAlasan('');
-      setEligibilityResult(null);
-
-      // Refresh requests list
       await loadRequests();
-    } catch (err: unknown) {
-      const msg = normalizeGasErrorMessage(err, undefined, 'Terjadi kesalahan saat mengirim pengajuan.');
-      addToast('error', 'Gagal Mengajukan Permintaan', msg);
     } finally {
       setIsSubmittingRequest(false);
+      setCartSubmitProgress(null);
     }
   };
 
@@ -960,16 +1027,40 @@ export const PengajuanPage: React.FC = () => {
 
               {/* Form Body */}
               <div className="p-5 sm:p-6 space-y-6">
-                {/* Success Banner */}
-                {submittedRequestId && (
-                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3 text-emerald-900 text-xs animate-fadeIn">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-bold text-emerald-950 text-sm">
-                        Permintaan Berhasil Tercatat: ID {submittedRequestId}
+                {/* Result Banner */}
+                {cartResult && (
+                  <div className={`p-4 border rounded-xl flex items-start gap-3 text-xs animate-fadeIn ${
+                    cartResult.success
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100'
+                      : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100'
+                  }`}>
+                    {cartResult.success ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    )}
+                    <div className="flex-1">
+                      <div className="font-bold text-sm">
+                        {cartResult.success ? 'Semua Permintaan Terkirim!' : 'Hasil Pengiriman Permintaan'}
                       </div>
-                      <p className="mt-1 text-emerald-800 leading-relaxed">
-                        Permintaan Anda telah masuk ke antrean gudang dan menunggu persetujuan admin. Anda dapat memantau progresnya pada tabel Riwayat di bawah.
+                      {cartResult.createdIds.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2 font-mono font-bold text-[11px]">
+                          {cartResult.createdIds.map((id, idx) => (
+                            <span key={idx} className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200">
+                              {id}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {cartResult.failedItems.length > 0 && (
+                        <ul className="list-disc list-inside mt-2 space-y-0.5 text-rose-800 dark:text-rose-200">
+                          {cartResult.failedItems.map((msg, idx) => (
+                            <li key={idx}>{msg}</li>
+                          ))}
+                        </ul>
+                      )}
+                      <p className="mt-2 opacity-80 leading-relaxed">
+                        Pantau progresnya pada tabel Riwayat di bawah.
                       </p>
                     </div>
                   </div>
@@ -1155,6 +1246,16 @@ export const PengajuanPage: React.FC = () => {
                       </div>
                     </div>
 
+                    <button
+                      type="button"
+                      onClick={handleAddToCart}
+                      disabled={!selectedMemberId || !selectedItemId || !isSelectedItemReady || formJumlah === '' || Number(formJumlah) <= 0 || isSubmittingRequest}
+                      className="w-full py-2.5 px-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Tambah ke Keranjang</span>
+                    </button>
+
                     {/* Eligibility Result Box (Human Friendly) */}
                     {eligibilityResult && (
                       <div
@@ -1188,6 +1289,54 @@ export const PengajuanPage: React.FC = () => {
                                 : 'Kuota pengambilan tersedia.')}
                           </p>
                         </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* KERANJANG PERMINTAAN */}
+                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 space-y-3">
+                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                      <ShoppingCart className="w-3.5 h-3.5" />
+                      <span>Keranjang Permintaan ({requestCart.length} item):</span>
+                    </div>
+                    {requestCart.length === 0 ? (
+                      <div className="p-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 text-center bg-white dark:bg-slate-900">
+                        <p className="font-medium text-xs text-slate-600 dark:text-slate-400">Keranjang masih kosong</p>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                          Pilih barang &amp; jumlah di atas lalu klik &ldquo;Tambah ke Keranjang&rdquo;
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {requestCart.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3 animate-fadeIn"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-6 h-6 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                {idx + 1}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-semibold text-slate-900 dark:text-slate-100 truncate text-xs">{item.nama}</div>
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                                    {item.jumlah} {item.satuan}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFromCart(idx)}
+                              disabled={isSubmittingRequest}
+                              className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors shrink-0"
+                              title="Hapus dari keranjang"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -1228,28 +1377,33 @@ export const PengajuanPage: React.FC = () => {
                   </div>
 
                   {/* STEP 5: KIRIM PERMINTAAN */}
-                  <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-slate-100">
-                    <div>
-                      {!isSelectedItemReady && selectedItemObj && (
-                        <span className="text-rose-600 font-semibold text-xs flex items-center gap-1.5">
-                          <AlertCircle className="w-4 h-4 shrink-0" />
-                          <span>Stok kosong di gudang — form tidak dapat diajukan saat ini</span>
-                        </span>
-                      )}
-                    </div>
+                  <div className="pt-2 space-y-3 border-t border-slate-100 dark:border-slate-800">
+                    {isSubmittingRequest && cartSubmitProgress && (
+                      <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-100 text-xs flex items-center gap-2 animate-pulse">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                        <span>{cartSubmitProgress}</span>
+                      </div>
+                    )}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {requestCart.length > 0
+                          ? `${requestCart.length} item di keranjang akan diajukan berurutan.`
+                          : 'Tambahkan barang ke keranjang terlebih dahulu.'}
+                      </div>
 
-                    <button
-                      type="submit"
-                      disabled={isSubmittingRequest || !isSelectedItemReady || !canPerformAction('REQUEST')}
-                      className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs hover:shadow"
-                    >
-                      {isSubmittingRequest ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Send className="w-4 h-4" />
-                      )}
-                      <span>Ajukan Permintaan Sekarang</span>
-                    </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmittingRequest || requestCart.length === 0 || !selectedMemberId || !formAlasan.trim() || !canPerformAction('REQUEST')}
+                        className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs hover:shadow"
+                      >
+                        {isSubmittingRequest ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                        <span>Ajukan {requestCart.length > 0 ? `${requestCart.length} ` : ''}Permintaan</span>
+                      </button>
+                    </div>
                   </div>
                 </form>
               </div>
