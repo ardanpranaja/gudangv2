@@ -161,14 +161,14 @@ export const RiwayatMemberPage: React.FC = () => {
                 <div className="text-[11px] text-stone-500 dark:text-stone-400">Jabatan / Role</div>
                 <div className="font-semibold text-stone-900 dark:text-stone-100">{selectedMember.JABATAN || '-'}</div>
               </div>
-              <div className="h-8 w-px bg-stone-200" />
+              <div className="h-8 w-px bg-stone-200 dark:bg-stone-700" />
               <div>
                 <div className="text-[11px] text-stone-500 dark:text-stone-400">Kontak</div>
                 <div className="font-mono text-xs font-medium text-stone-800 dark:text-stone-200">
                   {selectedMember.NO_HP || '-'}
                 </div>
               </div>
-              <div className="h-8 w-px bg-stone-200" />
+              <div className="h-8 w-px bg-stone-200 dark:bg-stone-700" />
               <div>
                 <div className="text-[11px] text-stone-500 dark:text-stone-400">Status</div>
                 <StatusBadge status={selectedMember.STATUS} size="sm" />
