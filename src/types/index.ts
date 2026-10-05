@@ -45,6 +45,9 @@ export interface MasterItem {
   STATUS: StatusItem;
   CREATED_AT?: string;
   UPDATED_AT?: string;
+  CARA_PAKAI?: string;
+  TAKARAN?: string;
+  PERHATIAN?: string;
 }
 
 export interface MasterMember {
