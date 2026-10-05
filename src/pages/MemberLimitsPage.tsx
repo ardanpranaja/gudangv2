@@ -349,7 +349,7 @@ export const MemberLimitsPage: React.FC = () => {
       key: 'ID_LIMIT',
       header: 'ID Limit',
       sortable: true,
-      className: 'font-mono text-slate-800 dark:text-slate-200 font-semibold',
+      className: 'font-mono text-stone-800 dark:text-stone-200 font-semibold',
     },
     {
       key: 'ID_MEMBER',
@@ -359,10 +359,10 @@ export const MemberLimitsPage: React.FC = () => {
         const member = members.find((m) => m.ID_MEMBER === l.ID_MEMBER);
         return (
           <div>
-            <div className="font-semibold text-slate-900 dark:text-slate-100">
+            <div className="font-semibold text-stone-900 dark:text-stone-100">
               {l.NAMA_MEMBER || member?.NAMA_MEMBER || l.ID_MEMBER}
             </div>
-            <div className="font-mono text-[11px] text-slate-400 dark:text-slate-500">
+            <div className="font-mono text-[11px] text-stone-400 dark:text-stone-500">
               {l.ID_MEMBER} · {member?.JABATAN || ''}
             </div>
           </div>
@@ -377,10 +377,10 @@ export const MemberLimitsPage: React.FC = () => {
         const item = items.find((i) => i.ID_ITEM === l.ID_ITEM);
         return (
           <div>
-            <div className="font-medium text-slate-900 dark:text-slate-100">
+            <div className="font-medium text-stone-900 dark:text-stone-100">
               {l.NAMA_ITEM || item?.NAMA_ITEM || l.ID_ITEM}
             </div>
-            <div className="font-mono text-[11px] text-slate-400 dark:text-slate-500">
+            <div className="font-mono text-[11px] text-stone-400 dark:text-stone-500">
               {l.ID_ITEM} · {item?.KATEGORI || ''}
             </div>
           </div>
@@ -393,7 +393,7 @@ export const MemberLimitsPage: React.FC = () => {
       sortable: true,
       align: 'right',
       render: (l) => (
-        <span className="font-mono font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
+        <span className="font-mono font-semibold text-stone-900 dark:text-stone-100 tabular-nums">
           {l.MAX_QTY} {l.SATUAN}
         </span>
       ),
@@ -419,9 +419,9 @@ export const MemberLimitsPage: React.FC = () => {
                     <button
                       onClick={() => handleOpenEdit(l)}
                       title="Edit Limit"
-                      className="px-2 py-1 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded inline-flex items-center gap-1 transition-colors"
+                      className="px-2 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 rounded inline-flex items-center gap-1 transition-colors"
                     >
-                      <Pencil className="w-3 h-3 text-slate-600 dark:text-slate-400" />
+                      <Pencil className="w-3 h-3 text-stone-600 dark:text-stone-400" />
                       <span>Edit</span>
                     </button>
                     <button
@@ -449,7 +449,7 @@ export const MemberLimitsPage: React.FC = () => {
             <button
               onClick={() => navigateTo('riwayat-member', { memberId: l.ID_MEMBER })}
               title="Lihat Histori Pengambilan Member"
-              className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 inline-flex items-center gap-0.5 font-medium hover:underline px-1.5 py-1"
+              className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 inline-flex items-center gap-0.5 font-medium hover:underline px-1.5 py-1"
             >
               <span>Histori</span>
               <ArrowRight className="w-3 h-3" />
@@ -476,7 +476,7 @@ export const MemberLimitsPage: React.FC = () => {
               setFormStatus('AKTIF');
               setIsCreateModalOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 text-white rounded text-xs font-semibold hover:bg-slate-800 transition-colors shadow-xs shrink-0 self-start sm:self-auto"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-700 text-white rounded text-xs font-semibold hover:bg-amber-800 transition-colors shadow-xs shrink-0 self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Limit</span>
@@ -484,9 +484,9 @@ export const MemberLimitsPage: React.FC = () => {
         )}
       </div>
 
-      <div className="p-3.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between gap-3">
+      <div className="p-3.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-600 dark:text-stone-400 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
+          <Info className="w-4 h-4 text-stone-500 dark:text-stone-400 shrink-0" />
           <span>
             Data Limit Member bersumber langsung dari Google Spreadsheet (
             <span className="font-mono font-medium">MEMBER_LIMIT</span>). Batas kuota (
@@ -494,7 +494,7 @@ export const MemberLimitsPage: React.FC = () => {
             boleh diambil dalam <strong>satu transaksi pengambilan</strong>.
           </span>
         </div>
-        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono shrink-0 hidden md:block">
+        <div className="text-[11px] text-stone-500 dark:text-stone-400 font-mono shrink-0 hidden md:block">
           Total: {limits.length} konfigurasi ({limits.filter((l) => l.STATUS === 'AKTIF').length} aktif)
         </div>
       </div>
@@ -537,7 +537,7 @@ export const MemberLimitsPage: React.FC = () => {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 dark:text-slate-200 h-[32px]"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-700 dark:text-stone-200 h-[32px]"
             >
               <option value="ALL">Semua Status</option>
               <option value="AKTIF">Hanya AKTIF</option>
@@ -552,33 +552,33 @@ export const MemberLimitsPage: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="min-h-screen px-4 text-center flex items-center justify-center">
             <div
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+              className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs transition-opacity"
               onClick={() => !isSubmitting && setIsCreateModalOpen(false)}
             />
-            <div className="inline-block w-full max-w-lg p-6 my-8 text-left align-middle bg-white dark:bg-slate-900 shadow-xl rounded-lg border border-slate-200 dark:border-slate-700 relative z-10 animate-fadeIn">
+            <div className="inline-block w-full max-w-lg p-6 my-8 text-left align-middle bg-white dark:bg-stone-900 shadow-xl rounded-lg border border-stone-200 dark:border-stone-700 relative z-10 animate-fadeIn">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-                  <SlidersHorizontal className="w-5 h-5 text-slate-700 dark:text-slate-200" />
+                <div className="flex items-center gap-2 text-stone-900 dark:text-stone-100">
+                  <SlidersHorizontal className="w-5 h-5 text-stone-700 dark:text-stone-200" />
                   <h3 className="text-base font-semibold">Tambah Limit Member</h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
                   disabled={isSubmitting}
-                  className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-slate-600 hover:bg-slate-100"
+                  className="p-1 rounded text-stone-400 dark:text-stone-500 hover:text-stone-600 hover:bg-stone-100"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
+              <p className="text-xs text-stone-500 dark:text-stone-400 mb-5">
                 Konfigurasi batas alokasi pengambilan baru yang disimpan langsung ke Spreadsheet{' '}
                 <span className="font-mono">MEMBER_LIMIT</span> via GAS.
               </p>
 
               <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                  <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                     Pilih Member Penerima <span className="text-rose-500">*</span>
                   </label>
                   <SearchableSelect
@@ -593,7 +593,7 @@ export const MemberLimitsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                  <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                     Pilih Barang yang Dibatasi <span className="text-rose-500">*</span>
                   </label>
                   <SearchableSelect
@@ -609,7 +609,7 @@ export const MemberLimitsPage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                    <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                       Batas Maksimum (MAX_QTY) <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
@@ -620,20 +620,20 @@ export const MemberLimitsPage: React.FC = () => {
                         disabled={isSubmitting}
                         value={formMaxQty}
                         onChange={(e) => setFormMaxQty(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 dark:text-slate-200 font-mono text-xs pr-14"
+                        className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 font-mono text-xs pr-14"
                         placeholder="1"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-mono text-xs pointer-events-none">
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 font-mono text-xs pointer-events-none">
                         {selectedCreateItem?.SATUAN || 'UNIT'}
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 block">
+                    <span className="text-[10px] text-stone-400 dark:text-stone-500 mt-1 block">
                       Jumlah maksimum per 1 kali pengambilan.
                     </span>
                   </div>
 
                   <div>
-                    <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                    <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                       Satuan Barang
                     </label>
                     <input
@@ -641,16 +641,16 @@ export const MemberLimitsPage: React.FC = () => {
                       readOnly
                       disabled
                       value={selectedCreateItem?.SATUAN ? `${selectedCreateItem.SATUAN} (Otomatis dari Master)` : 'Pilih barang dahulu'}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded text-slate-600 dark:text-slate-400 font-mono text-xs cursor-not-allowed"
+                      className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 rounded text-stone-600 dark:text-stone-400 font-mono text-xs cursor-not-allowed"
                     />
                   </div>
                 </div>
 
                 {/* Masa Pakai Information Card (from MASTER_ITEM) */}
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg space-y-1">
+                <div className="p-3 bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 rounded-lg space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-slate-700 dark:text-slate-200">Masa Pakai Item:</span>
-                    <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
+                    <span className="font-medium text-stone-700 dark:text-stone-200">Masa Pakai Item:</span>
+                    <span className="font-mono font-semibold text-stone-900 dark:text-stone-100">
                       {selectedCreateItem
                         ? selectedCreateItem.MASA_PAKAI_BULAN
                           ? `${selectedCreateItem.MASA_PAKAI_BULAN} Bulan`
@@ -658,7 +658,7 @@ export const MemberLimitsPage: React.FC = () => {
                         : '-'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
                     Masa pakai item bersumber dari <span className="font-mono">MASTER_ITEM</span>. Nilai ini
                     tidak disimpan di MEMBER_LIMIT, melainkan digunakan bersama oleh backend saat validasi
                     kelayakan pengambilan.
@@ -666,33 +666,33 @@ export const MemberLimitsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                  <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                     Status Awal
                   </label>
                   <select
                     disabled={isSubmitting}
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as 'AKTIF' | 'NONAKTIF')}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 dark:text-slate-200 text-xs"
+                    className="w-full px-3 py-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-700 dark:text-stone-200 text-xs"
                   >
                     <option value="AKTIF">AKTIF</option>
                     <option value="NONAKTIF">NONAKTIF</option>
                   </select>
                 </div>
 
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2">
+                <div className="pt-3 border-t border-stone-200 dark:border-stone-700 flex items-center justify-end gap-2">
                   <button
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded font-medium hover:bg-slate-50 transition-colors"
+                    className="px-4 py-2 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 rounded font-medium hover:bg-stone-50 transition-colors"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting || !formMemberId || !formItemId || Number(formMaxQty) <= 0}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white rounded font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-700 text-white rounded font-medium hover:bg-amber-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>
@@ -718,56 +718,56 @@ export const MemberLimitsPage: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="min-h-screen px-4 text-center flex items-center justify-center">
             <div
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+              className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs transition-opacity"
               onClick={() => !isSubmitting && setEditModalData(null)}
             />
-            <div className="inline-block w-full max-w-lg p-6 my-8 text-left align-middle bg-white dark:bg-slate-900 shadow-xl rounded-lg border border-slate-200 dark:border-slate-700 relative z-10 animate-fadeIn">
+            <div className="inline-block w-full max-w-lg p-6 my-8 text-left align-middle bg-white dark:bg-stone-900 shadow-xl rounded-lg border border-stone-200 dark:border-stone-700 relative z-10 animate-fadeIn">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-                  <Pencil className="w-5 h-5 text-slate-700 dark:text-slate-200" />
+                <div className="flex items-center gap-2 text-stone-900 dark:text-stone-100">
+                  <Pencil className="w-5 h-5 text-stone-700 dark:text-stone-200" />
                   <h3 className="text-base font-semibold">Edit Limit Member</h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setEditModalData(null)}
                   disabled={isSubmitting}
-                  className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-slate-600 hover:bg-slate-100"
+                  className="p-1 rounded text-stone-400 dark:text-stone-500 hover:text-stone-600 hover:bg-stone-100"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
+              <p className="text-xs text-stone-500 dark:text-stone-400 mb-5">
                 Perbarui batas kuota atau status untuk ID Limit{' '}
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{editModalData.ID_LIMIT}</span>. Member
+                <span className="font-mono font-bold text-stone-800 dark:text-stone-200">{editModalData.ID_LIMIT}</span>. Member
                 dan Barang dikunci sebagai identitas konfigurasi.
               </p>
 
               <form onSubmit={handleEditSubmit} className="space-y-4 text-xs">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                    <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                       Member (Terkunci)
                     </label>
-                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded text-slate-700 dark:text-slate-200">
+                    <div className="p-2.5 bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 rounded text-stone-700 dark:text-stone-200">
                       <div className="font-semibold">
                         {editModalData.NAMA_MEMBER || selectedEditMember?.NAMA_MEMBER || editModalData.ID_MEMBER}
                       </div>
-                      <div className="text-[11px] font-mono text-slate-400 dark:text-slate-500 mt-0.5">
+                      <div className="text-[11px] font-mono text-stone-400 dark:text-stone-500 mt-0.5">
                         {editModalData.ID_MEMBER} · {selectedEditMember?.JABATAN || ''}
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                    <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                       Barang (Terkunci)
                     </label>
-                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded text-slate-700 dark:text-slate-200">
+                    <div className="p-2.5 bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 rounded text-stone-700 dark:text-stone-200">
                       <div className="font-semibold">
                         {editModalData.NAMA_ITEM || selectedEditItem?.NAMA_ITEM || editModalData.ID_ITEM}
                       </div>
-                      <div className="text-[11px] font-mono text-slate-400 dark:text-slate-500 mt-0.5">
+                      <div className="text-[11px] font-mono text-stone-400 dark:text-stone-500 mt-0.5">
                         {editModalData.ID_ITEM} · {selectedEditItem?.KATEGORI || ''}
                       </div>
                     </div>
@@ -776,7 +776,7 @@ export const MemberLimitsPage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                    <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                       Batas Maksimum (MAX_QTY) <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
@@ -787,19 +787,19 @@ export const MemberLimitsPage: React.FC = () => {
                         disabled={isSubmitting}
                         value={editMaxQty}
                         onChange={(e) => setEditMaxQty(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 dark:text-slate-200 font-mono text-xs pr-14"
+                        className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 font-mono text-xs pr-14"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-mono text-xs pointer-events-none">
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 font-mono text-xs pointer-events-none">
                         {selectedEditItem?.SATUAN || editModalData.SATUAN}
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 block">
+                    <span className="text-[10px] text-stone-400 dark:text-stone-500 mt-1 block">
                       Jumlah maksimum per 1 kali pengambilan.
                     </span>
                   </div>
 
                   <div>
-                    <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                    <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                       Satuan Barang
                     </label>
                     <input
@@ -807,15 +807,15 @@ export const MemberLimitsPage: React.FC = () => {
                       readOnly
                       disabled
                       value={`${selectedEditItem?.SATUAN || editModalData.SATUAN} (Otomatis)`}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded text-slate-600 dark:text-slate-400 font-mono text-xs cursor-not-allowed"
+                      className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 rounded text-stone-600 dark:text-stone-400 font-mono text-xs cursor-not-allowed"
                     />
                   </div>
                 </div>
 
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg space-y-1">
+                <div className="p-3 bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 rounded-lg space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-slate-700 dark:text-slate-200">Masa Pakai Item:</span>
-                    <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
+                    <span className="font-medium text-stone-700 dark:text-stone-200">Masa Pakai Item:</span>
+                    <span className="font-mono font-semibold text-stone-900 dark:text-stone-100">
                       {selectedEditItem
                         ? selectedEditItem.MASA_PAKAI_BULAN
                           ? `${selectedEditItem.MASA_PAKAI_BULAN} Bulan`
@@ -823,39 +823,39 @@ export const MemberLimitsPage: React.FC = () => {
                         : '-'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
                     Masa pakai merujuk pada MASTER_ITEM dan tidak disimpan di baris MEMBER_LIMIT.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">
+                  <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
                     Status Limit
                   </label>
                   <select
                     disabled={isSubmitting}
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value as 'AKTIF' | 'NONAKTIF')}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 dark:text-slate-200 text-xs"
+                    className="w-full px-3 py-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-700 dark:text-stone-200 text-xs"
                   >
                     <option value="AKTIF">AKTIF</option>
                     <option value="NONAKTIF">NONAKTIF</option>
                   </select>
                 </div>
 
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2">
+                <div className="pt-3 border-t border-stone-200 dark:border-stone-700 flex items-center justify-end gap-2">
                   <button
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => setEditModalData(null)}
-                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded font-medium hover:bg-slate-50 transition-colors"
+                    className="px-4 py-2 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 rounded font-medium hover:bg-stone-50 transition-colors"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting || Number(editMaxQty) <= 0}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white rounded font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-700 text-white rounded font-medium hover:bg-amber-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>
