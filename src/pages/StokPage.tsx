@@ -174,7 +174,7 @@ export const StokPage: React.FC = () => {
               item.stok <= 0
                 ? 'text-rose-600'
                 : item.isLowStock
-                ? 'text-amber-700'
+                ? 'text-amber-700 dark:text-amber-300'
                 : 'text-stone-900 dark:text-stone-100'
             }`}
           >
@@ -203,7 +203,7 @@ export const StokPage: React.FC = () => {
         <div className="flex items-center justify-center gap-1">
           <StatusBadge status={item.status} size="sm" />
           {item.isLowStock && (
-            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded">
+            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded dark:bg-amber-900/40 dark:text-amber-200">
               Menipis
             </span>
           )}
@@ -234,7 +234,7 @@ export const StokPage: React.FC = () => {
         description="Satu-satunya halaman utama posisi saldo stok. Nilai stok diperoleh langsung dari GET action=stock backend Google Apps Script."
         actions={
           lowStockCount > 0 ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded text-amber-900 text-xs">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded text-amber-900 text-xs dark:bg-amber-950/40 dark:text-amber-100 dark:border-amber-800">
               <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
               <span>
                 <strong>{lowStockCount} barang</strong> berada di bawah batas minimum stok.
@@ -272,7 +272,7 @@ export const StokPage: React.FC = () => {
               <span className="px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 text-[11px] font-semibold">
                 Khusus Admin
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                 Dokumen PN-
               </span>
             </div>
@@ -335,8 +335,8 @@ export const StokPage: React.FC = () => {
                       afterStock === null
                         ? 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700'
                         : afterStock >= 0
-                        ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
-                        : 'bg-rose-50 border-rose-200 text-rose-950'
+                        ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950 dark:text-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800'
+                        : 'bg-rose-50 border-rose-200 text-rose-950 dark:bg-rose-950/40 dark:border-rose-800'
                     }`}
                   >
                     <span className="text-[11px] font-medium block opacity-75">
@@ -353,7 +353,7 @@ export const StokPage: React.FC = () => {
                           </span>
                         </div>
                         {afterStock < 0 && (
-                          <div className="flex items-center gap-1 text-[11px] text-rose-700 font-semibold mt-1">
+                          <div className="flex items-center gap-1 text-[11px] text-rose-700 font-semibold mt-1 dark:text-rose-300">
                             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                             <span>Peringatan: Stok akhir negatif</span>
                           </div>
