@@ -100,7 +100,7 @@ export const DashboardPage: React.FC = () => {
             </button>
             <button
               onClick={() => navigateTo('keluar')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-50 transition-colors"
             >
               <ArrowUpRight className="w-3.5 h-3.5" />
               <span>Barang Keluar</span>
@@ -150,16 +150,16 @@ export const DashboardPage: React.FC = () => {
       {/* Main Grid: Low Stock & Recent Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column: Low Stock Warnings */}
-        <div className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-semibold text-slate-900">Perhatian Minimum Stok</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Barang dengan stok sama atau di bawah batas minimum</p>
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Perhatian Minimum Stok</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Barang dengan stok sama atau di bawah batas minimum</p>
               </div>
               <button
                 onClick={() => navigateTo('stok')}
-                className="text-xs font-medium text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
+                className="text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 inline-flex items-center gap-1"
               >
                 <span>Lihat Semua Stok</span>
                 <ArrowRight className="w-3 h-3" />
@@ -167,16 +167,16 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             {lowStockItems.length === 0 ? (
-              <div className="text-xs text-slate-500 p-6 border border-dashed border-slate-200 rounded text-center">
+              <div className="text-xs text-slate-500 dark:text-slate-400 p-6 border border-dashed border-slate-200 dark:border-slate-700 rounded text-center">
                 Semua stok barang berada dalam batas aman.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 text-xs">
+              <div className="divide-y divide-slate-100 dark:divide-slate-700 text-xs">
                 {lowStockItems.slice(0, 5).map((item, idx) => (
                   <div key={`${item.idItem}-${idx}`} className="py-2.5 flex items-center justify-between">
                     <div>
-                      <div className="font-medium text-slate-900">{item.namaItem}</div>
-                      <div className="text-slate-400 text-[11px] mt-0.5">
+                      <div className="font-medium text-slate-900 dark:text-slate-100">{item.namaItem}</div>
+                      <div className="text-slate-400 dark:text-slate-500 text-[11px] mt-0.5">
                         Kategori: {item.kategori} · Lokasi: {item.lokasi}
                       </div>
                     </div>
@@ -186,7 +186,7 @@ export const DashboardPage: React.FC = () => {
                       </div>
                       <button
                         onClick={() => navigateTo('bincard', { itemId: item.idItem })}
-                        className="text-[11px] text-slate-500 hover:text-slate-800 underline mt-0.5"
+                        className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-800 underline mt-0.5"
                       >
                         Lihat Bin Card
                       </button>
@@ -197,11 +197,11 @@ export const DashboardPage: React.FC = () => {
             )}
           </div>
 
-          <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
             <span>Menampilkan {Math.min(lowStockItems.length, 5)} barang menipis</span>
             <button
               onClick={() => navigateTo('stok')}
-              className="text-slate-800 font-medium hover:underline inline-flex items-center gap-1"
+              className="text-slate-800 dark:text-slate-200 font-medium hover:underline inline-flex items-center gap-1"
             >
               <span>Halaman Stok</span>
               <ArrowRight className="w-3 h-3" />
@@ -210,36 +210,36 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Right Column: Recent Transactions Summary */}
-        <div className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-5 flex flex-col justify-between">
           <div>
             <div className="mb-4">
-              <h3 className="text-sm font-semibold text-slate-900">Aktivitas Transaksi Terkini</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Pencatatan mutasi barang terakhir di Google Spreadsheet</p>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Aktivitas Transaksi Terkini</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pencatatan mutasi barang terakhir di Google Spreadsheet</p>
             </div>
 
             {recentTransactions.length === 0 ? (
-              <div className="text-xs text-slate-500 p-6 border border-dashed border-slate-200 rounded text-center">
+              <div className="text-xs text-slate-500 dark:text-slate-400 p-6 border border-dashed border-slate-200 dark:border-slate-700 rounded text-center">
                 Belum ada transaksi tercatat di database.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 text-xs">
+              <div className="divide-y divide-slate-100 dark:divide-slate-700 text-xs">
                 {recentTransactions.map((tx, idx) => (
                   <div key={`${tx.ID_TRANSAKSI || tx.NO_DOKUMEN || idx}-${idx}`} className="py-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-semibold text-slate-800">{tx.NO_DOKUMEN}</span>
+                        <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">{tx.NO_DOKUMEN}</span>
                         <StatusBadge status={tx.JENIS_TRANSAKSI} size="sm" />
                       </div>
-                      <div className="text-slate-600 mt-1 truncate">
+                      <div className="text-slate-600 dark:text-slate-400 mt-1 truncate">
                         {tx.NAMA_ITEM || tx.ID_ITEM}
                         {tx.NAMA_MEMBER ? ` · Member: ${tx.NAMA_MEMBER}` : ''}
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
                         {formatDateTime(tx.TIMESTAMP || tx.TANGGAL)} · &quot;{tx.KETERANGAN || '-'}&quot;
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="font-mono font-semibold text-slate-900 tabular-nums">
+                      <span className="font-mono font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
                         {tx.JUMLAH}
                       </span>
                     </div>
@@ -249,11 +249,11 @@ export const DashboardPage: React.FC = () => {
             )}
           </div>
 
-          <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
             <span>Menampilkan {recentTransactions.length} transaksi terbaru</span>
             <button
               onClick={() => navigateTo('laporan')}
-              className="text-slate-800 font-medium hover:underline inline-flex items-center gap-1"
+              className="text-slate-800 dark:text-slate-200 font-medium hover:underline inline-flex items-center gap-1"
             >
               <span>Laporan Lengkap</span>
               <ArrowRight className="w-3 h-3" />
