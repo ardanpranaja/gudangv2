@@ -15,18 +15,18 @@ export const MasterMesinPage: React.FC = () => {
       />
 
       {/* Backend API Notice per Step 13 */}
-      <div className="p-4 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-700 space-y-2">
-        <div className="flex items-center gap-2 font-semibold text-slate-900">
-          <Info className="w-4 h-4 text-slate-600 shrink-0" />
+      <div className="p-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 space-y-2">
+        <div className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
+          <Info className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0" />
           <span>Status Modul Mesin di API GAS (v1.2.4)</span>
         </div>
-        <p className="leading-relaxed text-slate-600">
+        <p className="leading-relaxed text-slate-600 dark:text-slate-400">
           Sesuai spesifikasi blueprint, modul Master Mesin adalah modul tahap berikutnya dan belum
           diekspos sebagai endpoint aktif pada GAS v1.2.4. Tidak ada data palsu atau simulasi lokal yang ditampilkan.
         </p>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 p-8">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-8">
         <EmptyState
           title="Belum terhubung ke API GAS."
           description="Endpoint GET action=machines belum diekspos di backend GAS v1.2.4. Modul ini disiapkan untuk integrasi tahap berikutnya."
@@ -37,9 +37,9 @@ export const MasterMesinPage: React.FC = () => {
         />
       </div>
 
-      <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center justify-between">
+      <div className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Cog className="w-4 h-4 text-slate-500" />
+          <Cog className="w-4 h-4 text-slate-500 dark:text-slate-400" />
           <span>
             <strong>Blueprint Section 23:</strong> Struktur MASTER_MESIN disiapkan untuk mengelola nomor
             seri, merk, model, dan status unit mesin secara independen.
@@ -47,7 +47,7 @@ export const MasterMesinPage: React.FC = () => {
         </div>
         <button
           onClick={() => navigateTo('pemakaian-mesin')}
-          className="text-slate-900 font-semibold hover:underline inline-flex items-center gap-1 shrink-0 ml-3"
+          className="text-slate-900 dark:text-slate-100 font-semibold hover:underline inline-flex items-center gap-1 shrink-0 ml-3"
         >
           <span>Pemakaian Mesin</span>
           <ArrowRight className="w-3 h-3" />
