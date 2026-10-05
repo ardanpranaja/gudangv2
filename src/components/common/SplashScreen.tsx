@@ -75,7 +75,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
             <span>Kegudangaja</span>
           </h1>
-          <p className="text-xs text-slate-400 font-medium tracking-wide uppercase">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wide uppercase">
             Sistem Inventaris &amp; Logistik Terintegrasi
           </p>
         </div>
@@ -85,7 +85,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden relative">
             <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full animate-[progress_1.6s_ease-in-out_infinite] w-full" />
           </div>
-          <div className="text-[11px] text-slate-500 font-medium font-mono">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium font-mono">
             {statusText}
           </div>
         </div>
