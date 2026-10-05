@@ -253,8 +253,26 @@ export const AI_TOOL_DECLARATIONS = [
           type: 'STRING',
           description: 'Nomor surat jalan / referensi dokumen fisik.',
         },
+        items: {
+          type: 'ARRAY',
+          description: 'Daftar barang untuk transaksi MULTI-ITEM (satu member, banyak barang sekaligus). Setiap entri berisi itemId dan jumlah. Jika diisi dan valid, parameter itemId/jumlah tunggal diabaikan.',
+          items: {
+            type: 'OBJECT',
+            properties: {
+              itemId: {
+                type: 'STRING',
+                description: 'ID Item barang (misal "PRL0098").',
+              },
+              jumlah: {
+                type: 'NUMBER',
+                description: 'Jumlah fisik barang.',
+              },
+            },
+            required: ['itemId', 'jumlah'],
+          },
+        },
       },
-      required: ['type', 'itemId', 'jumlah'],
+      required: ['type'],
     },
   },
   {
@@ -696,32 +714,46 @@ export async function executeAITool(
 
       case 'propose_transaction': {
         const type = String(args.type || '').toUpperCase() as AIConfirmationType;
-        const itemId = String(args.itemId || '').trim();
-        const jumlah = Number(args.jumlah || 1);
         const memberId = typeof args.memberId === 'string' ? args.memberId.trim() : '';
         const keterangan = typeof args.keterangan === 'string' ? args.keterangan.trim() : '';
         const noDokumen = typeof args.noDokumen === 'string' ? args.noDokumen.trim() : '';
         const tanggal = new Date().toISOString().slice(0, 10);
 
-        if (!type || !itemId || jumlah <= 0) {
+        // Kumpulkan daftar item: dukung multi-item via args.items, fallback ke itemId/jumlah tunggal.
+        type DraftItem = { itemId: string; jumlah: number };
+        let draftItems: DraftItem[] = [];
+        if (Array.isArray(args.items) && args.items.length > 0) {
+          for (const it of args.items as Array<Record<string, unknown>>) {
+            const iid = String(it?.itemId || '').trim();
+            const qty = Number(it?.jumlah || 0);
+            if (iid && qty > 0) draftItems.push({ itemId: iid, jumlah: qty });
+          }
+        }
+        if (draftItems.length === 0) {
+          const itemId = String(args.itemId || '').trim();
+          const jumlah = Number(args.jumlah || 0);
+          if (itemId && jumlah > 0) draftItems.push({ itemId, jumlah });
+        }
+
+        if (!type || draftItems.length === 0) {
           return {
             success: false,
             errorCode: 'MISSING_PARAMETER',
-            message: 'Parameter type, itemId, dan jumlah (> 0) wajib diisi untuk draf transaksi.',
-            missing: [!type ? 'type' : '', !itemId ? 'itemId' : '', jumlah <= 0 ? 'jumlah' : ''].filter(Boolean),
+            message: 'Parameter type dan daftar barang (items array atau itemId+jumlah) wajib diisi untuk draf transaksi.',
+            missing: [!type ? 'type' : '', draftItems.length === 0 ? 'items/itemId+jumlah' : ''].filter(Boolean),
           };
         }
 
-        let itemName = itemId;
-        let satuan = 'item';
         let memberName = memberId;
+        const itemCatalog = new Map<string, { name: string; satuan: string }>();
 
         try {
           const [items, members] = await Promise.all([api.getItems(), api.getMembers()]);
-          const matchedItem = items.find((i) => i.ID_ITEM.toUpperCase() === itemId.toUpperCase());
-          if (matchedItem) {
-            itemName = matchedItem.NAMA_ITEM;
-            satuan = matchedItem.SATUAN || 'item';
+          for (const it of items) {
+            itemCatalog.set(it.ID_ITEM.toUpperCase(), {
+              name: it.NAMA_ITEM,
+              satuan: it.SATUAN || 'item',
+            });
           }
           if (memberId) {
             const matchedMember = members.find((m) => m.ID_MEMBER.toUpperCase() === memberId.toUpperCase());
@@ -733,36 +765,56 @@ export async function executeAITool(
           // Safe fallback
         }
 
-        let eligibilityNote = '';
-        if (type === 'BARANG_KELUAR' && memberId) {
-          try {
-            const el = await api.getPickupEligibility(memberId, itemId, jumlah);
-            if (!el.allowed) {
-              eligibilityNote = `Perhatian: ${el.reason || 'Pengambilan melebihi limit atau belum memenuhi masa pakai.'}`;
+        // Resolve nama/satuan tiap item + cek kelayakan per item untuk transaksi keluar.
+        const eligibilityNotes: string[] = [];
+        const resolvedItems = await Promise.all(
+          draftItems.map(async (d) => {
+            const cat = itemCatalog.get(d.itemId.toUpperCase());
+            const itemName = cat?.name || d.itemId;
+            const satuan = cat?.satuan || 'item';
+            if ((type === 'BARANG_KELUAR' || type === 'PINJAM') && memberId) {
+              try {
+                const el = await api.getPickupEligibility(memberId, d.itemId, d.jumlah);
+                if (!el.allowed) {
+                  eligibilityNotes.push(`${itemName}: ${el.reason || 'melebihi limit atau belum memenuhi masa pakai.'}`);
+                }
+              } catch {
+                // ignore
+              }
             }
-          } catch {
-            // ignore
-          }
-        }
+            return { itemId: d.itemId, itemName, jumlah: d.jumlah, satuan };
+          })
+        );
+
+        const eligibilityNote = eligibilityNotes.length > 0 ? `Perhatian: ${eligibilityNotes.join(' ')}` : '';
+        const isMulti = resolvedItems.length > 1;
 
         const confirmation: AIConfirmationData = {
           id: `conf-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
           type,
-          title: `Konfirmasi Transaksi ${type.replace('_', ' ')}`,
+          title: `Konfirmasi Transaksi ${type.replace('_', ' ')}${isMulti ? ` (${resolvedItems.length} barang)` : ''}`,
           description: eligibilityNote || undefined,
           details: [
             { label: 'Jenis Transaksi', value: type, highlight: true },
-            { label: 'Barang', value: `${itemName} [${itemId}]` },
-            { label: 'Jumlah', value: `${jumlah} ${satuan}`, highlight: true },
+            ...(isMulti
+              ? resolvedItems.map((ri, idx) => ({
+                  label: `Barang ${idx + 1}`,
+                  value: `${ri.itemName} [${ri.itemId}] — ${ri.jumlah} ${ri.satuan}`,
+                  highlight: true,
+                }))
+              : [
+                  { label: 'Barang', value: `${resolvedItems[0].itemName} [${resolvedItems[0].itemId}]` },
+                  { label: 'Jumlah', value: `${resolvedItems[0].jumlah} ${resolvedItems[0].satuan}`, highlight: true },
+                ]),
             ...(memberId ? [{ label: 'Member', value: `${memberName} [${memberId}]` }] : []),
             ...(keterangan ? [{ label: 'Keterangan', value: keterangan }] : []),
             ...(noDokumen ? [{ label: 'No. Dokumen', value: noDokumen }] : []),
             { label: 'Tanggal', value: tanggal },
           ],
+          items: resolvedItems,
           rawInput: {
             type,
-            itemId,
-            jumlah,
+            items: resolvedItems.map((ri) => ({ itemId: ri.itemId, jumlah: ri.jumlah })),
             memberId,
             keterangan,
             noDokumen,
@@ -773,7 +825,9 @@ export async function executeAITool(
 
         return {
           success: true,
-          message: 'Draft transaksi telah dibuat dan menunggu konfirmasi pengguna.',
+          message: isMulti
+            ? `Draft transaksi multi-item (${resolvedItems.length} barang) telah dibuat dan menunggu konfirmasi pengguna.`
+            : 'Draft transaksi telah dibuat dan menunggu konfirmasi pengguna.',
           data: {
             status: 'PROPOSED',
             details: confirmation.details,
