@@ -94,13 +94,13 @@ export const PengaturanPage: React.FC = () => {
       />
 
       {/* Backend Connection Card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4 shadow-2xs">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4 shadow-2xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2 text-slate-900">
-            <Settings className="w-4 h-4 text-slate-700" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+            <Settings className="w-4 h-4 text-slate-700 dark:text-slate-200" />
             <h3 className="text-sm font-semibold">Koneksi Backend (Google Apps Script)</h3>
           </div>
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <span className="relative flex w-2.5 h-2.5">
               {isOnline && (
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -111,20 +111,20 @@ export const PengaturanPage: React.FC = () => {
                 }`}
               />
             </span>
-            <span className="text-xs font-bold font-mono text-slate-700">{health.status}</span>
+            <span className="text-xs font-bold font-mono text-slate-700 dark:text-slate-200">{health.status}</span>
           </div>
         </div>
 
         <form onSubmit={handleSaveGasUrl} className="space-y-4 text-xs">
           <div>
-            <label className="block font-medium text-slate-700 mb-1">URL Web App Deployment GAS:</label>
+            <label className="block font-medium text-slate-700 dark:text-slate-200 mb-1">URL Web App Deployment GAS:</label>
             <div className="flex gap-2">
               <input
                 type="url"
                 value={gasUrlInput}
                 onChange={(e) => setGasUrlInput(e.target.value)}
                 placeholder="https://script.google.com/macros/s/AKfycb.../exec"
-                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-800 font-mono text-xs"
+                className="flex-1 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-800 dark:text-slate-200 font-mono text-xs"
               />
               <button
                 type="submit"
@@ -136,7 +136,7 @@ export const PengaturanPage: React.FC = () => {
                 type="button"
                 onClick={handleTestConnection}
                 disabled={isTesting}
-                className="px-3.5 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5"
+                className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-medium hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
                 <span>Uji Koneksi</span>
@@ -149,28 +149,28 @@ export const PengaturanPage: React.FC = () => {
         {isOnline && (
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-1.5 text-slate-500 font-medium mb-1">
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium mb-1">
                   <Database className="w-3.5 h-3.5" />
                   <span>Spreadsheet ID</span>
                 </div>
-                <div className="font-mono text-slate-800 truncate" title={health.spreadsheetId}>
+                <div className="font-mono text-slate-800 dark:text-slate-200 truncate" title={health.spreadsheetId}>
                   {health.spreadsheetId || 'Connected'}
                 </div>
               </div>
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-1.5 text-slate-500 font-medium mb-1">
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium mb-1">
                   <Zap className="w-3.5 h-3.5" />
                   <span>Latensi</span>
                 </div>
-                <div className="font-mono text-slate-800 font-bold">{health.latencyMs || 0} ms</div>
+                <div className="font-mono text-slate-800 dark:text-slate-200 font-bold">{health.latencyMs || 0} ms</div>
               </div>
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-1.5 text-slate-500 font-medium mb-1">
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium mb-1">
                   <Clock className="w-3.5 h-3.5" />
                   <span>Terakhir Dicek</span>
                 </div>
-                <div className="font-mono text-slate-800">{formatCheckedAt(health.lastChecked)}</div>
+                <div className="font-mono text-slate-800 dark:text-slate-200">{formatCheckedAt(health.lastChecked)}</div>
               </div>
             </div>
 
@@ -188,8 +188,8 @@ export const PengaturanPage: React.FC = () => {
                       key={s.name}
                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-md font-mono text-[11px] border ${
                         s.exists
-                          ? 'bg-white text-emerald-800 border-emerald-200'
-                          : 'bg-white text-rose-700 border-rose-200'
+                          ? 'bg-white dark:bg-slate-900 text-emerald-800 border-emerald-200'
+                          : 'bg-white dark:bg-slate-900 text-rose-700 border-rose-200'
                       }`}
                       title={s.exists ? 'Sheet tersedia' : 'Sheet tidak ditemukan'}
                     >
@@ -225,10 +225,10 @@ export const PengaturanPage: React.FC = () => {
       <AIConfigPanel />
 
       {/* Role Management Info */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-3 shadow-2xs">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-3 shadow-2xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2 text-slate-900">
-            <ShieldCheck className="w-4 h-4 text-slate-700" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+            <ShieldCheck className="w-4 h-4 text-slate-700 dark:text-slate-200" />
             <h3 className="text-sm font-semibold">Mode Akses &amp; Keamanan Sistem</h3>
           </div>
           <span
@@ -243,10 +243,10 @@ export const PengaturanPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <div
             className={`p-3.5 rounded-lg border transition-colors ${
-              isAdmin ? 'border-slate-900 bg-slate-900 text-white shadow-sm' : 'border-slate-200 bg-slate-50'
+              isAdmin ? 'border-slate-900 bg-slate-900 text-white shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60'
             }`}
           >
-            <div className={`font-semibold flex items-center gap-1.5 ${isAdmin ? 'text-white' : 'text-slate-900'}`}>
+            <div className={`font-semibold flex items-center gap-1.5 ${isAdmin ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
               <span className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-emerald-400' : 'bg-slate-400'}`} />
               <span>Mode ADMIN</span>
               {isAdmin && (
@@ -255,7 +255,7 @@ export const PengaturanPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <p className={`text-[11px] mt-1 leading-relaxed ${isAdmin ? 'text-slate-300' : 'text-slate-600'}`}>
+            <p className={`text-[11px] mt-1 leading-relaxed ${isAdmin ? 'text-slate-300' : 'text-slate-600 dark:text-slate-400'}`}>
               Akses penuh ke seluruh modul gudang: Ringkasan, Master Barang, Member, Transaksi Masuk/Keluar, Stok,
               Bin Card, Approval Pengajuan, Laporan, dan Pengaturan.
             </p>
@@ -263,10 +263,10 @@ export const PengaturanPage: React.FC = () => {
 
           <div
             className={`p-3.5 rounded-lg border transition-colors ${
-              !isAdmin ? 'border-emerald-600 bg-emerald-50 shadow-sm' : 'border-slate-200 bg-slate-50'
+              !isAdmin ? 'border-emerald-600 bg-emerald-50 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60'
             }`}
           >
-            <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+            <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
               <span className={`w-2 h-2 rounded-full ${!isAdmin ? 'bg-emerald-500' : 'bg-slate-400'}`} />
               <span>Mode MEMBER</span>
               {!isAdmin && (
@@ -275,7 +275,7 @@ export const PengaturanPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <p className="text-slate-600 text-[11px] mt-1 leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 text-[11px] mt-1 leading-relaxed">
               Mode mandiri personil lapangan tanpa perlu login untuk mengajukan permintaan barang dan memantau riwayat
               permohonan sendiri.
             </p>
@@ -284,16 +284,16 @@ export const PengaturanPage: React.FC = () => {
       </div>
 
       {/* Debug & Health Check Tools */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4 shadow-2xs">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4 shadow-2xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2 text-slate-900">
-            <Terminal className="w-4 h-4 text-slate-700" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+            <Terminal className="w-4 h-4 text-slate-700 dark:text-slate-200" />
             <h3 className="text-sm font-semibold">Diagnostik Admin</h3>
           </div>
           <button
             onClick={handleFetchDebug}
             disabled={loadingDebug}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loadingDebug ? 'animate-spin' : ''}`} />
             <span>Tarik Debug Transaksi</span>
@@ -304,7 +304,7 @@ export const PengaturanPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 font-semibold">
+                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-semibold">
                   <th className="py-1.5 px-2">ID Transaksi</th>
                   <th className="py-1.5 px-2">Tanggal</th>
                   <th className="py-1.5 px-2">Jenis</th>
@@ -313,13 +313,13 @@ export const PengaturanPage: React.FC = () => {
                   <th className="py-1.5 px-2">No. Dokumen</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-mono text-[11px] text-slate-700">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700 font-mono text-[11px] text-slate-700 dark:text-slate-200">
                 {debugLogs.map((log, idx) => (
                   <tr key={log.ID_TRANSAKSI || idx}>
                     <td className="py-1.5 px-2 font-bold">{log.ID_TRANSAKSI || '-'}</td>
                     <td className="py-1.5 px-2">{log.TANGGAL || log.TIMESTAMP || '-'}</td>
                     <td className="py-1.5 px-2">{log.JENIS_TRANSAKSI || '-'}</td>
-                    <td className="py-1.5 px-2 font-sans font-medium text-slate-800">
+                    <td className="py-1.5 px-2 font-sans font-medium text-slate-800 dark:text-slate-200">
                       {log.NAMA_ITEM || log.ID_ITEM || '-'}
                     </td>
                     <td className="py-1.5 px-2 font-bold">{log.JUMLAH || 0}</td>
@@ -330,7 +330,7 @@ export const PengaturanPage: React.FC = () => {
             </table>
           </div>
         ) : (
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-400 dark:text-slate-500">
             Klik tombol &quot;Tarik Debug Transaksi&quot; untuk menguji respon API debug backend.
           </p>
         )}
