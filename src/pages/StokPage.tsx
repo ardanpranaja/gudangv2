@@ -138,7 +138,7 @@ export const StokPage: React.FC = () => {
       key: 'idItem',
       header: 'ID Barang',
       sortable: true,
-      className: 'font-mono text-slate-800 dark:text-slate-200 font-semibold',
+      className: 'font-mono text-stone-800 dark:text-stone-200 font-semibold',
     },
     {
       key: 'namaItem',
@@ -146,8 +146,8 @@ export const StokPage: React.FC = () => {
       sortable: true,
       render: (item) => (
         <div>
-          <div className="font-semibold text-slate-900 dark:text-slate-100">{item.namaItem}</div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Lokasi: {item.lokasi || '-'}</div>
+          <div className="font-semibold text-stone-900 dark:text-stone-100">{item.namaItem}</div>
+          <div className="text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">Lokasi: {item.lokasi || '-'}</div>
         </div>
       ),
     },
@@ -155,7 +155,7 @@ export const StokPage: React.FC = () => {
       key: 'kategori',
       header: 'Kategori',
       sortable: true,
-      render: (item) => <span className="font-medium text-slate-700 dark:text-slate-200">{item.kategori}</span>,
+      render: (item) => <span className="font-medium text-stone-700 dark:text-stone-200">{item.kategori}</span>,
     },
     {
       key: 'stok',
@@ -175,12 +175,12 @@ export const StokPage: React.FC = () => {
                 ? 'text-rose-600'
                 : item.isLowStock
                 ? 'text-amber-700'
-                : 'text-slate-900 dark:text-slate-100'
+                : 'text-stone-900 dark:text-stone-100'
             }`}
           >
             {item.stok}
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">{item.satuan}</span>
+          <span className="text-[11px] text-stone-500 dark:text-stone-400 font-normal">{item.satuan}</span>
         </div>
       ),
     },
@@ -190,7 +190,7 @@ export const StokPage: React.FC = () => {
       sortable: true,
       align: 'right',
       render: (item) => (
-        <span className="font-mono text-slate-600 dark:text-slate-400 tabular-nums">
+        <span className="font-mono text-stone-600 dark:text-stone-400 tabular-nums">
           {item.minStok} {item.satuan}
         </span>
       ),
@@ -217,7 +217,7 @@ export const StokPage: React.FC = () => {
       render: (item) => (
         <button
           onClick={() => navigateTo('bincard', { itemId: item.idItem })}
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 hover:text-slate-900 transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded hover:bg-stone-50 hover:text-stone-900 transition-colors"
           title="Buka Bin Card untuk meninjau riwayat mutasi barang ini"
         >
           <ScrollText className="w-3.5 h-3.5" />
@@ -244,8 +244,8 @@ export const StokPage: React.FC = () => {
         }
       />
 
-      <div className="p-3.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
-        <Info className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
+      <div className="p-3.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-600 dark:text-stone-400 flex items-center gap-2">
+        <Info className="w-4 h-4 text-stone-500 dark:text-stone-400 shrink-0" />
         <span>
           Nilai saldo stok dihitung dan divalidasi oleh backend GAS dari seluruh transaksi sah di Spreadsheet.
         </span>
@@ -253,23 +253,23 @@ export const StokPage: React.FC = () => {
 
       {/* SECTION PENYESUAIAN STOK (KHUSUS ADMIN) */}
       {isAdmin && (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+        <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-amber-700 text-white flex items-center justify-center shrink-0">
                 <SlidersHorizontal className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
                   Penyesuaian Stok (Koreksi Opname &amp; Fisik)
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-stone-500 dark:text-stone-400">
                   Koreksi saldo stok beraudit ke lembar transaksi dengan jenis PENYESUAIAN (Backend v16)
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1.5 self-start sm:self-auto">
-              <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-semibold">
+              <span className="px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 text-[11px] font-semibold">
                 Khusus Admin
               </span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold">
@@ -280,7 +280,7 @@ export const StokPage: React.FC = () => {
 
           <form onSubmit={handleAdjustSubmit} className="space-y-4 text-xs">
             <div className="space-y-1">
-              <label className="block font-semibold text-slate-700 dark:text-slate-200">
+              <label className="block font-semibold text-stone-700 dark:text-stone-200">
                 Pilih Barang yang Akan Disesuaikan <span className="text-rose-500">*</span>
               </label>
               <SearchableSelect
@@ -296,16 +296,16 @@ export const StokPage: React.FC = () => {
             </div>
 
             {selectedAdjustStock && (
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-4 animate-fadeIn">
+              <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 space-y-4 animate-fadeIn">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
                   {/* Stok Saat Ini */}
-                  <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">Stok Saat Ini:</span>
+                  <div className="p-3 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700">
+                    <span className="text-[11px] font-medium text-stone-500 dark:text-stone-400 block">Stok Saat Ini:</span>
                     <div className="flex items-baseline gap-1.5 mt-0.5">
-                      <span className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 tabular-nums">
+                      <span className="text-2xl font-bold font-mono text-stone-900 dark:text-stone-100 tabular-nums">
                         {selectedAdjustStock.stok}
                       </span>
-                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                      <span className="text-xs font-semibold text-stone-600 dark:text-stone-400">
                         {selectedAdjustStock.satuan}
                       </span>
                     </div>
@@ -313,7 +313,7 @@ export const StokPage: React.FC = () => {
 
                   {/* Input Selisih */}
                   <div className="space-y-1">
-                    <label className="block font-semibold text-slate-700 dark:text-slate-200">
+                    <label className="block font-semibold text-stone-700 dark:text-stone-200">
                       Selisih (+ / -) <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -321,10 +321,10 @@ export const StokPage: React.FC = () => {
                       value={adjustDelta}
                       onChange={(e) => setAdjustDelta(e.target.value)}
                       placeholder="Contoh: +5 atau -3"
-                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 dark:text-slate-100 font-mono text-sm bg-white dark:bg-slate-900 font-semibold"
+                      className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 font-mono text-sm bg-white dark:bg-stone-900 font-semibold"
                       required
                     />
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 block">
+                    <span className="text-[10px] text-stone-400 dark:text-stone-500 block">
                       Tanda minus (-) mengurangi stok, tanda plus (+) menambah.
                     </span>
                   </div>
@@ -333,7 +333,7 @@ export const StokPage: React.FC = () => {
                   <div
                     className={`p-3 rounded-lg border transition-colors ${
                       afterStock === null
-                        ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700'
+                        ? 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700'
                         : afterStock >= 0
                         ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
                         : 'bg-rose-50 border-rose-200 text-rose-950'
@@ -360,7 +360,7 @@ export const StokPage: React.FC = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="text-xs text-slate-400 dark:text-slate-500 italic mt-1.5">
+                      <div className="text-xs text-stone-400 dark:text-stone-500 italic mt-1.5">
                         Masukkan selisih di samping
                       </div>
                     )}
@@ -369,7 +369,7 @@ export const StokPage: React.FC = () => {
 
                 {/* Input Alasan */}
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700 dark:text-slate-200">
+                  <label className="block font-semibold text-stone-700 dark:text-stone-200">
                     Alasan Penyesuaian <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -378,7 +378,7 @@ export const StokPage: React.FC = () => {
                     value={adjustReason}
                     onChange={(e) => setAdjustReason(e.target.value)}
                     placeholder="Contoh: Koreksi selisih hitung opname fisik / barang rusak saat bongkar muat..."
-                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900"
+                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900"
                   />
                 </div>
 
@@ -387,7 +387,7 @@ export const StokPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmittingAdjust || !isValidDelta || !adjustReason.trim()}
-                    className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                    className="px-5 py-2.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg font-semibold transition-all inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
                   >
                     {isSubmittingAdjust ? (
                       <>
@@ -424,7 +424,7 @@ export const StokPage: React.FC = () => {
             <select
               value={selectedKategori}
               onChange={(e) => setSelectedKategori(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 dark:text-slate-200"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-700 dark:text-stone-200"
             >
               <option value="ALL">Semua Kategori</option>
               <option value="CHEMICAL">CHEMICAL</option>
@@ -435,7 +435,7 @@ export const StokPage: React.FC = () => {
             <select
               value={selectedStockFilter}
               onChange={(e) => setSelectedStockFilter(e.target.value as any)}
-              className="px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-700 dark:text-slate-200"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-700 dark:text-stone-200"
             >
               <option value="ALL">Semua Kondisi Stok</option>
               <option value="LOW">Stok Menipis (Di Bawah Min)</option>
@@ -445,14 +445,14 @@ export const StokPage: React.FC = () => {
         }
       />
 
-      <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-600 dark:text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-600 dark:text-stone-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <span className="font-semibold text-slate-800 dark:text-slate-200">Prinsip Integritas Stok:</span> Saldo stok fisik
+          <span className="font-semibold text-stone-800 dark:text-stone-200">Prinsip Integritas Stok:</span> Saldo stok fisik
           berasal dari backend GAS tanpa manipulasi lokal di frontend.
         </div>
         <button
           onClick={() => navigateTo('masuk')}
-          className="text-slate-900 dark:text-slate-100 font-semibold hover:underline inline-flex items-center gap-1 shrink-0"
+          className="text-stone-900 dark:text-stone-100 font-semibold hover:underline inline-flex items-center gap-1 shrink-0"
         >
           <span>Penerimaan Masuk</span>
           <ArrowRight className="w-3 h-3" />
