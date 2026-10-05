@@ -22,12 +22,21 @@ export interface AIConfirmationDetail {
   highlight?: boolean;
 }
 
+export interface AIConfirmationItem {
+  itemId: string;
+  itemName: string;
+  jumlah: number;
+  satuan: string;
+}
+
 export interface AIConfirmationData {
   id: string;
   type: AIConfirmationType;
   title: string;
   description?: string;
   details: AIConfirmationDetail[];
+  /** Daftar barang untuk transaksi multi-item. Jika kosong/undefined, gunakan rawInput tunggal (kompatibilitas lama). */
+  items?: AIConfirmationItem[];
   rawInput: Record<string, unknown>;
   status: 'pending' | 'confirmed' | 'cancelled' | 'executed' | 'failed';
   executionResult?: {
