@@ -52,7 +52,7 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
       const formattedParts = parts.map((part, pIdx) => {
         if (part.startsWith('**') && part.endsWith('**')) {
           return (
-            <strong key={pIdx} className="font-semibold text-slate-900">
+            <strong key={pIdx} className="font-semibold text-slate-900 dark:text-slate-100">
               {part.slice(2, -2)}
             </strong>
           );
@@ -62,7 +62,7 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
 
       if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
         return (
-          <li key={idx} className="ml-4 list-disc text-xs leading-relaxed text-slate-700">
+          <li key={idx} className="ml-4 list-disc text-xs leading-relaxed text-slate-700 dark:text-slate-300">
             {formattedParts}
           </li>
         );
@@ -73,7 +73,7 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
       }
 
       return (
-        <p key={idx} className="text-xs leading-relaxed text-slate-800">
+        <p key={idx} className="text-xs leading-relaxed text-slate-800 dark:text-slate-200">
           {formattedParts}
         </p>
       );
@@ -91,19 +91,19 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
       <div
         className={`max-w-[85%] sm:max-w-[75%] rounded-xl p-4 shadow-xs ${
           isUser
-            ? 'bg-slate-900 text-white rounded-tr-none'
-            : 'bg-white border border-slate-200 text-slate-900 rounded-tl-none'
+            ? 'bg-slate-900 dark:bg-slate-700 text-white rounded-tr-none'
+            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-tl-none'
         }`}
       >
         {/* Tool calls execution summary */}
         {!isUser && message.toolCalls && message.toolCalls.length > 0 && (
-          <div className="mb-2.5 pb-2 border-b border-slate-100">
+          <div className="mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-700">
             <button
               type="button"
               onClick={() => setShowTools(!showTools)}
-              className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 hover:text-slate-800 transition-colors"
+              className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
             >
-              <Wrench className="w-3.5 h-3.5 text-slate-400" />
+              <Wrench className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
               <span>
                 {message.toolCalls.length} data backend diperiksa
               </span>
@@ -111,9 +111,9 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
             </button>
 
             {showTools && (
-              <div className="mt-2 space-y-1 bg-slate-50 p-2.5 rounded border border-slate-100 text-[11px]">
+              <div className="mt-2 space-y-1 bg-slate-50 dark:bg-slate-700/50 p-2.5 rounded border border-slate-100 dark:border-slate-600 text-[11px]">
                 {message.toolCalls.map((tc, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 text-slate-600 font-mono">
+                  <div key={idx} className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-mono">
                     {tc.status === 'done' ? (
                       <Check className="w-3 h-3 text-emerald-600 shrink-0" />
                     ) : tc.status === 'error' ? (
@@ -130,7 +130,7 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
         )}
 
         {/* Text Body */}
-        <div className={`space-y-1 ${isUser ? 'text-white' : 'text-slate-800'}`}>
+        <div className={`space-y-1 ${isUser ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}>
           {isUser ? (
             <p className="text-xs leading-relaxed whitespace-pre-wrap">{message.content}</p>
           ) : (
@@ -148,7 +148,7 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
 
         {/* Error message if any */}
         {message.error && (
-          <div className="mt-2 p-2 bg-rose-50 border border-rose-200 rounded text-rose-700 text-xs">
+          <div className="mt-2 p-2 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 rounded text-rose-700 dark:text-rose-300 text-xs">
             {message.error}
           </div>
         )}
@@ -156,7 +156,7 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
         {/* Timestamp */}
         <div
           className={`text-[10px] mt-1.5 text-right ${
-            isUser ? 'text-slate-400' : 'text-slate-400'
+            isUser ? 'text-slate-400 dark:text-slate-500' : 'text-slate-400 dark:text-slate-500'
           }`}
         >
           {message.timestamp}
@@ -164,7 +164,7 @@ export const AIMessage: React.FC<AIMessageProps> = ({ message, onUpdateConfirmat
       </div>
 
       {isUser && (
-        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center shrink-0">
           <User className="w-4 h-4" />
         </div>
       )}
