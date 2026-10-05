@@ -33,21 +33,56 @@ export async function executeConfirmationBackend(
     };
   } else {
     // Transaction: BARANG_MASUK, BARANG_KELUAR, PINJAM, KEMBALI
-    const res = await api.submitTransaction({
-      itemId: String(confirmation.rawInput.itemId),
-      type: confirmation.type,
-      jumlah: Number(confirmation.rawInput.jumlah),
-      memberId: confirmation.rawInput.memberId ? String(confirmation.rawInput.memberId) : undefined,
-      keterangan: confirmation.rawInput.keterangan ? String(confirmation.rawInput.keterangan) : undefined,
-      tanggal: confirmation.rawInput.tanggal ? String(confirmation.rawInput.tanggal) : undefined,
-      noDokumen: confirmation.rawInput.noDokumen ? String(confirmation.rawInput.noDokumen) : undefined,
-    });
+    // Dukung multi-item: satu member, banyak barang — loop per item seperti keranjang.
+    const rawItems = confirmation.items && confirmation.items.length > 0
+      ? confirmation.items.map((it) => ({ itemId: it.itemId, jumlah: it.jumlah }))
+      : Array.isArray(confirmation.rawInput.items) && (confirmation.rawInput.items as unknown[]).length > 0
+        ? (confirmation.rawInput.items as Array<Record<string, unknown>>).map((it) => ({
+            itemId: String(it.itemId),
+            jumlah: Number(it.jumlah),
+          }))
+        : [{ itemId: String(confirmation.rawInput.itemId), jumlah: Number(confirmation.rawInput.jumlah) }];
 
-    const idTransaksi = (res as any)?.ID_TRANSAKSI || (res as any)?.idTransaksi || 'Tercatat';
+    const memberId = confirmation.rawInput.memberId ? String(confirmation.rawInput.memberId) : undefined;
+    const keterangan = confirmation.rawInput.keterangan ? String(confirmation.rawInput.keterangan) : undefined;
+    const tanggal = confirmation.rawInput.tanggal ? String(confirmation.rawInput.tanggal) : undefined;
+    const noDokumen = confirmation.rawInput.noDokumen ? String(confirmation.rawInput.noDokumen) : undefined;
+
+    const succeeded: string[] = [];
+    const failed: string[] = [];
+    for (const it of rawItems) {
+      try {
+        const res = await api.submitTransaction({
+          itemId: it.itemId,
+          type: confirmation.type,
+          jumlah: it.jumlah,
+          memberId,
+          keterangan,
+          tanggal,
+          noDokumen,
+        });
+        succeeded.push(String((res as any)?.ID_TRANSAKSI || (res as any)?.idTransaksi || it.itemId));
+      } catch (err: unknown) {
+        failed.push(`${it.itemId} (${normalizeGasErrorMessage(err, undefined, 'gagal')})`);
+      }
+    }
+
+    if (failed.length === 0) {
+      return {
+        success: true,
+        message: succeeded.length > 1
+          ? `${succeeded.length} transaksi berhasil dicatat di backend GAS.`
+          : 'Transaksi berhasil dicatat di backend GAS.',
+        idTransaksi: succeeded[0],
+      };
+    }
+    if (succeeded.length === 0) {
+      throw new Error(`Semua item gagal: ${failed.join('; ')}`);
+    }
     return {
       success: true,
-      message: `Transaksi berhasil dicatat di backend GAS.`,
-      idTransaksi,
+      message: `${succeeded.length} berhasil, ${failed.length} gagal: ${failed.join('; ')}`,
+      idTransaksi: succeeded[0],
     };
   }
 }
