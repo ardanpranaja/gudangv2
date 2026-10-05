@@ -16,7 +16,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const isMemberMode = role === 'MEMBER';
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased flex flex-col transition-colors">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans antialiased flex flex-col transition-colors">
       {/* Sidebar Navigation (Admin Mode Only) */}
       {!isMemberMode && (
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -41,7 +41,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       {/* Toast notifications container */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
         {toasts.map((toast) => {
-          let border = 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100';
+          let border = 'border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100';
           let Icon = Info;
           let iconColor = 'text-blue-500 dark:text-blue-400';
 
