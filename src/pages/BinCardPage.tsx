@@ -121,7 +121,7 @@ export const BinCardPage: React.FC = () => {
       align: 'right',
       render: (e) =>
         e.masuk > 0 ? (
-          <span className="font-mono font-semibold text-emerald-700 tabular-nums">+{e.masuk}</span>
+          <span className="font-mono font-semibold text-emerald-700 tabular-nums dark:text-emerald-300">+{e.masuk}</span>
         ) : (
           <span className="text-stone-300 font-mono">-</span>
         ),
@@ -203,7 +203,7 @@ export const BinCardPage: React.FC = () => {
                   {binCardData.saldoAwal}
                 </div>
               </div>
-              <div className="h-8 w-px bg-stone-200" />
+              <div className="h-8 w-px bg-stone-200 dark:bg-stone-700" />
               <div>
                 <div className="text-[11px] text-stone-500 dark:text-stone-400">Saldo Akhir (GAS)</div>
                 <div className="font-mono text-xl font-bold text-stone-900 dark:text-stone-100 tabular-nums">
