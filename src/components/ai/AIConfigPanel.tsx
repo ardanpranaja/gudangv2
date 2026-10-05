@@ -427,7 +427,7 @@ export const AIConfigPanel: React.FC = () => {
                   Pengelolaan API Key Gemini:
                 </label>
                 {activeKeyObj && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold dark:bg-emerald-900/40 dark:text-emerald-200">
                     <Check className="w-3 h-3 text-emerald-600" />
                     Aktif: {activeKeyObj.label}
                   </span>
@@ -450,7 +450,7 @@ export const AIConfigPanel: React.FC = () => {
           {savedKeys.length === 0 && !isAddingNewKey ? (
             <div className="p-4 bg-slate-50 dark:bg-slate-800/60/80 border border-slate-200 dark:border-slate-700 rounded-lg space-y-3 dark:bg-slate-800/60">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5 dark:bg-emerald-900/40 dark:text-emerald-300">
                   <Key className="w-4 h-4" />
                 </div>
                 <div className="space-y-1 flex-1">
@@ -474,7 +474,7 @@ export const AIConfigPanel: React.FC = () => {
                       href="https://aistudio.google.com/apikey"
                       target="_blank"
                       rel="noreferrer"
-                      className="text-emerald-600 hover:text-emerald-700 underline font-medium inline-flex items-center gap-0.5"
+                      className="text-emerald-600 hover:text-emerald-700 underline font-medium inline-flex items-center gap-0.5 dark:text-emerald-300"
                     >
                       Google AI Studio <ExternalLink className="w-2.5 h-2.5" />
                     </a>
@@ -522,7 +522,7 @@ export const AIConfigPanel: React.FC = () => {
                       </option>
                     );
                   })}
-                  <option value="__add_new__" className="font-semibold text-emerald-700">
+                  <option value="__add_new__" className="font-semibold text-emerald-700 dark:text-emerald-300">
                     + Masukkan API Key Baru...
                   </option>
                 </select>
@@ -545,7 +545,7 @@ export const AIConfigPanel: React.FC = () => {
                   <button
                     type="button"
                     onClick={(e) => handleDeleteKey(activeKeyObj.id, e)}
-                    className="px-2.5 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded font-medium transition-colors inline-flex items-center gap-1 shrink-0"
+                    className="px-2.5 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded font-medium transition-colors inline-flex items-center gap-1 shrink-0 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 dark:hover:bg-rose-900/40"
                     title="Hapus Kunci Aktif"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -558,10 +558,10 @@ export const AIConfigPanel: React.FC = () => {
 
           {/* ACTIVE KEY STATUS CARD */}
           {activeKeyObj && (
-            <div className="p-3 bg-emerald-50/50 border border-emerald-200/80 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="p-3 bg-emerald-50/50 border border-emerald-200/80 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs dark:bg-emerald-950/40 dark:border-emerald-800">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold dark:bg-emerald-900/40 dark:text-emerald-200">
                     <Check className="w-3 h-3" />
                     Kunci Aktif
                   </span>
@@ -588,9 +588,9 @@ export const AIConfigPanel: React.FC = () => {
                 type="button"
                 onClick={handleTestConnection}
                 disabled={isTesting || isLoadingModels}
-                className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-emerald-300 text-emerald-800 rounded font-medium hover:bg-emerald-50 transition-colors inline-flex items-center gap-1.5 shrink-0 shadow-2xs text-xs"
+                className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-emerald-300 text-emerald-800 rounded font-medium hover:bg-emerald-50 transition-colors inline-flex items-center gap-1.5 shrink-0 shadow-2xs text-xs dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-700 dark:hover:bg-emerald-950/40"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin text-emerald-600' : 'text-emerald-700'}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin text-emerald-600' : 'text-emerald-700 dark:text-emerald-300'}`} />
                 <span>{testingProgressText ? 'Menguji...' : 'Uji Koneksi Kunci Ini'}</span>
               </button>
             </div>
@@ -657,7 +657,7 @@ export const AIConfigPanel: React.FC = () => {
                 </div>
 
                 {saveKeyError && (
-                  <div className="p-2.5 bg-rose-50 border border-rose-200 rounded text-rose-800 text-[11px] flex items-center gap-2">
+                  <div className="p-2.5 bg-rose-50 border border-rose-200 rounded text-rose-800 text-[11px] flex items-center gap-2 dark:bg-rose-950/40 dark:text-rose-200 dark:border-rose-800">
                     <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                     <span>{saveKeyError}</span>
                   </div>
@@ -784,7 +784,7 @@ export const AIConfigPanel: React.FC = () => {
 
           {/* Warning badge if user explicitly selected a specialist model */}
           {isSelectedSpecialist && (
-            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-800 flex items-start gap-2">
+            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-800 flex items-start gap-2 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
               <div>
                 <strong>Perhatian:</strong> Model ini tergolong model spesialis (audio/vision/research/robotics) dan tidak dioptimalkan untuk percakapan chat operasional atau tool calling gudang. Sebaiknya gunakan seri <strong>Gemini Flash</strong> atau <strong>Pro</strong>.
@@ -800,7 +800,7 @@ export const AIConfigPanel: React.FC = () => {
                   <Cpu className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                   {selectedModelObj.displayName}
                 </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 dark:text-slate-200 font-mono text-[10px]">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 dark:text-slate-200 font-mono text-[10px] dark:bg-slate-700">
                   <Layers className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
                   {selectedModelObj.id}
                 </span>
@@ -814,7 +814,7 @@ export const AIConfigPanel: React.FC = () => {
           )}
 
           {modelsError && (
-            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded text-amber-800 text-[11px] flex items-center justify-between">
+            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded text-amber-800 text-[11px] flex items-center justify-between dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800">
               <div className="flex items-center gap-1.5">
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                 <span>{modelsError}</span>
@@ -822,7 +822,7 @@ export const AIConfigPanel: React.FC = () => {
               <button
                 type="button"
                 onClick={() => loadModels(true)}
-                className="font-medium underline hover:text-amber-900 ml-2 shrink-0"
+                className="font-medium underline hover:text-amber-900 ml-2 shrink-0 dark:text-amber-100"
               >
                 Coba Lagi
               </button>
@@ -833,7 +833,7 @@ export const AIConfigPanel: React.FC = () => {
 
       {/* Progress feedback while testing */}
       {isTesting && testingProgressText && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs flex items-center gap-2 animate-pulse">
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs flex items-center gap-2 animate-pulse dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800">
           <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 shrink-0" />
           <span>{testingProgressText}</span>
         </div>
@@ -844,10 +844,10 @@ export const AIConfigPanel: React.FC = () => {
         <div
           className={`p-3.5 rounded border text-xs flex items-start gap-2.5 ${
             testResult.success
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100 dark:border-emerald-800'
               : testResult.category === 'UNAVAILABLE' || testResult.category === 'QUOTA'
-              ? 'bg-amber-50 border-amber-200 text-amber-900'
-              : 'bg-rose-50 border-rose-200 text-rose-900'
+              ? 'bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100 dark:border-amber-800'
+              : 'bg-rose-50 border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100 dark:border-rose-800'
           }`}
         >
           {testResult.success ? (
