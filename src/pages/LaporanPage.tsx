@@ -228,7 +228,7 @@ export const LaporanPage: React.FC = () => {
                       <td className="py-2 px-3 font-mono font-bold text-stone-900 dark:text-stone-100 text-right tabular-nums">
                         <div>{t.JUMLAH}</div>
                         {getAdminConsumableBadge(t.ID_ITEM, Number(t.JUMLAH || 0)) && (
-                          <div className="text-[10px] font-sans font-medium text-teal-700">
+                          <div className="text-[10px] font-sans font-medium text-teal-700 dark:text-teal-300">
                             {getAdminConsumableBadge(t.ID_ITEM, Number(t.JUMLAH || 0))}
                           </div>
                         )}
