@@ -527,14 +527,14 @@ export const PengajuanPage: React.FC = () => {
       header: 'ID Pengajuan',
       sortable: true,
       render: (r) => (
-        <div className="font-mono font-semibold text-slate-900 dark:text-slate-100">{r.ID_PENGAJUAN}</div>
+        <div className="font-mono font-semibold text-stone-900 dark:text-stone-100">{r.ID_PENGAJUAN}</div>
       ),
     },
     {
       key: 'TANGGAL',
       header: 'Tanggal',
       sortable: true,
-      render: (r) => <div className="text-slate-700 dark:text-slate-200">{r.TANGGAL || '-'}</div>,
+      render: (r) => <div className="text-stone-700 dark:text-stone-200">{r.TANGGAL || '-'}</div>,
     },
     {
       key: 'ID_ITEM',
@@ -544,8 +544,8 @@ export const PengajuanPage: React.FC = () => {
         const item = itemMap.get(r.ID_ITEM);
         return (
           <div>
-            <div className="font-medium text-slate-900 dark:text-slate-100">{r.NAMA_ITEM || item?.NAMA_ITEM || r.ID_ITEM}</div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{r.ID_ITEM}</div>
+            <div className="font-medium text-stone-900 dark:text-stone-100">{r.NAMA_ITEM || item?.NAMA_ITEM || r.ID_ITEM}</div>
+            <div className="text-[11px] text-stone-500 dark:text-stone-400 font-mono">{r.ID_ITEM}</div>
           </div>
         );
       },
@@ -559,8 +559,8 @@ export const PengajuanPage: React.FC = () => {
         const badge = getAdminConsumableBadge(r.ID_ITEM, Number(r.JUMLAH || 0));
         return (
           <div className="text-right">
-            <div className="font-bold text-slate-900 dark:text-slate-100 tabular-nums">
-              {r.JUMLAH} <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">{item?.SATUAN || 'UNIT'}</span>
+            <div className="font-bold text-stone-900 dark:text-stone-100 tabular-nums">
+              {r.JUMLAH} <span className="text-[11px] font-normal text-stone-500 dark:text-stone-400">{item?.SATUAN || 'UNIT'}</span>
             </div>
             {badge && (
               <div className="text-[10px] text-teal-700 font-medium">
@@ -577,7 +577,7 @@ export const PengajuanPage: React.FC = () => {
       render: (r) => {
         const mem = memberMap.get(r.ID_MEMBER);
         return (
-          <span className="text-slate-600 dark:text-slate-400 font-medium text-xs">
+          <span className="text-stone-600 dark:text-stone-400 font-medium text-xs">
             {mem?.LANTAI ? `Lantai ${mem.LANTAI}` : '-'}
           </span>
         );
@@ -587,7 +587,7 @@ export const PengajuanPage: React.FC = () => {
       key: 'ALASAN',
       header: 'Alasan Pengajuan',
       render: (r) => (
-        <div className="max-w-xs text-slate-700 dark:text-slate-200 text-xs truncate" title={r.ALASAN}>
+        <div className="max-w-xs text-stone-700 dark:text-stone-200 text-xs truncate" title={r.ALASAN}>
           {r.ALASAN || '-'}
         </div>
       ),
@@ -611,8 +611,8 @@ export const PengajuanPage: React.FC = () => {
       sortable: true,
       render: (r) => (
         <div>
-          <div className="font-mono font-bold text-slate-900 dark:text-slate-100">{r.ID_PENGAJUAN}</div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">{r.TANGGAL}</div>
+          <div className="font-mono font-bold text-stone-900 dark:text-stone-100">{r.ID_PENGAJUAN}</div>
+          <div className="text-[10px] text-stone-400 dark:text-stone-500 font-mono">{r.TANGGAL}</div>
         </div>
       ),
     },
@@ -625,7 +625,7 @@ export const PengajuanPage: React.FC = () => {
         const badge = getAdminConsumableBadge(r.ID_ITEM, Number(r.JUMLAH || 0));
         return (
           <div>
-            <div className="font-semibold text-slate-900 dark:text-slate-100">{r.NAMA_ITEM || itm?.NAMA_ITEM || r.ID_ITEM}</div>
+            <div className="font-semibold text-stone-900 dark:text-stone-100">{r.NAMA_ITEM || itm?.NAMA_ITEM || r.ID_ITEM}</div>
             <div className="text-xs font-bold text-emerald-700 mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span>Siapkan: {r.JUMLAH} {itm?.SATUAN || 'UNIT'}</span>
               {badge && (
@@ -646,15 +646,15 @@ export const PengajuanPage: React.FC = () => {
         const mem = memberMap.get(r.ID_MEMBER);
         return (
           <div>
-            <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+            <div className="font-medium text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
               <span>{r.NAMA_MEMBER || mem?.NAMA_MEMBER || r.ID_MEMBER}</span>
               {mem?.LANTAI && (
-                <span className="px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-[10px]">
+                <span className="px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold text-[10px]">
                   Lt. {mem.LANTAI}
                 </span>
               )}
             </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">{mem?.JABATAN || r.ID_MEMBER}</div>
+            <div className="text-[11px] text-stone-500 dark:text-stone-400">{mem?.JABATAN || r.ID_MEMBER}</div>
           </div>
         );
       },
@@ -663,7 +663,7 @@ export const PengajuanPage: React.FC = () => {
       key: 'ALASAN',
       header: 'Alasan Permintaan',
       render: (r) => (
-        <div className="max-w-xs text-xs text-slate-600 dark:text-slate-400 line-clamp-2" title={r.ALASAN}>
+        <div className="max-w-xs text-xs text-stone-600 dark:text-stone-400 line-clamp-2" title={r.ALASAN}>
           {r.ALASAN || '-'}
         </div>
       ),
@@ -710,7 +710,7 @@ export const PengajuanPage: React.FC = () => {
           );
         }
 
-        return <span className="text-slate-400 dark:text-slate-500 text-xs italic">Selesai</span>;
+        return <span className="text-stone-400 dark:text-stone-500 text-xs italic">Selesai</span>;
       },
     },
   ];
@@ -725,8 +725,8 @@ export const PengajuanPage: React.FC = () => {
       sortable: true,
       render: (r) => (
         <div>
-          <div className="font-mono font-bold text-slate-900 dark:text-slate-100">{r.ID_PENGAJUAN}</div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500">{r.TANGGAL || '-'}</div>
+          <div className="font-mono font-bold text-stone-900 dark:text-stone-100">{r.ID_PENGAJUAN}</div>
+          <div className="text-[10px] text-stone-400 dark:text-stone-500">{r.TANGGAL || '-'}</div>
         </div>
       ),
     },
@@ -738,15 +738,15 @@ export const PengajuanPage: React.FC = () => {
         const mem = memberMap.get(r.ID_MEMBER);
         return (
           <div>
-            <div className="font-medium text-slate-900 dark:text-slate-100">
+            <div className="font-medium text-stone-900 dark:text-stone-100">
               {r.NAMA_MEMBER || mem?.NAMA_MEMBER || r.ID_MEMBER}
               {mem?.LANTAI && (
-                <span className="ml-1.5 px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10px] font-semibold">
+                <span className="ml-1.5 px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 text-[10px] font-semibold">
                   Lt. {mem.LANTAI}
                 </span>
               )}
             </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">{mem?.JABATAN || r.ID_MEMBER}</div>
+            <div className="text-[11px] text-stone-500 dark:text-stone-400">{mem?.JABATAN || r.ID_MEMBER}</div>
           </div>
         );
       },
@@ -760,8 +760,8 @@ export const PengajuanPage: React.FC = () => {
         const badge = getAdminConsumableBadge(r.ID_ITEM, Number(r.JUMLAH || 0));
         return (
           <div>
-            <div className="font-medium text-slate-900 dark:text-slate-100">{r.NAMA_ITEM || itm?.NAMA_ITEM || r.ID_ITEM}</div>
-            <div className="text-[11px] text-slate-600 dark:text-slate-400 font-mono font-semibold flex items-center gap-1.5 flex-wrap">
+            <div className="font-medium text-stone-900 dark:text-stone-100">{r.NAMA_ITEM || itm?.NAMA_ITEM || r.ID_ITEM}</div>
+            <div className="text-[11px] text-stone-600 dark:text-stone-400 font-mono font-semibold flex items-center gap-1.5 flex-wrap">
               <span>{r.JUMLAH} {itm?.SATUAN || 'UNIT'}</span>
               {badge && (
                 <span className="text-[10px] font-sans text-teal-700 font-medium bg-teal-50 px-1 py-0.2 rounded border border-teal-200">
@@ -777,7 +777,7 @@ export const PengajuanPage: React.FC = () => {
       key: 'ALASAN',
       header: 'Alasan Permintaan',
       render: (r) => (
-        <div className="max-w-xs text-xs text-slate-700 dark:text-slate-200 line-clamp-2" title={r.ALASAN}>
+        <div className="max-w-xs text-xs text-stone-700 dark:text-stone-200 line-clamp-2" title={r.ALASAN}>
           {r.ALASAN || '-'}
         </div>
       ),
@@ -793,11 +793,11 @@ export const PengajuanPage: React.FC = () => {
       key: 'ID_APPROVER',
       header: 'Approver / Catatan',
       render: (r) => {
-        if (!r.ID_APPROVER && !r.CATATAN_APPROVER) return <span className="text-slate-400 dark:text-slate-500 text-xs italic">-</span>;
+        if (!r.ID_APPROVER && !r.CATATAN_APPROVER) return <span className="text-stone-400 dark:text-stone-500 text-xs italic">-</span>;
         return (
           <div className="text-xs">
-            <div className="font-medium text-slate-800 dark:text-slate-200">{r.ID_APPROVER}</div>
-            {r.CATATAN_APPROVER && <div className="text-[11px] text-slate-500 dark:text-slate-400 italic">"{r.CATATAN_APPROVER}"</div>}
+            <div className="font-medium text-stone-800 dark:text-stone-200">{r.ID_APPROVER}</div>
+            {r.CATATAN_APPROVER && <div className="text-[11px] text-stone-500 dark:text-stone-400 italic">"{r.CATATAN_APPROVER}"</div>}
           </div>
         );
       },
@@ -812,7 +812,7 @@ export const PengajuanPage: React.FC = () => {
 
         if (st === 'MENUNGGU') {
           if (!canPerformAction('APPROVAL')) {
-            return <span className="text-slate-400 dark:text-slate-500 text-xs italic">-</span>;
+            return <span className="text-stone-400 dark:text-stone-500 text-xs italic">-</span>;
           }
           return (
             <div className="flex flex-wrap items-center justify-center gap-1.5 min-w-[150px]">
@@ -879,7 +879,7 @@ export const PengajuanPage: React.FC = () => {
           );
         }
 
-        return <span className="text-slate-400 dark:text-slate-500 text-xs italic">-</span>;
+        return <span className="text-stone-400 dark:text-stone-500 text-xs italic">-</span>;
       },
     },
   ];
@@ -899,7 +899,7 @@ export const PengajuanPage: React.FC = () => {
             <button
               onClick={loadRequests}
               disabled={isRequestsLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-50 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-600 rounded hover:bg-stone-50 transition-colors disabled:opacity-50"
               title="Perbarui riwayat permohonan"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRequestsLoading ? 'animate-spin' : ''}`} />
@@ -911,14 +911,14 @@ export const PengajuanPage: React.FC = () => {
 
       {/* Navigation Mode Tabs (Admin Mode Only) */}
       {role === 'ADMIN' && (
-        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-2">
+        <div className="flex items-center gap-2 border-b border-stone-200 dark:border-stone-700 pb-2">
           <button
             type="button"
             onClick={() => setActiveTab('admin')}
             className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
               activeTab === 'admin'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
+                ? 'bg-amber-700 text-white shadow-xs'
+                : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50'
             }`}
           >
             <Boxes className="w-3.5 h-3.5" />
@@ -935,8 +935,8 @@ export const PengajuanPage: React.FC = () => {
             onClick={() => setActiveTab('crew')}
             className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
               activeTab === 'crew'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
+                ? 'bg-amber-700 text-white shadow-xs'
+                : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50'
             }`}
           >
             <User className="w-3.5 h-3.5" />
@@ -951,14 +951,14 @@ export const PengajuanPage: React.FC = () => {
       {activeTab === 'crew' && (
         <div className="space-y-6">
           {/* Sub-tab Switcher: Permintaan Barang vs Tisu & Plastik */}
-          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-3">
+          <div className="flex items-center gap-2 border-b border-stone-200 dark:border-stone-700 pb-3">
             <button
               type="button"
               onClick={() => setCrewFormType('general')}
               className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
                 crewFormType === 'general'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
+                  ? 'bg-amber-700 text-white shadow-xs'
+                  : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50'
               }`}
             >
               <Package className="w-3.5 h-3.5" />
@@ -971,7 +971,7 @@ export const PengajuanPage: React.FC = () => {
               className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
                 crewFormType === 'consumable'
                   ? 'bg-emerald-800 text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
+                  : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50'
               }`}
             >
               <ShoppingCart className="w-3.5 h-3.5" />
@@ -999,9 +999,9 @@ export const PengajuanPage: React.FC = () => {
             /* Form Permintaan & Panduan Singkat Grid */
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             {/* LEFT / MAIN COLUMN: FORM CARD */}
-            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
+            <div className="lg:col-span-2 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-700 overflow-hidden shadow-xs">
               {/* Header Gradient */}
-              <div className="bg-gradient-to-r from-emerald-900 via-slate-900 to-slate-950 text-white p-5 sm:p-6 border-b border-slate-800">
+              <div className="bg-gradient-to-r from-emerald-900 via-stone-900 to-stone-950 text-white p-5 sm:p-6 border-b border-stone-800">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 flex items-center justify-center shrink-0">
@@ -1046,7 +1046,7 @@ export const PengajuanPage: React.FC = () => {
                       {cartResult.createdIds.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mt-2 font-mono font-bold text-[11px]">
                           {cartResult.createdIds.map((id, idx) => (
-                            <span key={idx} className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200">
+                            <span key={idx} className="px-2 py-0.5 rounded bg-white dark:bg-stone-900 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200">
                               {id}
                             </span>
                           ))}
@@ -1068,22 +1068,22 @@ export const PengajuanPage: React.FC = () => {
 
                 <form onSubmit={handleCrewSubmitRequest} className="space-y-6 text-xs">
                   {/* STEP 1: PILIH NAMA */}
-                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/50 space-y-3 dark:bg-slate-800/60">
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
                     <div className="flex items-center gap-2.5">
                       <div
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                           selectedMemberId
                             ? 'bg-emerald-600 text-white shadow-2xs'
-                            : 'bg-slate-200 text-slate-700 dark:text-slate-200'
+                            : 'bg-stone-200 text-stone-700 dark:text-stone-200'
                         }`}
                       >
                         {selectedMemberId ? <Check className="w-4 h-4 text-white" /> : '1'}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                        <h4 className="font-semibold text-stone-900 dark:text-stone-100">
                           Pilih Nama Anda <span className="text-rose-500">*</span>
                         </h4>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        <p className="text-[11px] text-stone-500 dark:text-stone-400">
                           Cari nama pemohon sesuai penempatan lantai tugas
                         </p>
                       </div>
@@ -1110,16 +1110,16 @@ export const PengajuanPage: React.FC = () => {
                             {selectedMemberObj.NAMA_MEMBER.charAt(0)}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 truncate">
+                            <div className="font-semibold text-stone-900 dark:text-stone-100 flex items-center gap-1.5 truncate">
                               <span className="truncate">{selectedMemberObj.NAMA_MEMBER}</span>
                             </div>
-                            <div className="text-[11px] text-slate-600 dark:text-slate-400 truncate">
+                            <div className="text-[11px] text-stone-600 dark:text-stone-400 truncate">
                               {selectedMemberObj.JABATAN || 'Personil Lapangan'}
                             </div>
                           </div>
                         </div>
                         <div className="text-right shrink-0 ml-2">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs">
                             <Building2 className="w-3.5 h-3.5 text-emerald-600" />
                             <span>{selectedMemberObj.LANTAI ? `Lantai ${selectedMemberObj.LANTAI}` : 'Lantai -'}</span>
                           </span>
@@ -1129,22 +1129,22 @@ export const PengajuanPage: React.FC = () => {
                   </div>
 
                   {/* STEP 2: PILIH BARANG */}
-                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/50 space-y-3 dark:bg-slate-800/60">
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
                     <div className="flex items-center gap-2.5">
                       <div
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                           selectedItemId
                             ? 'bg-emerald-600 text-white shadow-2xs'
-                            : 'bg-slate-200 text-slate-700 dark:text-slate-200'
+                            : 'bg-stone-200 text-stone-700 dark:text-stone-200'
                         }`}
                       >
                         {selectedItemId ? <Check className="w-4 h-4 text-white" /> : '2'}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                        <h4 className="font-semibold text-stone-900 dark:text-stone-100">
                           Pilih Barang <span className="text-rose-500">*</span>
                         </h4>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        <p className="text-[11px] text-stone-500 dark:text-stone-400">
                           Cari barang yang ingin diajukan dan perhatikan status ketersediaan
                         </p>
                       </div>
@@ -1165,10 +1165,10 @@ export const PengajuanPage: React.FC = () => {
 
                     {/* Binary Status Indicator Pill (No stock numbers!) */}
                     {selectedItemObj && (
-                      <div className="p-3 rounded-lg border bg-white dark:bg-slate-900 flex items-center justify-between text-xs animate-fadeIn shadow-2xs">
+                      <div className="p-3 rounded-lg border bg-white dark:bg-stone-900 flex items-center justify-between text-xs animate-fadeIn shadow-2xs">
                         <div className="min-w-0 pr-2">
-                          <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">{selectedItemObj.NAMA_ITEM}</div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          <div className="font-semibold text-stone-900 dark:text-stone-100 truncate">{selectedItemObj.NAMA_ITEM}</div>
+                          <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
                             Kategori: {selectedItemObj.KATEGORI} • Satuan: {selectedItemObj.SATUAN}
                           </div>
                         </div>
@@ -1190,22 +1190,22 @@ export const PengajuanPage: React.FC = () => {
                   </div>
 
                   {/* STEP 3: JUMLAH & CEK KELAYAKAN */}
-                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/50 space-y-3 dark:bg-slate-800/60">
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
                     <div className="flex items-center gap-2.5">
                       <div
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                           Number(formJumlah) >= 1
                             ? 'bg-emerald-600 text-white shadow-2xs'
-                            : 'bg-slate-200 text-slate-700 dark:text-slate-200'
+                            : 'bg-stone-200 text-stone-700 dark:text-stone-200'
                         }`}
                       >
                         {Number(formJumlah) >= 1 ? <Check className="w-4 h-4 text-white" /> : '3'}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                        <h4 className="font-semibold text-stone-900 dark:text-stone-100">
                           Jumlah &amp; Cek Kelayakan <span className="text-rose-500">*</span>
                         </h4>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        <p className="text-[11px] text-stone-500 dark:text-stone-400">
                           Tentukan kuantitas dan cek kesesuaian jadwal masa pakai
                         </p>
                       </div>
@@ -1213,7 +1213,7 @@ export const PengajuanPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="space-y-1">
-                        <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-200">Jumlah Diminta:</label>
+                        <label className="block text-[11px] font-medium text-stone-700 dark:text-stone-200">Jumlah Diminta:</label>
                         <input
                           type="number"
                           min={1}
@@ -1225,7 +1225,7 @@ export const PengajuanPage: React.FC = () => {
                             setEligibilityResult(null);
                           }}
                           required
-                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-slate-900 font-mono text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900"
+                          className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 font-mono text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900"
                         />
                       </div>
 
@@ -1234,7 +1234,7 @@ export const PengajuanPage: React.FC = () => {
                           type="button"
                           onClick={handleCheckEligibility}
                           disabled={isCheckingEligibility || !selectedMemberId || !selectedItemId}
-                          className="w-full py-2 px-3.5 bg-white dark:bg-slate-900 hover:bg-slate-100 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 rounded-lg font-medium transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                          className="w-full py-2 px-3.5 bg-white dark:bg-stone-900 hover:bg-stone-100 border border-stone-300 dark:border-stone-600 text-stone-800 dark:text-stone-200 rounded-lg font-medium transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
                         >
                           {isCheckingEligibility ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1294,15 +1294,15 @@ export const PengajuanPage: React.FC = () => {
                   </div>
 
                   {/* KERANJANG PERMINTAAN */}
-                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 space-y-3">
-                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
+                    <div className="text-[11px] font-bold text-stone-700 dark:text-stone-200 flex items-center gap-1.5">
                       <ShoppingCart className="w-3.5 h-3.5" />
                       <span>Keranjang Permintaan ({requestCart.length} item):</span>
                     </div>
                     {requestCart.length === 0 ? (
-                      <div className="p-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 text-center bg-white dark:bg-slate-900">
-                        <p className="font-medium text-xs text-slate-600 dark:text-slate-400">Keranjang masih kosong</p>
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                      <div className="p-4 rounded-lg border border-dashed border-stone-300 dark:border-stone-600 text-center bg-white dark:bg-stone-900">
+                        <p className="font-medium text-xs text-stone-600 dark:text-stone-400">Keranjang masih kosong</p>
+                        <p className="text-[11px] text-stone-400 dark:text-stone-500">
                           Pilih barang &amp; jumlah di atas lalu klik &ldquo;Tambah ke Keranjang&rdquo;
                         </p>
                       </div>
@@ -1311,16 +1311,16 @@ export const PengajuanPage: React.FC = () => {
                         {requestCart.map((item, idx) => (
                           <div
                             key={idx}
-                            className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3 animate-fadeIn"
+                            className="p-3 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 flex items-center justify-between gap-3 animate-fadeIn"
                           >
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-6 h-6 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center font-bold text-[10px] shrink-0">
+                              <div className="w-6 h-6 rounded-full bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center font-bold text-[10px] shrink-0">
                                 {idx + 1}
                               </div>
                               <div className="min-w-0">
-                                <div className="font-semibold text-slate-900 dark:text-slate-100 truncate text-xs">{item.nama}</div>
-                                <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                                <div className="font-semibold text-stone-900 dark:text-stone-100 truncate text-xs">{item.nama}</div>
+                                <div className="text-[11px] text-stone-500 dark:text-stone-400">
+                                  <span className="font-bold text-stone-800 dark:text-stone-200">
                                     {item.jumlah} {item.satuan}
                                   </span>
                                 </div>
@@ -1330,7 +1330,7 @@ export const PengajuanPage: React.FC = () => {
                               type="button"
                               onClick={() => handleRemoveFromCart(idx)}
                               disabled={isSubmittingRequest}
-                              className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors shrink-0"
+                              className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors shrink-0"
                               title="Hapus dari keranjang"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1342,23 +1342,23 @@ export const PengajuanPage: React.FC = () => {
                   </div>
 
                   {/* STEP 4: ALASAN PERMINTAAN */}
-                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/50 space-y-3 dark:bg-slate-800/60">
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         <div
                           className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                             formAlasan.trim().length > 0
                               ? 'bg-emerald-600 text-white shadow-2xs'
-                              : 'bg-slate-200 text-slate-700 dark:text-slate-200'
+                              : 'bg-stone-200 text-stone-700 dark:text-stone-200'
                           }`}
                         >
                           {formAlasan.trim().length > 0 ? <Check className="w-4 h-4 text-white" /> : '4'}
                         </div>
                         <div>
-                          <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                          <h4 className="font-semibold text-stone-900 dark:text-stone-100">
                             Alasan Permintaan <span className="text-rose-500">*</span>
                           </h4>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          <p className="text-[11px] text-stone-500 dark:text-stone-400">
                             Wajib diisi untuk pertimbangan admin
                           </p>
                         </div>
@@ -1372,12 +1372,12 @@ export const PengajuanPage: React.FC = () => {
                       onChange={(e) => setFormAlasan(e.target.value)}
                       placeholder="Contoh: Barang sebelumnya rusak saat operasional / kebutuhan mendesak pembersihan lantai 3..."
                       required
-                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-slate-900 text-slate-900 dark:text-slate-100 text-xs bg-white dark:bg-slate-900"
+                      className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 text-xs bg-white dark:bg-stone-900"
                     />
                   </div>
 
                   {/* STEP 5: KIRIM PERMINTAAN */}
-                  <div className="pt-2 space-y-3 border-t border-slate-100 dark:border-slate-800">
+                  <div className="pt-2 space-y-3 border-t border-stone-100 dark:border-stone-800">
                     {isSubmittingRequest && cartSubmitProgress && (
                       <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-100 text-xs flex items-center gap-2 animate-pulse">
                         <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
@@ -1385,7 +1385,7 @@ export const PengajuanPage: React.FC = () => {
                       </div>
                     )}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <div className="text-[11px] text-stone-500 dark:text-stone-400">
                         {requestCart.length > 0
                           ? `${requestCart.length} item di keranjang akan diajukan berurutan.`
                           : 'Tambahkan barang ke keranjang terlebih dahulu.'}
@@ -1394,7 +1394,7 @@ export const PengajuanPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isSubmittingRequest || requestCart.length === 0 || !selectedMemberId || !formAlasan.trim() || !canPerformAction('REQUEST')}
-                        className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs hover:shadow"
+                        className="w-full sm:w-auto px-6 py-2.5 bg-amber-700 hover:bg-amber-800 text-white rounded-xl font-semibold transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs hover:shadow"
                       >
                         {isSubmittingRequest ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -1411,20 +1411,20 @@ export const PengajuanPage: React.FC = () => {
 
             {/* RIGHT COLUMN: PANDUAN SINGKAT PANEL */}
             <div className="lg:col-span-1 space-y-4">
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs space-y-4 text-xs">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+              <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-700 p-5 shadow-xs space-y-4 text-xs">
+                <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
                   <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
                     <HelpCircle className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Panduan Singkat Pengambilan</h3>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400">Informasi status barang &amp; alur gudang</p>
+                    <h3 className="font-bold text-stone-900 dark:text-stone-100 text-xs">Panduan Singkat Pengambilan</h3>
+                    <p className="text-[10px] text-stone-500 dark:text-stone-400">Informasi status barang &amp; alur gudang</p>
                   </div>
                 </div>
 
                 {/* Status Biner Explanation */}
                 <div className="space-y-2">
-                  <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Arti Status Barang:</div>
+                  <div className="text-[11px] font-semibold text-stone-700 dark:text-stone-200">Arti Status Barang:</div>
                   <div className="space-y-1.5">
                     <div className="p-2 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2">
                       <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-bold text-[9px] shrink-0 mt-0.5">
@@ -1446,18 +1446,18 @@ export const PengajuanPage: React.FC = () => {
                 </div>
 
                 {/* Workflow Status Steps (One Line with Arrows) */}
-                <div className="space-y-2 pt-1 border-t border-slate-100">
-                  <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Alur Status Permintaan:</div>
-                  <div className="flex items-center justify-between text-[10px] font-bold bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 overflow-x-auto">
+                <div className="space-y-2 pt-1 border-t border-stone-100">
+                  <div className="text-[11px] font-semibold text-stone-700 dark:text-stone-200">Alur Status Permintaan:</div>
+                  <div className="flex items-center justify-between text-[10px] font-bold bg-stone-50 dark:bg-stone-800/60 p-2.5 rounded-lg border border-stone-200 dark:border-stone-700 overflow-x-auto">
                     <span className="text-amber-700">MENUNGGU</span>
-                    <span className="text-slate-400 dark:text-slate-500">&rarr;</span>
+                    <span className="text-stone-400 dark:text-stone-500">&rarr;</span>
                     <span className="text-blue-700">DISETUJUI</span>
-                    <span className="text-slate-400 dark:text-slate-500">&rarr;</span>
+                    <span className="text-stone-400 dark:text-stone-500">&rarr;</span>
                     <span className="text-orange-700">DIPROSES</span>
-                    <span className="text-slate-400 dark:text-slate-500">&rarr;</span>
+                    <span className="text-stone-400 dark:text-stone-500">&rarr;</span>
                     <span className="text-emerald-700">SELESAI</span>
                   </div>
-                  <ul className="space-y-1.5 text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed pt-1">
+                  <ul className="space-y-1.5 text-[11px] text-stone-600 dark:text-stone-400 leading-relaxed pt-1">
                     <li className="flex items-start gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5" />
                       <span><strong>MENUNGGU</strong>: Masuk ke antrean review verifikasi admin gudang.</span>
@@ -1478,8 +1478,8 @@ export const PengajuanPage: React.FC = () => {
                 </div>
 
                 {/* Important Notes */}
-                <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
-                  <div className="font-semibold text-slate-800 dark:text-slate-200">Tips Pengisian:</div>
+                <div className="p-3 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 text-[11px] text-stone-600 dark:text-stone-400 space-y-1">
+                  <div className="font-semibold text-stone-800 dark:text-stone-200">Tips Pengisian:</div>
                   <p className="leading-relaxed">
                     Pastikan nama pemohon sesuai dengan lantai tugas Anda. Alasan yang jelas membantu admin memverifikasi urgensi pengambilan.
                   </p>
@@ -1493,11 +1493,11 @@ export const PengajuanPage: React.FC = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <Clock className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+                <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100">
                   Riwayat Permintaan Saya{selectedMemberObj ? ` (${selectedMemberObj.NAMA_MEMBER})` : ''}
                 </h3>
-                <span className="px-2 py-0.5 text-[11px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full border border-slate-200 dark:border-slate-700">
+                <span className="px-2 py-0.5 text-[11px] font-mono bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 rounded-full border border-stone-200 dark:border-stone-700">
                   {myRequests.length} data
                 </span>
               </div>
@@ -1527,13 +1527,13 @@ export const PengajuanPage: React.FC = () => {
           {/* Ringkasan Admin: 3 Widget Rekap */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Widget 1: Rekap Status (5 Status) */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3 shadow-2xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 text-xs">
-                  <Layers className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+            <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-4 space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+                <div className="flex items-center gap-1.5 font-semibold text-stone-800 dark:text-stone-200 text-xs">
+                  <Layers className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" />
                   <span>Rekap Status Pengajuan</span>
                 </div>
-                <span className="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400">{requests.length} Total</span>
+                <span className="text-[11px] font-mono font-bold text-stone-500 dark:text-stone-400">{requests.length} Total</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-2 rounded bg-amber-50 border border-amber-200 flex items-center justify-between">
@@ -1560,29 +1560,29 @@ export const PengajuanPage: React.FC = () => {
             </div>
 
             {/* Widget 2: Top Requester per Member (+ Lantai) */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3 shadow-2xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 text-xs">
-                  <User className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+            <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-4 space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+                <div className="flex items-center gap-1.5 font-semibold text-stone-800 dark:text-stone-200 text-xs">
+                  <User className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" />
                   <span>Top Pemohon (Member)</span>
                 </div>
-                <span className="text-[11px] text-slate-400 dark:text-slate-500">Lantai</span>
+                <span className="text-[11px] text-stone-400 dark:text-stone-500">Lantai</span>
               </div>
               <div className="space-y-1.5 text-xs">
                 {adminSummary.topRequesters.length === 0 ? (
-                  <div className="text-slate-400 dark:text-slate-500 py-3 text-center text-xs">Belum ada data</div>
+                  <div className="text-stone-400 dark:text-stone-500 py-3 text-center text-xs">Belum ada data</div>
                 ) : (
                   adminSummary.topRequesters.map((req, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-50">
+                    <div key={idx} className="flex items-center justify-between p-1.5 rounded hover:bg-stone-50">
                       <div className="min-w-0 flex-1 truncate">
-                        <span className="font-medium text-slate-800 dark:text-slate-200">{req.member.NAMA_MEMBER}</span>
+                        <span className="font-medium text-stone-800 dark:text-stone-200">{req.member.NAMA_MEMBER}</span>
                         {req.member.LANTAI && (
-                          <span className="ml-1.5 px-1 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-semibold">
+                          <span className="ml-1.5 px-1 py-0.2 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 text-[10px] font-semibold">
                             Lt. {req.member.LANTAI}
                           </span>
                         )}
                       </div>
-                      <span className="font-mono font-bold text-slate-900 dark:text-slate-100 ml-2">{req.count} req</span>
+                      <span className="font-mono font-bold text-stone-900 dark:text-stone-100 ml-2">{req.count} req</span>
                     </div>
                   ))
                 )}
@@ -1590,23 +1590,23 @@ export const PengajuanPage: React.FC = () => {
             </div>
 
             {/* Widget 3: Top 5 Barang Sering Diminta */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3 shadow-2xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 text-xs">
-                  <TrendingUp className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+            <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-4 space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+                <div className="flex items-center gap-1.5 font-semibold text-stone-800 dark:text-stone-200 text-xs">
+                  <TrendingUp className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" />
                   <span>Top 5 Barang Diminta</span>
                 </div>
-                <span className="text-[11px] text-slate-400 dark:text-slate-500">Qty Total</span>
+                <span className="text-[11px] text-stone-400 dark:text-stone-500">Qty Total</span>
               </div>
               <div className="space-y-1.5 text-xs">
                 {adminSummary.topItems.length === 0 ? (
-                  <div className="text-slate-400 dark:text-slate-500 py-3 text-center text-xs">Belum ada data</div>
+                  <div className="text-stone-400 dark:text-stone-500 py-3 text-center text-xs">Belum ada data</div>
                 ) : (
                   adminSummary.topItems.map((it, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-50">
+                    <div key={idx} className="flex items-center justify-between p-1.5 rounded hover:bg-stone-50">
                       <div className="min-w-0 flex-1 truncate">
-                        <span className="font-medium text-slate-800 dark:text-slate-200">{it.item.NAMA_ITEM}</span>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-1">({it.count}x)</span>
+                        <span className="font-medium text-stone-800 dark:text-stone-200">{it.item.NAMA_ITEM}</span>
+                        <span className="text-[10px] text-stone-400 dark:text-stone-500 ml-1">({it.count}x)</span>
                       </div>
                       <span className="font-mono font-bold text-emerald-700 ml-2">
                         {it.totalQty} {it.item.SATUAN}
@@ -1619,13 +1619,13 @@ export const PengajuanPage: React.FC = () => {
           </div>
 
           {/* DAFTAR SIAP DISIAPKAN (PICKING LIST) */}
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+          <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-5 space-y-4 shadow-xs">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <div className="flex items-center gap-2 text-stone-900 dark:text-stone-100">
                 <Boxes className="w-4 h-4 text-orange-600" />
                 <div>
                   <h3 className="text-sm font-semibold">Daftar Siap Disiapkan (Picking List Gudang)</h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400">
                     Daftar permohonan berstatus DISETUJUI &amp; DIPROSES untuk diambil dan diserahkan ke personil.
                   </p>
                 </div>
@@ -1648,31 +1648,31 @@ export const PengajuanPage: React.FC = () => {
           {/* TABEL SELURUH RIWAYAT PENGAJUAN — KELOLA STATUS */}
           <div className="space-y-3">
             {/* Header & Legend Panel */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5 shadow-xs space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-amber-700 text-white flex items-center justify-center shrink-0">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
+                    <h3 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100">
                       Daftar Pengajuan — Kelola Status
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-stone-500 dark:text-stone-400">
                       Pembaruan status langsung per baris untuk operasional gudang yang cepat
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <span className="px-2.5 py-1 text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <span className="px-2.5 py-1 text-xs font-mono font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 rounded-lg border border-stone-200 dark:border-stone-700">
                     {filteredAllRequests.length} data
                   </span>
                   <button
                     type="button"
                     onClick={loadRequests}
                     disabled={isRequestsLoading}
-                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 inline-flex items-center gap-1.5 text-xs font-medium"
+                    className="p-1.5 text-stone-500 dark:text-stone-400 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-colors border border-stone-200 dark:border-stone-700 inline-flex items-center gap-1.5 text-xs font-medium"
                     title="Muat Ulang Data"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isRequestsLoading ? 'animate-spin text-emerald-600' : ''}`} />
@@ -1682,36 +1682,36 @@ export const PengajuanPage: React.FC = () => {
               </div>
 
               {/* Legend Alur Status & Penjelasan Efek Tombol */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/60/90 rounded-lg border border-slate-200 dark:border-slate-700/80 text-xs space-y-2 dark:bg-slate-800/60 dark:border-slate-700">
-                <div className="flex items-center gap-2 flex-wrap text-slate-700 dark:text-slate-200 font-medium">
-                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/60/90 rounded-lg border border-stone-200 dark:border-stone-700/80 text-xs space-y-2 dark:bg-stone-800/60 dark:border-stone-700">
+                <div className="flex items-center gap-2 flex-wrap text-stone-700 dark:text-stone-200 font-medium">
+                  <span className="text-[11px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
                     Alur Status:
                   </span>
                   <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 font-semibold text-[11px]">
                     MENUNGGU
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                  <ArrowRight className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
                   <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-800 font-semibold text-[11px]">
                     DISETUJUI
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                  <ArrowRight className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
                   <span className="px-2 py-0.5 rounded bg-orange-50 border border-orange-200 text-orange-800 font-semibold text-[11px]">
                     DIPROSES
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                  <ArrowRight className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
                   <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold text-[11px]">
                     SELESAI
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-600 dark:text-slate-400 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <div className="text-[11px] text-stone-600 dark:text-stone-400 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span>
                     <strong className="text-emerald-700">Setujui</strong> = stok berkurang &amp; masuk picking list
                   </span>
-                  <span className="text-slate-300">•</span>
+                  <span className="text-stone-300">•</span>
                   <span>
                     <strong className="text-orange-700">Mulai Siapkan</strong> = masuk antrean penyiapan
                   </span>
-                  <span className="text-slate-300">•</span>
+                  <span className="text-stone-300">•</span>
                   <span>
                     <strong className="text-emerald-700">Selesai</strong> = barang diserahkan
                   </span>
@@ -1734,7 +1734,7 @@ export const PengajuanPage: React.FC = () => {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="text-xs border border-slate-200 dark:border-slate-700 rounded px-2.5 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+                  className="text-xs border border-stone-200 dark:border-stone-700 rounded px-2.5 py-1.5 bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200 focus:outline-hidden focus:ring-1 focus:ring-amber-700"
                 >
                   <option value="ALL">Semua Status</option>
                   <option value="MENUNGGU">Menunggu</option>
