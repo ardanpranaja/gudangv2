@@ -563,7 +563,7 @@ export const PengajuanPage: React.FC = () => {
               {r.JUMLAH} <span className="text-[11px] font-normal text-stone-500 dark:text-stone-400">{item?.SATUAN || 'UNIT'}</span>
             </div>
             {badge && (
-              <div className="text-[10px] text-teal-700 font-medium">
+              <div className="text-[10px] text-teal-700 font-medium dark:text-teal-300">
                 {badge}
               </div>
             )}
@@ -626,10 +626,10 @@ export const PengajuanPage: React.FC = () => {
         return (
           <div>
             <div className="font-semibold text-stone-900 dark:text-stone-100">{r.NAMA_ITEM || itm?.NAMA_ITEM || r.ID_ITEM}</div>
-            <div className="text-xs font-bold text-emerald-700 mt-0.5 flex items-center gap-1.5 flex-wrap">
+            <div className="text-xs font-bold text-emerald-700 mt-0.5 flex items-center gap-1.5 flex-wrap dark:text-emerald-300">
               <span>Siapkan: {r.JUMLAH} {itm?.SATUAN || 'UNIT'}</span>
               {badge && (
-                <span className="text-[11px] font-normal text-teal-800 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
+                <span className="text-[11px] font-normal text-teal-800 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200 dark:bg-teal-950/40 dark:text-teal-200 dark:border-teal-800">
                   {badge}
                 </span>
               )}
@@ -764,7 +764,7 @@ export const PengajuanPage: React.FC = () => {
             <div className="text-[11px] text-stone-600 dark:text-stone-400 font-mono font-semibold flex items-center gap-1.5 flex-wrap">
               <span>{r.JUMLAH} {itm?.SATUAN || 'UNIT'}</span>
               {badge && (
-                <span className="text-[10px] font-sans text-teal-700 font-medium bg-teal-50 px-1 py-0.2 rounded border border-teal-200">
+                <span className="text-[10px] font-sans text-teal-700 font-medium bg-teal-50 px-1 py-0.2 rounded border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800">
                   {badge}
                 </span>
               )}
@@ -835,7 +835,7 @@ export const PengajuanPage: React.FC = () => {
                     handleApproval('REJECT', r.ID_PENGAJUAN);
                   }
                 }}
-                className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-300 rounded-md transition-colors inline-flex items-center gap-1 disabled:opacity-50"
+                className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-300 rounded-md transition-colors inline-flex items-center gap-1 disabled:opacity-50 dark:bg-rose-950/40 dark:border-rose-700 dark:hover:bg-rose-950/40"
                 title="Tolak pengajuan permohonan"
               >
                 {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
@@ -1074,7 +1074,7 @@ export const PengajuanPage: React.FC = () => {
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                           selectedMemberId
                             ? 'bg-emerald-600 text-white shadow-2xs'
-                            : 'bg-stone-200 text-stone-700 dark:text-stone-200'
+                            : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                         }`}
                       >
                         {selectedMemberId ? <Check className="w-4 h-4 text-white" /> : '1'}
@@ -1104,7 +1104,7 @@ export const PengajuanPage: React.FC = () => {
 
                     {/* Kartu Identitas Ringkas Member */}
                     {selectedMemberObj && (
-                      <div className="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs animate-fadeIn">
+                      <div className="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs animate-fadeIn dark:bg-emerald-950/40 dark:border-emerald-800">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                             {selectedMemberObj.NAMA_MEMBER.charAt(0)}
@@ -1119,7 +1119,7 @@ export const PengajuanPage: React.FC = () => {
                           </div>
                         </div>
                         <div className="text-right shrink-0 ml-2">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs dark:text-emerald-100 dark:border-emerald-700">
                             <Building2 className="w-3.5 h-3.5 text-emerald-600" />
                             <span>{selectedMemberObj.LANTAI ? `Lantai ${selectedMemberObj.LANTAI}` : 'Lantai -'}</span>
                           </span>
@@ -1135,7 +1135,7 @@ export const PengajuanPage: React.FC = () => {
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                           selectedItemId
                             ? 'bg-emerald-600 text-white shadow-2xs'
-                            : 'bg-stone-200 text-stone-700 dark:text-stone-200'
+                            : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                         }`}
                       >
                         {selectedItemId ? <Check className="w-4 h-4 text-white" /> : '2'}
@@ -1174,12 +1174,12 @@ export const PengajuanPage: React.FC = () => {
                         </div>
                         <div className="shrink-0">
                           {isSelectedItemReady ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] border border-emerald-200">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-200 dark:border-emerald-800">
                               <Check className="w-3.5 h-3.5" />
                               <span>STATUS: READY</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-bold text-[11px] border border-rose-200">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-bold text-[11px] border border-rose-200 dark:bg-rose-900/40 dark:text-rose-200 dark:border-rose-800">
                               <AlertCircle className="w-3.5 h-3.5" />
                               <span>STATUS: KOSONG (Habis)</span>
                             </span>
@@ -1196,7 +1196,7 @@ export const PengajuanPage: React.FC = () => {
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                           Number(formJumlah) >= 1
                             ? 'bg-emerald-600 text-white shadow-2xs'
-                            : 'bg-stone-200 text-stone-700 dark:text-stone-200'
+                            : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                         }`}
                       >
                         {Number(formJumlah) >= 1 ? <Check className="w-4 h-4 text-white" /> : '3'}
@@ -1261,10 +1261,10 @@ export const PengajuanPage: React.FC = () => {
                       <div
                         className={`p-3 rounded-lg border text-xs flex items-start gap-2.5 transition-all ${
                           eligibilityResult.allowed && !eligibilityResult.early
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100 dark:border-emerald-800'
                             : eligibilityResult.early
-                            ? 'bg-amber-50 border-amber-200 text-amber-900'
-                            : 'bg-rose-50 border-rose-200 text-rose-900'
+                            ? 'bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100 dark:border-amber-800'
+                            : 'bg-rose-50 border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100 dark:border-rose-800'
                         }`}
                       >
                         {eligibilityResult.allowed && !eligibilityResult.early ? (
@@ -1330,7 +1330,7 @@ export const PengajuanPage: React.FC = () => {
                               type="button"
                               onClick={() => handleRemoveFromCart(idx)}
                               disabled={isSubmittingRequest}
-                              className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors shrink-0"
+                              className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors shrink-0 dark:bg-rose-950/40"
                               title="Hapus dari keranjang"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1349,7 +1349,7 @@ export const PengajuanPage: React.FC = () => {
                           className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
                             formAlasan.trim().length > 0
                               ? 'bg-emerald-600 text-white shadow-2xs'
-                              : 'bg-stone-200 text-stone-700 dark:text-stone-200'
+                              : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                           }`}
                         >
                           {formAlasan.trim().length > 0 ? <Check className="w-4 h-4 text-white" /> : '4'}
@@ -1413,7 +1413,7 @@ export const PengajuanPage: React.FC = () => {
             <div className="lg:col-span-1 space-y-4">
               <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-700 p-5 shadow-xs space-y-4 text-xs">
                 <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 dark:bg-emerald-950/40 dark:text-emerald-300">
                     <HelpCircle className="w-4 h-4" />
                   </div>
                   <div>
@@ -1426,15 +1426,15 @@ export const PengajuanPage: React.FC = () => {
                 <div className="space-y-2">
                   <div className="text-[11px] font-semibold text-stone-700 dark:text-stone-200">Arti Status Barang:</div>
                   <div className="space-y-1.5">
-                    <div className="p-2 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2">
+                    <div className="p-2 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2 dark:bg-emerald-950/40 dark:border-emerald-800">
                       <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-bold text-[9px] shrink-0 mt-0.5">
                         READY
                       </span>
-                      <span className="text-[11px] text-emerald-950 leading-relaxed">
+                      <span className="text-[11px] text-emerald-950 dark:text-emerald-100 leading-relaxed">
                         Barang tersedia fisik di rak gudang dan siap untuk diajukan.
                       </span>
                     </div>
-                    <div className="p-2 rounded-lg bg-rose-50/70 border border-rose-200 flex items-start gap-2">
+                    <div className="p-2 rounded-lg bg-rose-50/70 border border-rose-200 flex items-start gap-2 dark:bg-rose-950/40 dark:border-rose-800">
                       <span className="px-1.5 py-0.5 rounded bg-rose-600 text-white font-bold text-[9px] shrink-0 mt-0.5">
                         KOSONG
                       </span>
@@ -1449,13 +1449,13 @@ export const PengajuanPage: React.FC = () => {
                 <div className="space-y-2 pt-1 border-t border-stone-100">
                   <div className="text-[11px] font-semibold text-stone-700 dark:text-stone-200">Alur Status Permintaan:</div>
                   <div className="flex items-center justify-between text-[10px] font-bold bg-stone-50 dark:bg-stone-800/60 p-2.5 rounded-lg border border-stone-200 dark:border-stone-700 overflow-x-auto">
-                    <span className="text-amber-700">MENUNGGU</span>
+                    <span className="text-amber-700 dark:text-amber-300">MENUNGGU</span>
                     <span className="text-stone-400 dark:text-stone-500">&rarr;</span>
-                    <span className="text-blue-700">DISETUJUI</span>
+                    <span className="text-blue-700 dark:text-blue-300">DISETUJUI</span>
                     <span className="text-stone-400 dark:text-stone-500">&rarr;</span>
-                    <span className="text-orange-700">DIPROSES</span>
+                    <span className="text-orange-700 dark:text-orange-300">DIPROSES</span>
                     <span className="text-stone-400 dark:text-stone-500">&rarr;</span>
-                    <span className="text-emerald-700">SELESAI</span>
+                    <span className="text-emerald-700 dark:text-emerald-300">SELESAI</span>
                   </div>
                   <ul className="space-y-1.5 text-[11px] text-stone-600 dark:text-stone-400 leading-relaxed pt-1">
                     <li className="flex items-start gap-1.5">
@@ -1536,25 +1536,25 @@ export const PengajuanPage: React.FC = () => {
                 <span className="text-[11px] font-mono font-bold text-stone-500 dark:text-stone-400">{requests.length} Total</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2 rounded bg-amber-50 border border-amber-200 flex items-center justify-between">
-                  <span className="text-amber-800 font-medium">Menunggu</span>
-                  <span className="font-bold text-amber-900 font-mono">{adminSummary.menungguCount}</span>
+                <div className="p-2 rounded bg-amber-50 border border-amber-200 flex items-center justify-between dark:bg-amber-950/40 dark:border-amber-800">
+                  <span className="text-amber-800 font-medium dark:text-amber-200">Menunggu</span>
+                  <span className="font-bold text-amber-900 font-mono dark:text-amber-100">{adminSummary.menungguCount}</span>
                 </div>
-                <div className="p-2 rounded bg-blue-50 border border-blue-200 flex items-center justify-between">
-                  <span className="text-blue-800 font-medium">Disetujui</span>
-                  <span className="font-bold text-blue-900 font-mono">{adminSummary.disetujuiCount}</span>
+                <div className="p-2 rounded bg-blue-50 border border-blue-200 flex items-center justify-between dark:bg-blue-950/40 dark:border-blue-800">
+                  <span className="text-blue-800 font-medium dark:text-blue-200">Disetujui</span>
+                  <span className="font-bold text-blue-900 font-mono dark:text-blue-100">{adminSummary.disetujuiCount}</span>
                 </div>
-                <div className="p-2 rounded bg-orange-50 border border-orange-200 flex items-center justify-between">
-                  <span className="text-orange-800 font-medium">Diproses</span>
-                  <span className="font-bold text-orange-900 font-mono">{adminSummary.diprosesCount}</span>
+                <div className="p-2 rounded bg-orange-50 border border-orange-200 flex items-center justify-between dark:bg-orange-950/40 dark:border-orange-800">
+                  <span className="text-orange-800 font-medium dark:text-orange-200">Diproses</span>
+                  <span className="font-bold text-orange-900 font-mono dark:text-orange-100">{adminSummary.diprosesCount}</span>
                 </div>
-                <div className="p-2 rounded bg-emerald-50 border border-emerald-200 flex items-center justify-between">
-                  <span className="text-emerald-800 font-medium">Selesai</span>
-                  <span className="font-bold text-emerald-900 font-mono">{adminSummary.selesaiCount}</span>
+                <div className="p-2 rounded bg-emerald-50 border border-emerald-200 flex items-center justify-between dark:bg-emerald-950/40 dark:border-emerald-800">
+                  <span className="text-emerald-800 font-medium dark:text-emerald-200">Selesai</span>
+                  <span className="font-bold text-emerald-900 font-mono dark:text-emerald-100">{adminSummary.selesaiCount}</span>
                 </div>
-                <div className="p-2 rounded bg-rose-50 border border-rose-200 flex items-center justify-between col-span-2">
-                  <span className="text-rose-800 font-medium">Ditolak / Batal</span>
-                  <span className="font-bold text-rose-900 font-mono">{adminSummary.ditolakCount}</span>
+                <div className="p-2 rounded bg-rose-50 border border-rose-200 flex items-center justify-between col-span-2 dark:bg-rose-950/40 dark:border-rose-800">
+                  <span className="text-rose-800 font-medium dark:text-rose-200">Ditolak / Batal</span>
+                  <span className="font-bold text-rose-900 font-mono dark:text-rose-100">{adminSummary.ditolakCount}</span>
                 </div>
               </div>
             </div>
@@ -1608,7 +1608,7 @@ export const PengajuanPage: React.FC = () => {
                         <span className="font-medium text-stone-800 dark:text-stone-200">{it.item.NAMA_ITEM}</span>
                         <span className="text-[10px] text-stone-400 dark:text-stone-500 ml-1">({it.count}x)</span>
                       </div>
-                      <span className="font-mono font-bold text-emerald-700 ml-2">
+                      <span className="font-mono font-bold text-emerald-700 ml-2 dark:text-emerald-300">
                         {it.totalQty} {it.item.SATUAN}
                       </span>
                     </div>
@@ -1630,7 +1630,7 @@ export const PengajuanPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <span className="px-2 py-0.5 bg-orange-50 border border-orange-200 text-orange-800 rounded-full font-bold font-mono text-xs">
+              <span className="px-2 py-0.5 bg-orange-50 border border-orange-200 text-orange-800 rounded-full font-bold font-mono text-xs dark:bg-orange-950/40 dark:text-orange-200 dark:border-orange-800">
                 {pickingList.length} Antrean
               </span>
             </div>
@@ -1687,33 +1687,33 @@ export const PengajuanPage: React.FC = () => {
                   <span className="text-[11px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
                     Alur Status:
                   </span>
-                  <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 font-semibold text-[11px]">
+                  <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 font-semibold text-[11px] dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800">
                     MENUNGGU
                   </span>
                   <ArrowRight className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
-                  <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-800 font-semibold text-[11px]">
+                  <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-800 font-semibold text-[11px] dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-800">
                     DISETUJUI
                   </span>
                   <ArrowRight className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
-                  <span className="px-2 py-0.5 rounded bg-orange-50 border border-orange-200 text-orange-800 font-semibold text-[11px]">
+                  <span className="px-2 py-0.5 rounded bg-orange-50 border border-orange-200 text-orange-800 font-semibold text-[11px] dark:bg-orange-950/40 dark:text-orange-200 dark:border-orange-800">
                     DIPROSES
                   </span>
                   <ArrowRight className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
-                  <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold text-[11px]">
+                  <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold text-[11px] dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800">
                     SELESAI
                   </span>
                 </div>
                 <div className="text-[11px] text-stone-600 dark:text-stone-400 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span>
-                    <strong className="text-emerald-700">Setujui</strong> = stok berkurang &amp; masuk picking list
+                    <strong className="text-emerald-700 dark:text-emerald-300">Setujui</strong> = stok berkurang &amp; masuk picking list
                   </span>
                   <span className="text-stone-300">•</span>
                   <span>
-                    <strong className="text-orange-700">Mulai Siapkan</strong> = masuk antrean penyiapan
+                    <strong className="text-orange-700 dark:text-orange-300">Mulai Siapkan</strong> = masuk antrean penyiapan
                   </span>
                   <span className="text-stone-300">•</span>
                   <span>
-                    <strong className="text-emerald-700">Selesai</strong> = barang diserahkan
+                    <strong className="text-emerald-700 dark:text-emerald-300">Selesai</strong> = barang diserahkan
                   </span>
                 </div>
               </div>
