@@ -175,8 +175,8 @@ export const PengaturanPage: React.FC = () => {
             </div>
 
             {sheets.length > 0 && (
-              <div className="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-lg">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-900 mb-2">
+              <div className="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-lg dark:bg-emerald-950/40 dark:border-emerald-800">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-900 mb-2 dark:text-emerald-100">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   <span>
                     {sheets.length} Sheet Database Ditemukan
@@ -188,8 +188,8 @@ export const PengaturanPage: React.FC = () => {
                       key={s.name}
                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-md font-mono text-[11px] border ${
                         s.exists
-                          ? 'bg-white dark:bg-stone-900 text-emerald-800 border-emerald-200'
-                          : 'bg-white dark:bg-stone-900 text-rose-700 border-rose-200'
+                          ? 'bg-white dark:bg-stone-900 text-emerald-800 border-emerald-200 dark:text-emerald-200 dark:border-emerald-800'
+                          : 'bg-white dark:bg-stone-900 text-rose-700 border-rose-200 dark:text-rose-300 dark:border-rose-800'
                       }`}
                       title={s.exists ? 'Sheet tersedia' : 'Sheet tidak ditemukan'}
                     >
@@ -208,12 +208,12 @@ export const PengaturanPage: React.FC = () => {
         )}
 
         {health.status === 'OFFLINE' && (
-          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-900 space-y-1">
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-900 space-y-1 dark:bg-rose-950/40 dark:text-rose-100 dark:border-rose-800">
             <div className="flex items-center gap-1.5 font-semibold">
               <AlertCircle className="w-4 h-4 text-rose-600" />
               <span>Gagal Terhubung ke Backend GAS</span>
             </div>
-            <div className="text-[11px] text-rose-700">{health.error}</div>
+            <div className="text-[11px] text-rose-700 dark:text-rose-300">{health.error}</div>
             <p className="text-[11px] text-rose-600 pt-1">
               Pastikan Web App disetel dengan izin &quot;Who has access: Anyone&quot; agar browser dapat mengaksesnya.
             </p>
@@ -263,7 +263,7 @@ export const PengaturanPage: React.FC = () => {
 
           <div
             className={`p-3.5 rounded-lg border transition-colors ${
-              !isAdmin ? 'border-emerald-600 bg-emerald-50 shadow-sm' : 'border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60'
+              !isAdmin ? 'border-emerald-600 bg-emerald-50 shadow-sm dark:bg-emerald-950/40' : 'border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60'
             }`}
           >
             <div className="font-semibold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
