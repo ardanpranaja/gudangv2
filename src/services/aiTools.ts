@@ -6,6 +6,66 @@ import {
   AIConversationContext,
 } from '../types/ai';
 
+// ============ FUZZY MATCHING (toleransi typo) ============
+/** Normalisasi nama: lowercase, hapus karakter khusus. */
+function normalizeName(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Jarak Levenshtein untuk toleransi typo. */
+function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+/**
+ * Skor kecocokan 0-1 antara query dan nama target.
+ * Menangani: substring ("kanebo" vs "multi cloth/kanebo"),
+ * token ("tisu rol" vs "tissue roll"), dan typo ringan ("tissu" vs "tissue").
+ */
+function fuzzyScore(query: string, target: string): number {
+  const q = normalizeName(query);
+  const t = normalizeName(target);
+  if (!q || !t) return 0;
+  if (t.includes(q) || q.includes(t)) return 1.0;
+
+  const qTokens = q.split(' ').filter(Boolean);
+  const tTokens = t.split(' ').filter(Boolean);
+  if (qTokens.length > 0) {
+    const matched = qTokens.filter((qt) =>
+      tTokens.some((tt) => tt.includes(qt) || qt.includes(tt) || levenshtein(qt, tt) <= Math.max(1, Math.floor(qt.length / 4)))
+    );
+    if (matched.length === qTokens.length) return 0.9;
+    if (matched.length > 0) return 0.6 + (0.3 * matched.length) / qTokens.length;
+  }
+
+  const dist = levenshtein(q, t);
+  const maxLen = Math.max(q.length, t.length);
+  return Math.max(0, 1 - dist / maxLen);
+}
+
+/** Cari item dengan fuzzy matching, urut dari skor tertinggi. */
+function fuzzyMatchItems<T>(query: string, items: T[], getName: (item: T) => string, threshold = 0.45): T[] {
+  if (!query.trim()) return items;
+  return items
+    .map((item) => ({ item, score: fuzzyScore(query, getName(item)) }))
+    .filter((x) => x.score >= threshold)
+    .sort((a, b) => b.score - a.score)
+    .map((x) => x.item);
+}
+
 // Gemini Function Declarations Schema for @google/genai
 export const AI_TOOL_DECLARATIONS = [
   {
@@ -36,6 +96,77 @@ export const AI_TOOL_DECLARATIONS = [
           description: 'Kata kunci nama barang atau kategori (opsional).',
         },
       },
+    },
+  },
+  {
+    name: 'get_daily_summary',
+    description: 'Ringkasan transaksi barang KELUAR (BARANG_KELUAR dan PINJAM) pada tanggal tertentu, diagregat per barang. Untuk menjawab "barang apa saja yang keluar hari ini/tanggal X".',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        tanggal: {
+          type: 'STRING',
+          description: 'Tanggal target: format YYYY-MM-DD, atau "hari ini", "kemarin". Default: hari ini.',
+        },
+        jenis: {
+          type: 'STRING',
+          description: 'Filter jenis: "KELUAR" (BARANG_KELUAR+PINJAM, default), "MASUK" (BARANG_MASUK+KEMBALI), atau "SEMUA".',
+        },
+      },
+    },
+  },
+  {
+    name: 'get_pending_returns',
+    description: 'Daftar pinjaman barang (PINJAM) yang belum dikembalikan — siapa meminjam apa, kapan, dan sudah berapa lama.',
+    parameters: { type: 'OBJECT', properties: {} },
+  },
+  {
+    name: 'get_usage_average',
+    description: 'Rata-rata pemakaian barang per minggu/bulan berdasarkan riwayat transaksi keluar — untuk acuan perencanaan pembelian.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        query: { type: 'STRING', description: 'Kata kunci nama barang (opsional, kosongkan untuk semua barang).' },
+        periode: { type: 'STRING', description: '"minggu" atau "bulan". Default: "minggu".' },
+      },
+    },
+  },
+  {
+    name: 'get_member_recap',
+    description: 'Rekap pengambilan barang per member: barang apa saja, total qty, dan kapan terakhir mengambil.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        query: { type: 'STRING', description: 'Kata kunci nama member.' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'get_top_items',
+    description: 'Barang paling sering diambil (terlaris) pada periode tertentu, diurut dari tertinggi.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        periode: { type: 'STRING', description: '"hari", "minggu", atau "bulan". Default: "bulan".' },
+        limit: { type: 'NUMBER', description: 'Jumlah barang teratas. Default: 10.' },
+      },
+    },
+  },
+  {
+    name: 'find_duplicate_members',
+    description: 'Cari member dengan nama mirip/duplikat untuk ditinjau sebelum dinonaktifkan.',
+    parameters: { type: 'OBJECT', properties: {} },
+  },
+  {
+    name: 'deactivate_member',
+    description: 'Nonaktifkan member (STATUS=NONAKTIF). HANYA dipakai setelah pengguna mengonfirmasi eksplisit member mana yang dinonaktifkan.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        memberId: { type: 'STRING', description: 'ID_MEMBER yang akan dinonaktifkan.' },
+      },
+      required: ['memberId'],
     },
   },
   {
@@ -328,17 +459,15 @@ export async function executeAITool(
     switch (name) {
       case 'check_stock': {
         const stocks = await api.getStock();
-        const query = typeof args.query === 'string' ? args.query.toLowerCase().trim() : '';
+        const query = typeof args.query === 'string' ? args.query.trim() : '';
         const lowStockOnly = Boolean(args.lowStockOnly);
 
         let filtered = stocks;
         if (query) {
-          filtered = filtered.filter(
-            (s) =>
-              s.namaItem.toLowerCase().includes(query) ||
-              s.idItem.toLowerCase().includes(query) ||
-              (s.kategori && s.kategori.toLowerCase().includes(query))
-          );
+          const byId = stocks.filter((s) => s.idItem.toLowerCase() === query.toLowerCase());
+          filtered = byId.length > 0
+            ? byId
+            : fuzzyMatchItems(query, stocks, (s) => `${s.namaItem} ${s.kategori || ''}`);
         }
         if (lowStockOnly) {
           filtered = filtered.filter((s) => s.stok <= s.minStok || s.isLowStock);
@@ -367,15 +496,14 @@ export async function executeAITool(
 
       case 'get_items': {
         const items = await api.getItems();
-        const query = typeof args.query === 'string' ? args.query.toLowerCase().trim() : '';
+        const query = typeof args.query === 'string' ? args.query.trim() : '';
         let filtered = items;
         if (query) {
-          filtered = filtered.filter(
-            (i) =>
-              i.NAMA_ITEM.toLowerCase().includes(query) ||
-              i.ID_ITEM.toLowerCase().includes(query) ||
-              (i.KATEGORI && i.KATEGORI.toLowerCase().includes(query))
-          );
+          // ID exact match dulu, lalu fuzzy pada nama + kategori (toleransi typo)
+          const byId = items.filter((i) => i.ID_ITEM.toLowerCase() === query.toLowerCase());
+          filtered = byId.length > 0
+            ? byId
+            : fuzzyMatchItems(query, items, (i) => `${i.NAMA_ITEM} ${i.KATEGORI || ''}`);
         }
 
         const mapped = filtered.slice(0, 15).map((i) => ({
@@ -397,17 +525,216 @@ export async function executeAITool(
         };
       }
 
+      case 'get_daily_summary': {
+        const rawTanggal = typeof args.tanggal === 'string' ? args.tanggal.trim().toLowerCase() : '';
+        const jenisFilter = typeof args.jenis === 'string' ? args.jenis.trim().toUpperCase() : 'KELUAR';
+
+        // Parse tanggal
+        const today = new Date();
+        const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        let targetDate: string;
+        if (!rawTanggal || rawTanggal === 'hari ini' || rawTanggal === 'today') {
+          targetDate = fmt(today);
+        } else if (rawTanggal === 'kemarin' || rawTanggal === 'yesterday') {
+          const y = new Date(today);
+          y.setDate(y.getDate() - 1);
+          targetDate = fmt(y);
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(rawTanggal)) {
+          targetDate = rawTanggal;
+        } else {
+          return { success: false, errorCode: 'INVALID_INPUT', message: 'Format tanggal tidak dikenali. Gunakan YYYY-MM-DD, "hari ini", atau "kemarin".' };
+        }
+
+        const KELUAR_TYPES = ['BARANG_KELUAR', 'PINJAM'];
+        const MASUK_TYPES = ['BARANG_MASUK', 'KEMBALI'];
+        let allowedTypes: string[];
+        if (jenisFilter === 'MASUK') allowedTypes = MASUK_TYPES;
+        else if (jenisFilter === 'SEMUA') allowedTypes = [...KELUAR_TYPES, ...MASUK_TYPES, 'SALDO_AWAL', 'PENYESUAIAN'];
+        else allowedTypes = KELUAR_TYPES;
+
+        const allTx = await api.getTransactions();
+        const filtered = allTx.filter((t) => {
+          const tDate = String(t.TANGGAL || '').slice(0, 10);
+          return tDate === targetDate && allowedTypes.includes(String(t.JENIS_TRANSAKSI).toUpperCase());
+        });
+
+        // Agregat per barang
+        const agg = new Map<string, { nama: string; satuan: string; totalQty: number; count: number; pinjamQty: number; keluarQty: number }>();
+        for (const t of filtered) {
+          const key = t.ID_ITEM;
+          const cur = agg.get(key) || { nama: t.NAMA_ITEM || t.ID_ITEM, satuan: t.SATUAN || '', totalQty: 0, count: 0, pinjamQty: 0, keluarQty: 0 };
+          const qty = Number(t.JUMLAH || 0);
+          cur.totalQty += qty;
+          cur.count += 1;
+          if (String(t.JENIS_TRANSAKSI).toUpperCase() === 'PINJAM') cur.pinjamQty += qty;
+          else cur.keluarQty += qty;
+          agg.set(key, cur);
+        }
+
+        const items = [...agg.entries()]
+          .map(([id, v]) => ({ idItem: id, ...v }))
+          .sort((a, b) => b.totalQty - a.totalQty);
+
+        return {
+          success: true,
+          data: {
+            tanggal: targetDate,
+            totalTransaksi: filtered.length,
+            totalBarang: items.length,
+            items: items.slice(0, 30),
+          },
+        };
+      }
+
+      case 'get_pending_returns': {
+        const allTx = await api.getTransactions();
+        // PINJAM yang belum ada KEMBALI untuk member+item yang sama (FIFO sederhana)
+        const pinjam = allTx.filter((t) => String(t.JENIS_TRANSAKSI).toUpperCase() === 'PINJAM');
+        const kembali = allTx.filter((t) => String(t.JENIS_TRANSAKSI).toUpperCase() === 'KEMBALI');
+        const kembaliQty = new Map<string, number>();
+        for (const t of kembali) {
+          const key = `${t.ID_MEMBER || ''}|${t.ID_ITEM}`;
+          kembaliQty.set(key, (kembaliQty.get(key) || 0) + Number(t.JUMLAH || 0));
+        }
+        const pending: Array<Record<string, unknown>> = [];
+        const pinjamAgg = new Map<string, { nama: string; namaMember: string; tanggal: string; qty: number }>();
+        for (const t of pinjam) {
+          const key = `${t.ID_MEMBER || ''}|${t.ID_ITEM}`;
+          const cur = pinjamAgg.get(key) || { nama: t.NAMA_ITEM || t.ID_ITEM, namaMember: t.NAMA_MEMBER || t.ID_MEMBER || '-', tanggal: String(t.TANGGAL || '').slice(0, 10), qty: 0 };
+          cur.qty += Number(t.JUMLAH || 0);
+          if (String(t.TANGGAL || '').slice(0, 10) < cur.tanggal) cur.tanggal = String(t.TANGGAL || '').slice(0, 10);
+          pinjamAgg.set(key, cur);
+        }
+        const today = new Date();
+        for (const [key, v] of pinjamAgg) {
+          const ret = kembaliQty.get(key) || 0;
+          const sisa = v.qty - ret;
+          if (sisa > 0) {
+            const tglPinjam = new Date(v.tanggal);
+            const hari = isNaN(tglPinjam.getTime()) ? '-' : Math.floor((today.getTime() - tglPinjam.getTime()) / 86400000);
+            pending.push({ member: v.namaMember, barang: v.nama, sisaPinjam: sisa, tanggalPinjam: v.tanggal, hariBerlalu: hari });
+          }
+        }
+        pending.sort((a, b) => Number(b.hariBerlalu || 0) - Number(a.hariBerlalu || 0));
+        return { success: true, data: { total: pending.length, items: pending.slice(0, 30) } };
+      }
+
+      case 'get_usage_average': {
+        const query = typeof args.query === 'string' ? args.query.trim() : '';
+        const periode = typeof args.periode === 'string' && args.periode.toLowerCase() === 'bulan' ? 'bulan' : 'minggu';
+        const allTx = await api.getTransactions();
+        const keluar = allTx.filter((t) => ['BARANG_KELUAR', 'PINJAM'].includes(String(t.JENIS_TRANSAKSI).toUpperCase()));
+        if (keluar.length === 0) return { success: true, data: { items: [], note: 'Belum ada data transaksi keluar.' } };
+        // Rentang waktu data
+        const dates = keluar.map((t) => String(t.TANGGAL || '').slice(0, 10)).filter(Boolean).sort();
+        const spanHari = dates.length > 1
+          ? Math.max(1, Math.floor((new Date(dates[dates.length - 1]).getTime() - new Date(dates[0]).getTime()) / 86400000) + 1)
+          : 1;
+        const pembagi = periode === 'bulan' ? spanHari / 30 : spanHari / 7;
+        const agg = new Map<string, { nama: string; satuan: string; total: number }>();
+        for (const t of keluar) {
+          const cur = agg.get(t.ID_ITEM) || { nama: t.NAMA_ITEM || t.ID_ITEM, satuan: t.SATUAN || '', total: 0 };
+          cur.total += Number(t.JUMLAH || 0);
+          agg.set(t.ID_ITEM, cur);
+        }
+        let items = [...agg.entries()].map(([id, v]) => ({
+          idItem: id, nama: v.nama,
+          rataRata: Math.round((v.total / Math.max(pembagi, 0.1)) * 100) / 100,
+          satuan: `${v.satuan} per ${periode}`,
+          totalPeriode: v.total,
+        }));
+        if (query) items = fuzzyMatchItems(query, items, (i) => i.nama).slice(0, 15);
+        items.sort((a, b) => b.rataRata - a.rataRata);
+        return { success: true, data: { periode, rentangHari: spanHari, items: items.slice(0, 20) } };
+      }
+
+      case 'get_member_recap': {
+        const query = typeof args.query === 'string' ? args.query.trim() : '';
+        if (!query) return { success: false, errorCode: 'MISSING_PARAMETER', message: 'Parameter query (nama member) wajib diisi.' };
+        const members = await api.getMembers();
+        const matched = fuzzyMatchItems(query, members, (m) => m.NAMA_MEMBER);
+        if (matched.length === 0) return { success: true, data: { members: [], note: 'Member tidak ditemukan.' } };
+        const allTx = await api.getTransactions();
+        const result = matched.slice(0, 5).map((m) => {
+          const tx = allTx.filter((t) => t.ID_MEMBER === m.ID_MEMBER && ['BARANG_KELUAR', 'PINJAM'].includes(String(t.JENIS_TRANSAKSI).toUpperCase()));
+          const agg = new Map<string, { nama: string; qty: number; terakhir: string }>();
+          for (const t of tx) {
+            const cur = agg.get(t.ID_ITEM) || { nama: t.NAMA_ITEM || t.ID_ITEM, qty: 0, terakhir: '' };
+            cur.qty += Number(t.JUMLAH || 0);
+            const tg = String(t.TANGGAL || '').slice(0, 10);
+            if (tg > cur.terakhir) cur.terakhir = tg;
+            agg.set(t.ID_ITEM, cur);
+          }
+          return {
+            nama: m.NAMA_MEMBER, idMember: m.ID_MEMBER, jabatan: m.JABATAN || '',
+            totalTransaksi: tx.length,
+            barang: [...agg.values()].sort((a, b) => b.qty - a.qty).slice(0, 15),
+          };
+        });
+        return { success: true, data: { members: result } };
+      }
+
+      case 'get_top_items': {
+        const periode = typeof args.periode === 'string' ? args.periode.toLowerCase() : 'bulan';
+        const limit = Math.min(Math.max(Number(args.limit || 10), 1), 30);
+        const today = new Date();
+        let startDate: Date;
+        if (periode === 'hari') startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        else if (periode === 'minggu') { startDate = new Date(today); startDate.setDate(startDate.getDate() - 7); }
+        else { startDate = new Date(today); startDate.setMonth(startDate.getMonth() - 1); }
+        const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const start = fmt(startDate);
+        const allTx = await api.getTransactions();
+        const agg = new Map<string, { nama: string; satuan: string; qty: number; count: number }>();
+        for (const t of allTx) {
+          const tg = String(t.TANGGAL || '').slice(0, 10);
+          if (tg >= start && ['BARANG_KELUAR', 'PINJAM'].includes(String(t.JENIS_TRANSAKSI).toUpperCase())) {
+            const cur = agg.get(t.ID_ITEM) || { nama: t.NAMA_ITEM || t.ID_ITEM, satuan: t.SATUAN || '', qty: 0, count: 0 };
+            cur.qty += Number(t.JUMLAH || 0);
+            cur.count += 1;
+            agg.set(t.ID_ITEM, cur);
+          }
+        }
+        const items = [...agg.entries()]
+          .map(([id, v]) => ({ idItem: id, ...v }))
+          .sort((a, b) => b.qty - a.qty)
+          .slice(0, limit);
+        return { success: true, data: { periode, items } };
+      }
+
+      case 'find_duplicate_members': {
+        const members = await api.getMembers();
+        const aktif = members.filter((m) => String(m.STATUS).toUpperCase() === 'AKTIF');
+        const groups = new Map<string, typeof aktif>();
+        for (const m of aktif) {
+          const key = normalizeName(m.NAMA_MEMBER);
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key)!.push(m);
+        }
+        // Juga cek kemiripan antar nama berbeda (skor >= 0.85)
+        const dupGroups: Array<{ namaNormal: string; members: Array<{ id: string; nama: string; jabatan: string }> }> = [];
+        for (const [key, list] of groups) {
+          if (list.length > 1) {
+            dupGroups.push({ namaNormal: key, members: list.map((m) => ({ id: m.ID_MEMBER, nama: m.NAMA_MEMBER, jabatan: m.JABATAN || '' })) });
+          }
+        }
+        return { success: true, data: { totalGrup: dupGroups.length, groups: dupGroups.slice(0, 20) } };
+      }
+
+      case 'deactivate_member': {
+        const memberId = String(args.memberId || '').trim();
+        if (!memberId) return { success: false, errorCode: 'MISSING_PARAMETER', message: 'Parameter memberId wajib diisi.' };
+        const res = await api.updateMember({ idMember: memberId, status: 'NONAKTIF' });
+        return { success: true, message: `Member ${memberId} telah dinonaktifkan.`, data: res };
+      }
+
       case 'get_product_knowledge': {
         const items = await api.getItems();
         const query = typeof args.query === 'string' ? args.query.toLowerCase().trim() : '';
         if (!query) {
           return { success: false, errorCode: 'MISSING_PARAMETER', message: 'Parameter query wajib diisi.' };
         }
-        const filtered = items.filter(
-          (i) =>
-            i.NAMA_ITEM.toLowerCase().includes(query) ||
-            (i.KATEGORI && i.KATEGORI.toLowerCase().includes(query))
-        );
+        const filtered = fuzzyMatchItems(query, items, (i) => `${i.NAMA_ITEM} ${i.KATEGORI || ''}`);
         const mapped = filtered.slice(0, 5).map((i) => ({
           nama: i.NAMA_ITEM,
           kategori: i.KATEGORI,
