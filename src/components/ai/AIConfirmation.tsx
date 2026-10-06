@@ -90,8 +90,8 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
 
   if (confirmation.status === 'cancelled') {
     return (
-      <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-500 dark:text-slate-400 text-xs flex items-center gap-2">
-        <XCircle className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+      <div className="mt-3 p-3 bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 rounded-xl text-stone-500 dark:text-stone-400 text-xs flex items-center gap-2">
+        <XCircle className="w-4 h-4 text-stone-400 dark:text-stone-500" />
         <span>Draft transaksi telah dibatalkan oleh operator.</span>
       </div>
     );
@@ -99,7 +99,7 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
 
   if (confirmation.status === 'failed') {
     return (
-      <div className="mt-3 p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-lg text-rose-950 dark:text-rose-100 space-y-2">
+      <div className="mt-3 p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-950 dark:text-rose-100 space-y-2">
         <div className="flex items-center gap-2 font-semibold text-xs text-rose-800 dark:text-rose-300">
           <AlertTriangle className="w-4 h-4 text-rose-600" />
           <span>Gagal Mengeksekusi Operasi</span>
@@ -109,7 +109,7 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
           type="button"
           onClick={handleConfirm}
           disabled={isProcessing}
-          className="mt-2 px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-medium rounded inline-flex items-center gap-1.5 transition-colors"
+          className="mt-2 px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-medium rounded-lg inline-flex items-center gap-1.5 transition-colors"
         >
           {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5" />}
           <span>Coba Lagi</span>
@@ -119,12 +119,12 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
   }
 
   return (
-    <div className="mt-3 p-4 bg-white dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-600 rounded-lg shadow-sm space-y-3">
+    <div className="mt-3 p-4 bg-white dark:bg-stone-900 border-2 border-amber-700 dark:border-amber-600 rounded-xl shadow-xs space-y-3">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+      <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-2">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-slate-900 dark:text-slate-100" />
-          <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">{confirmation.title}</h4>
+          <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+          <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">{confirmation.title}</h4>
         </div>
         <span className="text-[10px] uppercase font-semibold px-2 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 rounded">
           Perlu Konfirmasi
@@ -133,7 +133,7 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
 
       {/* Description / Warning if any */}
       {confirmation.description && (
-        <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+        <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <span>{confirmation.description}</span>
         </div>
@@ -144,23 +144,23 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
         {confirmation.details.map((detail, idx) => (
           <div
             key={idx}
-            className={`p-2 rounded bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600 ${
-              detail.highlight ? 'col-span-2 font-semibold text-slate-900 dark:text-slate-100 bg-slate-100/70 dark:bg-slate-700' : 'text-slate-700 dark:text-slate-300'
+            className={`p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 ${
+              detail.highlight ? 'col-span-2 font-semibold text-stone-900 dark:text-stone-100 bg-stone-100 dark:bg-stone-800' : 'text-stone-700 dark:text-stone-300'
             }`}
           >
-            <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{detail.label}</div>
-            <div className="text-xs font-mono truncate text-slate-800 dark:text-slate-200">{detail.value}</div>
+            <div className="text-[10px] text-stone-500 dark:text-stone-400 font-medium">{detail.label}</div>
+            <div className="text-xs font-mono truncate text-stone-800 dark:text-stone-200">{detail.value}</div>
           </div>
         ))}
       </div>
 
       {/* Action Buttons */}
-      <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-700">
+      <div className="pt-2 flex items-center justify-end gap-2 border-t border-stone-100 dark:border-stone-800">
         <button
           type="button"
           onClick={handleCancel}
           disabled={isProcessing}
-          className="px-3 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 rounded font-medium transition-colors"
+          className="px-3.5 py-2 text-xs text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg font-medium transition-colors"
         >
           Batalkan
         </button>
@@ -168,7 +168,7 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
           type="button"
           onClick={handleConfirm}
           disabled={isProcessing}
-          className="px-4 py-1.5 text-xs bg-slate-900 dark:bg-slate-600 hover:bg-slate-800 dark:hover:bg-slate-500 text-white rounded font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs"
+          className="px-4 py-2 text-xs bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 text-white rounded-lg font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs"
         >
           {isProcessing ? (
             <>
@@ -177,7 +177,7 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
             </>
           ) : (
             <>
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
               <span>Konfirmasi & Eksekusi</span>
             </>
           )}

@@ -3,6 +3,44 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  /* =========================================================================
+     SISTEM TOKEN WARNA KRAFT HANGAT (KEGUDANGAJA)
+     -------------------------------------------------------------------------
+     Peran           | Terang               | Gelap
+     -------------------------------------------------------------------------
+     Background      | stone-50 (#fafaf9)   | stone-950 (#0c0a09)
+     Surface Kartu   | white (#ffffff)      | stone-900 (#1c1917)
+     Surface Sekunder| stone-100 (#f5f5f4)  | stone-800 (#292524)
+     Border          | stone-200 (#e7e5e4)  | stone-700 (#44403c) / stone-800
+     Teks Utama      | stone-900 (#1c1917)  | stone-100 (#f5f5f4)
+     Teks Sekunder   | stone-500 (#78716c)  | stone-400 (#a8a29e)
+     Aksen Primer    | amber-700 (#b45309)  | amber-500 (#f59e0b)
+     Aksen Hover     | amber-800 (#92400e)  | amber-400 (#fbbf24)
+     Aksen Teks      | amber-800 (#92400e)  | amber-400 (#fbbf24)
+     Ring / Focus    | amber-700 (#b45309)  | amber-500 (#f59e0b)
+     Sukses          | emerald-600          | emerald-400
+     Peringatan      | amber-600            | amber-400
+     Bahaya          | rose-600             | rose-400
+     Pink Uti 💗     | #f472b6              | #f472b6
+     ========================================================================= */
+  --color-kraft-bg: var(--color-stone-50);
+  --color-kraft-bg-dark: var(--color-stone-950);
+  --color-kraft-surface: #ffffff;
+  --color-kraft-surface-dark: var(--color-stone-900);
+  --color-kraft-surface-subtle: var(--color-stone-100);
+  --color-kraft-surface-subtle-dark: var(--color-stone-800);
+  --color-kraft-border: var(--color-stone-200);
+  --color-kraft-border-dark: var(--color-stone-700);
+  --color-kraft-text: var(--color-stone-900);
+  --color-kraft-text-dark: var(--color-stone-100);
+  --color-kraft-text-muted: var(--color-stone-500);
+  --color-kraft-text-muted-dark: var(--color-stone-400);
+  --color-kraft-primary: var(--color-amber-700);
+  --color-kraft-primary-hover: var(--color-amber-800);
+  --color-kraft-primary-dark: var(--color-amber-500);
+  --color-kraft-primary-dark-hover: var(--color-amber-400);
+  --color-uti-pink: #f472b6;
+
   --animate-fadeIn: fadeIn 0.3s ease-out;
   --animate-spin-slow: spinSlow 3s linear infinite;
   --animate-float: float 3s ease-in-out infinite;

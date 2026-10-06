@@ -22,7 +22,7 @@ export const AILiveOverlay: React.FC<AILiveOverlayProps> = ({
   if (status === 'DISCONNECTED') return null;
 
   return (
-    <div className="mx-4 mb-2 p-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl shadow-lg border border-slate-700/80 transition-all duration-300">
+    <div className="mx-4 mb-2 p-3 bg-gradient-to-r from-stone-900 to-stone-800 text-white rounded-xl shadow-lg border border-stone-700/80 transition-all duration-300">
       <div className="flex items-center justify-between gap-3">
         {/* Left Status Icon & Label */}
         <div className="flex items-center gap-2.5 min-w-0">
@@ -38,7 +38,7 @@ export const AILiveOverlay: React.FC<AILiveOverlayProps> = ({
             </div>
           )}
           {status === 'THINKING' && (
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
               <Sparkles className="w-4 h-4 animate-pulse" />
             </div>
           )}
@@ -56,7 +56,7 @@ export const AILiveOverlay: React.FC<AILiveOverlayProps> = ({
 
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-300">
                 Gemini Live Voice
               </span>
               <span
@@ -66,7 +66,7 @@ export const AILiveOverlay: React.FC<AILiveOverlayProps> = ({
                     : status === 'SPEAKING'
                     ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
                     : status === 'THINKING'
-                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                     : status === 'CONNECTING'
                     ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                     : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
@@ -75,7 +75,7 @@ export const AILiveOverlay: React.FC<AILiveOverlayProps> = ({
                 {status}
               </span>
             </div>
-            <p className="text-xs text-slate-200 truncate font-medium">
+            <p className="text-xs text-stone-200 truncate font-medium">
               {activeTool ? `Menjalankan tool: ${activeTool}...` : statusText}
             </p>
           </div>
@@ -85,7 +85,7 @@ export const AILiveOverlay: React.FC<AILiveOverlayProps> = ({
         <button
           type="button"
           onClick={onDisconnect}
-          className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1.5 border border-slate-600 transition-colors shrink-0"
+          className="px-2.5 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white text-xs font-medium flex items-center gap-1.5 border border-stone-600 transition-colors shrink-0"
           title="Akhiri sesi suara"
         >
           <X className="w-3.5 h-3.5" />
@@ -95,15 +95,15 @@ export const AILiveOverlay: React.FC<AILiveOverlayProps> = ({
 
       {/* Live Audio Transcripts Preview */}
       {(userTranscript || geminiTranscript) && (
-        <div className="mt-2.5 pt-2 border-t border-slate-700/60 text-xs space-y-1">
+        <div className="mt-2.5 pt-2 border-t border-stone-700/60 text-xs space-y-1">
           {userTranscript && (
-            <div className="flex items-start gap-1.5 text-slate-300">
+            <div className="flex items-start gap-1.5 text-stone-300">
               <span className="font-semibold text-emerald-400 shrink-0">Anda:</span>
               <span className="italic line-clamp-2">&ldquo;{userTranscript}&rdquo;</span>
             </div>
           )}
           {geminiTranscript && (
-            <div className="flex items-start gap-1.5 text-slate-300">
+            <div className="flex items-start gap-1.5 text-stone-300">
               <span className="font-semibold text-teal-400 shrink-0">Gemini:</span>
               <span className="line-clamp-2">&ldquo;{geminiTranscript}&rdquo;</span>
             </div>

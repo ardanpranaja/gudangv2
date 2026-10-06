@@ -243,9 +243,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-stone-900 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg shadow-xl overflow-hidden animate-fadeIn min-w-[280px]">
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg shadow-xl overflow-hidden animate-fadeIn min-w-[280px]">
           {/* Search Box */}
-          <div className="p-2 border-b border-stone-100 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 dark:bg-stone-900/50 dark:bg-stone-800/60">
+          <div className="p-2 border-b border-stone-100 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60">
             <div className="relative flex items-center">
               <Search className="w-3.5 h-3.5 absolute left-2.5 text-stone-400 dark:text-stone-500 pointer-events-none" />
               <input

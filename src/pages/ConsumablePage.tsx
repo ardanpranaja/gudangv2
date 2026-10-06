@@ -434,7 +434,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* =============================================================== */}
             {/* STEP 1: PILIH NAMA */}
             {/* =============================================================== */}
-            <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
+            <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
               <div className="flex items-center gap-2.5">
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
@@ -492,7 +492,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* =============================================================== */}
             {/* STEP 2: KERANJANG TISU & PLASTIK */}
             {/* =============================================================== */}
-            <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-4 dark:bg-stone-800/60">
+            <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div
@@ -704,7 +704,7 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* STEP 3: ALASAN & KIRIM SEMUA */}
             {/* =============================================================== */}
             <form onSubmit={handleSubmitAll} className="space-y-4">
-              <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
+              <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div

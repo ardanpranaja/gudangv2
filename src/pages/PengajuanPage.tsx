@@ -1068,7 +1068,7 @@ export const PengajuanPage: React.FC = () => {
 
                 <form onSubmit={handleCrewSubmitRequest} className="space-y-6 text-xs">
                   {/* STEP 1: PILIH NAMA */}
-                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
                     <div className="flex items-center gap-2.5">
                       <div
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
@@ -1129,7 +1129,7 @@ export const PengajuanPage: React.FC = () => {
                   </div>
 
                   {/* STEP 2: PILIH BARANG */}
-                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
                     <div className="flex items-center gap-2.5">
                       <div
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
@@ -1190,7 +1190,7 @@ export const PengajuanPage: React.FC = () => {
                   </div>
 
                   {/* STEP 3: JUMLAH & CEK KELAYAKAN */}
-                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
                     <div className="flex items-center gap-2.5">
                       <div
                         className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
@@ -1342,7 +1342,7 @@ export const PengajuanPage: React.FC = () => {
                   </div>
 
                   {/* STEP 4: ALASAN PERMINTAAN */}
-                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60/50 space-y-3 dark:bg-stone-800/60">
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         <div
@@ -1682,7 +1682,7 @@ export const PengajuanPage: React.FC = () => {
               </div>
 
               {/* Legend Alur Status & Penjelasan Efek Tombol */}
-              <div className="p-3 bg-stone-50 dark:bg-stone-800/60/90 rounded-lg border border-stone-200 dark:border-stone-700/80 text-xs space-y-2 dark:bg-stone-800/60 dark:border-stone-700">
+              <div className="p-3 bg-stone-50 dark:bg-stone-800/60 rounded-lg border border-stone-200 dark:border-stone-700 text-xs space-y-2">
                 <div className="flex items-center gap-2 flex-wrap text-stone-700 dark:text-stone-200 font-medium">
                   <span className="text-[11px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
                     Alur Status:

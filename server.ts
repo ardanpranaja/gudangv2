@@ -6,10 +6,249 @@ import { GoogleGenAI, Modality, LiveServerMessage } from '@google/genai';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { classifyError, ClassifiedError, GeminiErrorCategory } from './src/services/aiErrorClassifier';
-import { AI_TOOL_DECLARATIONS, executeAITool } from './src/services/aiTools';
 
-export { classifyError, type ClassifiedError, type GeminiErrorCategory };
+export type GeminiErrorCategory =
+  | 'INVALID_API_KEY'
+  | 'PERMISSION_DENIED'
+  | 'QUOTA'
+  | 'UNAVAILABLE'
+  | 'TIMEOUT'
+  | 'SERVER_ERROR'
+  | 'INVALID_REQUEST'
+  | 'NETWORK_ERROR'
+  | 'UNKNOWN';
+
+export interface ClassifiedError {
+  category: GeminiErrorCategory;
+  statusCode: number;
+  message: string;
+  isTransient: boolean;
+  technicalDetails?: string;
+}
+
+export function classifyError(err: unknown): ClassifiedError {
+  let msg = '';
+  let status = 500;
+
+  if (err instanceof Error) {
+    msg = err.message || '';
+    if (typeof (err as any).status === 'number') status = (err as any).status;
+    else if (typeof (err as any).statusCode === 'number') status = (err as any).statusCode;
+    else if (typeof (err as any).code === 'number') status = (err as any).code;
+  } else if (typeof err === 'string') {
+    msg = err;
+  } else if (typeof err === 'object' && err !== null) {
+    const errObj = err as Record<string, unknown>;
+    msg =
+      (typeof errObj.message === 'string' ? errObj.message : '') ||
+      (typeof errObj.error === 'string' ? errObj.error : '') ||
+      JSON.stringify(err);
+    if (typeof errObj.status === 'number') status = errObj.status;
+    else if (typeof errObj.statusCode === 'number') status = errObj.statusCode;
+    else if (typeof errObj.code === 'number') status = errObj.code;
+  }
+
+  if (msg.startsWith('{') && msg.includes('"error"')) {
+    try {
+      const parsed = JSON.parse(msg);
+      if (parsed?.error?.code && typeof parsed.error.code === 'number') {
+        status = parsed.error.code;
+      }
+      if (parsed?.error?.message && typeof parsed.error.message === 'string') {
+        msg = parsed.error.message;
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  const sanitizedMsg = msg.replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED_API_KEY]');
+  const lowerMsg = sanitizedMsg.toLowerCase();
+
+  if (
+    lowerMsg.includes('api_key_invalid') ||
+    lowerMsg.includes('api key not valid') ||
+    lowerMsg.includes('invalid api key') ||
+    lowerMsg.includes('unauthenticated') ||
+    status === 401
+  ) {
+    return {
+      category: 'INVALID_API_KEY',
+      statusCode: 401,
+      message: 'Kunci API Gemini tidak valid. Silakan periksa di menu Pengaturan > AI Assistant.',
+      isTransient: false,
+      technicalDetails: sanitizedMsg,
+    };
+  }
+
+  if (status === 403 || lowerMsg.includes('permission_denied') || lowerMsg.includes('permission denied')) {
+    return {
+      category: 'PERMISSION_DENIED',
+      statusCode: 403,
+      message: 'Akses Gemini API ditolak (izin atau hak akses tidak mencukupi).',
+      isTransient: false,
+      technicalDetails: sanitizedMsg,
+    };
+  }
+
+  if (
+    status === 429 ||
+    lowerMsg.includes('resource_exhausted') ||
+    lowerMsg.includes('quota') ||
+    lowerMsg.includes('rate limit') ||
+    lowerMsg.includes('429')
+  ) {
+    return {
+      category: 'QUOTA',
+      statusCode: 429,
+      message: 'Kuota Gemini API telah terlampaui. Silakan periksa batas kuota akun Anda.',
+      isTransient: true,
+      technicalDetails: sanitizedMsg,
+    };
+  }
+
+  if (
+    status === 503 ||
+    lowerMsg.includes('503') ||
+    lowerMsg.includes('unavailable') ||
+    lowerMsg.includes('high demand') ||
+    lowerMsg.includes('spikes in demand') ||
+    lowerMsg.includes('overloaded')
+  ) {
+    return {
+      category: 'UNAVAILABLE',
+      statusCode: 503,
+      message: 'Gemini sedang tidak tersedia sementara. Silakan coba kembali beberapa saat lagi.',
+      isTransient: true,
+      technicalDetails: sanitizedMsg,
+    };
+  }
+
+  if (
+    status === 408 ||
+    status === 504 ||
+    lowerMsg.includes('deadline_exceeded') ||
+    lowerMsg.includes('timed out') ||
+    lowerMsg.includes('timeout')
+  ) {
+    return {
+      category: 'TIMEOUT',
+      statusCode: 504,
+      message: 'Batas waktu komunikasi ke model Gemini terlampaui.',
+      isTransient: true,
+      technicalDetails: sanitizedMsg,
+    };
+  }
+
+  if (
+    status === 500 ||
+    status === 502 ||
+    lowerMsg.includes('internal server error') ||
+    lowerMsg.includes('internal error')
+  ) {
+    return {
+      category: 'SERVER_ERROR',
+      statusCode: 500,
+      message: 'Terjadi gangguan sementara pada server Gemini.',
+      isTransient: true,
+      technicalDetails: sanitizedMsg,
+    };
+  }
+
+  if (status === 400 || lowerMsg.includes('invalid_argument')) {
+    return {
+      category: 'INVALID_REQUEST',
+      statusCode: 400,
+      message: 'Format permintaan ke model AI tidak valid.',
+      isTransient: false,
+      technicalDetails: sanitizedMsg,
+    };
+  }
+
+  if (lowerMsg.includes('fetch failed') || lowerMsg.includes('econnrefused') || lowerMsg.includes('enotfound')) {
+    return {
+      category: 'NETWORK_ERROR',
+      statusCode: 503,
+      message: 'Gagal terhubung ke server Gemini. Periksa jaringan internet.',
+      isTransient: true,
+      technicalDetails: sanitizedMsg,
+    };
+  }
+
+  return {
+    category: 'UNKNOWN',
+    statusCode: status || 500,
+    message: sanitizedMsg || 'Terjadi kendala saat memproses permintaan AI.',
+    isTransient: false,
+    technicalDetails: sanitizedMsg,
+  };
+}
+
+const AI_TOOL_DECLARATIONS = [
+  {
+    name: 'check_stock',
+    description: 'Cek posisi stok barang saat ini di gudang. Bisa mencari berdasarkan nama barang, kategori, atau memfilter stok minimum.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        query: { type: 'STRING', description: 'Kata kunci nama barang atau kategori.' },
+        lowStockOnly: { type: 'BOOLEAN', description: 'Set true untuk melihat stok menipis.' },
+      },
+    },
+  },
+  {
+    name: 'get_items',
+    description: 'Ambil katalog master barang gudang.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        query: { type: 'STRING', description: 'Kata kunci pencarian nama atau kategori barang.' },
+      },
+    },
+  },
+  {
+    name: 'get_members',
+    description: 'Ambil daftar master member gudang.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        query: { type: 'STRING', description: 'Kata kunci pencarian nama atau ID member.' },
+      },
+    },
+  },
+  {
+    name: 'get_pending_requests',
+    description: 'Ambil daftar pengajuan early pickup yang memerlukan persetujuan.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        status: { type: 'STRING', description: 'Status filter (MENUNGGU, DISETUJUI, DITOLAK).' },
+      },
+    },
+  },
+];
+
+async function executeAITool(name: string, args: Record<string, unknown>): Promise<{ success: boolean; data: any; confirmation?: any }> {
+  const gasUrl = process.env.VITE_GAS_API_URL || process.env.GAS_API_URL || 'https://script.google.com/macros/s/AKfycbzMK3VeOCqqGKI-xVnkKij17NCaZ7VQHzgxX6y6CD7PoJydaIyiI_P5mvxdMlTlIEOK/exec';
+  try {
+    let action = '';
+    if (name === 'check_stock') action = 'getStock';
+    else if (name === 'get_items') action = 'getItems';
+    else if (name === 'get_members') action = 'getMembers';
+    else if (name === 'get_pending_requests') action = 'getRequests';
+
+    if (action) {
+      const resp = await fetch(`${gasUrl}?action=${action}`);
+      if (resp.ok) {
+        const json = await resp.json() as any;
+        return { success: true, data: json.data || json };
+      }
+    }
+    return { success: true, data: { status: 'OK', tool: name, args } };
+  } catch (err: any) {
+    return { success: false, data: { error: err.message || 'Tool execution failed' } };
+  }
+}
 
 dotenv.config();
 
@@ -18,9 +257,14 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: '10mb' }));
+
+// Health check endpoints for Cloud Run & load balancers
+app.get(['/healthz', '/api/health'], (_req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

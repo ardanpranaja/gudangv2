@@ -26,7 +26,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  let btnColor = 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500';
+  let btnColor = 'bg-amber-700 hover:bg-amber-800 text-white dark:bg-amber-600 dark:hover:bg-amber-500';
   if (variant === 'danger') {
     btnColor = 'bg-rose-600 hover:bg-rose-700 text-white dark:bg-rose-600 dark:hover:bg-rose-500';
   } else if (variant === 'warning') {
@@ -36,31 +36,31 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="min-h-screen px-4 text-center flex items-center justify-center">
-        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 backdrop-blur-xs transition-opacity" onClick={onClose} />
+        <div className="fixed inset-0 bg-stone-900/60 dark:bg-stone-950/80 backdrop-blur-xs transition-opacity" onClick={onClose} />
 
-        <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-slate-900 shadow-xl rounded-lg border border-slate-200 dark:border-slate-800 relative z-10">
+        <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-stone-900 shadow-xl rounded-xl border border-stone-200 dark:border-stone-700 relative z-10">
           <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2.5 text-slate-900 dark:text-slate-100">
+            <div className="flex items-center gap-2.5 text-stone-900 dark:text-stone-100">
               <AlertCircle className={`w-5 h-5 ${variant === 'danger' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}`} />
               <h3 className="text-base font-semibold">{title}</h3>
             </div>
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="p-1.5 rounded-lg text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-6">{message}</p>
+          <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed mb-6">{message}</p>
 
           <div className="flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-3.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-xs font-medium text-stone-700 dark:text-stone-300 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors disabled:opacity-50"
             >
               {cancelLabel}
             </button>
@@ -68,7 +68,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               type="button"
               onClick={onConfirm}
               disabled={isLoading}
-              className={`px-3.5 py-1.5 text-xs font-medium rounded transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 ${btnColor}`}
+              className={`px-4 py-2 text-xs font-semibold rounded-lg shadow-xs transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 ${btnColor}`}
             >
               {isLoading && <span className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />}
               <span>{confirmLabel}</span>

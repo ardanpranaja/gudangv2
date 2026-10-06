@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ShieldCheck, Lock, X, Loader2, AlertCircle, Clock } from 'lucide-react';
 import { normalizeGasErrorMessage } from '../../services/api';
+import { LoginIllustration } from '../illustrations/LoginIllustration';
 
 export const AdminLoginModal: React.FC = () => {
   const { isAdminLoginOpen, setIsAdminLoginOpen, loginAdmin } = useApp();
@@ -77,37 +78,42 @@ export const AdminLoginModal: React.FC = () => {
       <div className="min-h-screen px-4 text-center flex items-center justify-center">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity"
           onClick={() => !isLoading && setIsAdminLoginOpen(false)}
         />
 
         {/* Modal Window */}
-        <div className="inline-block w-full max-w-sm p-6 my-8 text-left align-middle bg-white dark:bg-slate-900 shadow-2xl rounded-2xl border border-slate-200 dark:border-slate-800 relative z-10 animate-fadeIn transition-colors">
+        <div className="inline-block w-full max-w-sm p-6 my-8 text-left align-middle bg-white dark:bg-stone-900 shadow-2xl rounded-2xl border border-stone-200 dark:border-stone-700 relative z-10 animate-fadeIn transition-colors">
           {/* Close button */}
           <button
             type="button"
             disabled={isLoading}
             onClick={() => setIsAdminLoginOpen(false)}
-            className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="absolute top-4 right-4 p-1 rounded-lg text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             title="Tutup"
           >
             <X className="w-4 h-4" />
           </button>
 
+          {/* Top Login Illustration */}
+          <div className="w-full h-28 mb-3 rounded-xl overflow-hidden flex items-center justify-center bg-stone-50 dark:bg-stone-800/40 border border-stone-100 dark:border-stone-800">
+            <LoginIllustration className="h-full w-auto max-w-full" />
+          </div>
+
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-slate-800 text-white flex items-center justify-center shadow-xs">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 flex items-center justify-center shadow-xs">
+              <ShieldCheck className="w-5 h-5 text-amber-700 dark:text-amber-400" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Masuk sebagai Admin</h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Masukkan PIN Keamanan Admin Gudang</p>
+              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">Masuk sebagai Admin</h3>
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">Masukkan PIN Keamanan Admin Gudang</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1.5">
                 PIN Admin:
               </label>
               <div className="relative">
@@ -122,9 +128,9 @@ export const AdminLoginModal: React.FC = () => {
                   placeholder="••••••"
                   maxLength={10}
                   autoComplete="current-password"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-center tracking-widest font-mono font-bold text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400 disabled:opacity-50 transition-all"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-sm text-center tracking-widest font-mono font-bold text-stone-900 dark:text-stone-100 focus:bg-white dark:focus:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 disabled:opacity-50 transition-all"
                 />
-                <Lock className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Lock className="w-4 h-4 text-stone-400 dark:text-stone-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
 
@@ -152,14 +158,14 @@ export const AdminLoginModal: React.FC = () => {
                 type="button"
                 disabled={isLoading}
                 onClick={() => setIsAdminLoginOpen(false)}
-                className="flex-1 py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium transition-colors"
+                className="flex-1 py-2 px-3 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-xs font-medium transition-colors"
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={isLocked || isLoading || !pin.trim()}
-                className="flex-1 py-2 px-4 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5 shadow-xs"
+                className="flex-1 py-2 px-4 bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 text-white rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5 shadow-xs"
               >
                 {isLoading ? (
                   <>

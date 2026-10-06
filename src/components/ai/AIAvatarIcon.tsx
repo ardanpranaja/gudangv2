@@ -180,14 +180,14 @@ export const AIAvatarIcon: React.FC<AIAvatarIconProps> = ({
           {status === 'online' && (
             <>
               <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 ring-2 ring-slate-900" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 ring-2 ring-stone-900" />
             </>
           )}
           {status === 'busy' && (
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 ring-2 ring-slate-900" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 ring-2 ring-stone-900" />
           )}
           {status === 'offline' && (
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-400 ring-2 ring-slate-900" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-stone-400 ring-2 ring-stone-900" />
           )}
         </span>
       )}
