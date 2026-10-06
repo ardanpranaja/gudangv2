@@ -115,6 +115,15 @@ const DEFAULT_GAS_URL =
 class ApiService {
   private gasUrl: string = '';
 
+  /**
+   * Cache daftar MASTER_ITEM agar tool AI (get_product_knowledge) dan halaman
+   * tidak menembak GAS berulang-ulang. GAS Web App lambat (cold start belasan
+   * detik), padahal daftar barang jarang berubah dalam hitungan menit.
+   */
+  private static ITEMS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 menit
+  private itemsCache: { data: any[]; fetchedAt: number } | null = null;
+  private itemsFetchPromise: Promise<any[]> | null = null;
+
   constructor() {
     this.loadConfig();
   }
@@ -286,28 +295,60 @@ class ApiService {
   }
 
   /**
-   * Items: GET action=items -> normalized data.items
+   * Ambil raw items dari GAS dengan cache 5 menit + dedup request bersamaan.
+   * Satu-satunya titik baca action=items; getItems/getMesinItems hanya memfilter.
    */
-  public async getItems(): Promise<MasterItem[]> {
-    const data = await this.get<GasItemsResponse>('items');
-    if (!data || !Array.isArray(data.items)) {
-      throw new GasApiError('Format response items dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+  private async getItemsRaw(forceRefresh = false): Promise<any[]> {
+    const now = Date.now();
+    if (
+      !forceRefresh &&
+      this.itemsCache &&
+      now - this.itemsCache.fetchedAt < ApiService.ITEMS_CACHE_TTL_MS
+    ) {
+      return this.itemsCache.data;
     }
-    // Kategori MESIN dikelola terpisah (Master Mesin) — sembunyikan dari seluruh list barang.
-    return data.items.filter((it: any) => String(it.KATEGORI || '').toUpperCase() !== 'MESIN');
+    // Dedup: request yang sedang berjalan dipakai bersama, jangan tembak GAS 2x.
+    if (!forceRefresh && this.itemsFetchPromise) {
+      return this.itemsFetchPromise;
+    }
+    const pending = (async () => {
+      const data = await this.get<GasItemsResponse>('items');
+      if (!data || !Array.isArray(data.items)) {
+        throw new GasApiError('Format response items dari GAS tidak valid.', 'MALFORMED_RESPONSE');
+      }
+      this.itemsCache = { data: data.items, fetchedAt: Date.now() };
+      return data.items;
+    })();
+    this.itemsFetchPromise = pending;
+    try {
+      return await pending;
+    } finally {
+      this.itemsFetchPromise = null;
+    }
+  }
+
+  /** Paksa cache items basi (dipanggil setelah mutasi item). */
+  public invalidateItemsCache(): void {
+    this.itemsCache = null;
   }
 
   /**
-   * Mesin: GET action=items lalu filter hanya KATEGORI='MESIN'.
+   * Items: GET action=items -> normalized data.items (cached 5 menit)
+   */
+  public async getItems(forceRefresh = false): Promise<MasterItem[]> {
+    const items = await this.getItemsRaw(forceRefresh);
+    // Kategori MESIN dikelola terpisah (Master Mesin) — sembunyikan dari seluruh list barang.
+    return items.filter((it: any) => String(it.KATEGORI || '').toUpperCase() !== 'MESIN');
+  }
+
+  /**
+   * Mesin: GET action=items lalu filter hanya KATEGORI='MESIN' (cached 5 menit).
    * Disiapkan untuk fitur Pemakaian Mesin di masa datang.
    * (getItems() mengecualikan MESIN dari list barang umum.)
    */
-  public async getMesinItems(): Promise<MasterItem[]> {
-    const data = await this.get<GasItemsResponse>('items');
-    if (!data || !Array.isArray(data.items)) {
-      throw new GasApiError('Format response items dari GAS tidak valid.', 'MALFORMED_RESPONSE');
-    }
-    return data.items.filter((it: any) => String(it.KATEGORI || '').toUpperCase() === 'MESIN');
+  public async getMesinItems(forceRefresh = false): Promise<MasterItem[]> {
+    const items = await this.getItemsRaw(forceRefresh);
+    return items.filter((it: any) => String(it.KATEGORI || '').toUpperCase() === 'MESIN');
   }
 
   /**
@@ -708,7 +749,12 @@ class ApiService {
     if (input.lokasi !== undefined) payload.LOKASI = input.lokasi;
     if (input.status !== undefined) payload.STATUS = input.status;
 
-    return this.post(payload);
+    const result = await this.post<{ message?: string; item?: MasterItem; [key: string]: unknown }>(
+      payload
+    );
+    // Item berubah → cache daftar items harus dibaca ulang dari GAS.
+    this.invalidateItemsCache();
+    return result;
   }
 
   /**
