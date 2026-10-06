@@ -1,5 +1,5 @@
 // Configuration and conversion utilities for Consumable Items (Tisu & Plastik)
-// Strictly limited to 14 explicit item IDs based on GudangPresisi specifications.
+// Strictly limited to 14 explicit item IDs based on Kegudangaja specifications.
 
 export interface ConsumableItemConfig {
   id: string;
