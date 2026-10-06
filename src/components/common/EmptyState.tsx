@@ -17,9 +17,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <div className="w-full py-12 px-6 text-center flex flex-col items-center justify-center border border-dashed border-stone-200 dark:border-stone-700 rounded-xl bg-stone-50/60 dark:bg-stone-900/40 shadow-xs transition-colors">
-      <div className="w-40 max-w-[160px] flex items-center justify-center mb-3">
-        <EmptyShelf className="w-full h-auto" />
-      </div>
+      <EmptyShelf className="w-40 h-auto mb-2" />
       <h4 className="text-sm font-semibold text-stone-900 dark:text-stone-100 tracking-tight">{title}</h4>
       <p className="text-xs text-stone-500 dark:text-stone-400 max-w-sm mt-1 mb-4 leading-relaxed">{description}</p>
       {action && (

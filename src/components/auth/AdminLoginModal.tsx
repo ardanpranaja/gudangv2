@@ -95,9 +95,9 @@ export const AdminLoginModal: React.FC = () => {
             <X className="w-4 h-4" />
           </button>
 
-          {/* Top Login Illustration */}
-          <div className="w-full h-28 mb-3 rounded-xl overflow-hidden flex items-center justify-center bg-stone-50 dark:bg-stone-800/40 border border-stone-100 dark:border-stone-800">
-            <LoginIllustration className="h-full w-auto max-w-full" />
+          {/* Top Login Illustration: Di layar sempit (< 640px) sembunyikan agar form tetap nyaman dipakai */}
+          <div className="hidden sm:flex w-full mb-4 rounded-xl overflow-hidden items-center justify-center bg-stone-50/80 dark:bg-stone-800/40 border border-stone-100 dark:border-stone-800 p-2">
+            <LoginIllustration className="w-full max-w-xs h-auto max-h-44 object-contain" />
           </div>
 
           {/* Header */}

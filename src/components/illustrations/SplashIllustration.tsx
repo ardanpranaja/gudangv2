@@ -11,91 +11,80 @@ export const SplashIllustration: React.FC<SplashIllustrationProps> = ({ classNam
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="Ilustrasi kotak inventaris terbuka dengan tanda cinta hangat merah muda melayang (identitas Uti)"
+      aria-label="Ilustrasi kotak inventaris terbuka dengan hati pink asisten Uti melayang"
       className={className}
     >
       <defs>
-        <linearGradient id="si-bg" x1="160" y1="20" x2="160" y2="280" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fef3c7" stopOpacity="0.7" />
-          <stop offset="100%" stopColor="#fde68a" stopOpacity="0.2" />
+        <linearGradient id="si-bg" x1="0" y1="0" x2="320" y2="300" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fffbeb" />
+          <stop offset="100%" stopColor="#fef3c7" />
         </linearGradient>
-        <radialGradient id="si-heart-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#f472b6" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#f472b6" stopOpacity="0" />
-        </radialGradient>
       </defs>
 
-      {/* Warm Ambient Circle */}
-      <circle cx="160" cy="150" r="115" fill="url(#si-bg)" />
+      {/* Background Frame Rounded rx="24" Gradien Krem */}
+      <rect width="320" height="300" rx="24" fill="url(#si-bg)" />
 
-      {/* Floating Sparkles & Little Hearts */}
-      <circle cx="90" cy="65" r="3" fill="#f59e0b" />
-      <circle cx="235" cy="80" r="2.5" fill="#f59e0b" />
-      <circle cx="75" cy="140" r="2" fill="#fbbf24" />
-      <circle cx="245" cy="150" r="3" fill="#fbbf24" />
+      {/* Sparkle dan Partikel Amber di Sekitar */}
+      <circle cx="65" cy="70" r="3" fill="#f59e0b" fillOpacity="0.8" />
+      <circle cx="255" cy="75" r="3.5" fill="#f59e0b" fillOpacity="0.8" />
+      <circle cx="50" cy="140" r="2.5" fill="#fbbf24" />
+      <circle cx="270" cy="145" r="2.5" fill="#fbbf24" />
+      <circle cx="95" cy="45" r="2" fill="#d97706" />
+      <circle cx="225" cy="45" r="2" fill="#d97706" />
 
-      {/* Small Floating Mini Heart Pink Left */}
-      <path
-        d="M100,95 C100,90 106,86 111,91 C116,86 122,90 122,95 C122,103 111,109 111,109 C111,109 100,103 100,95 Z"
-        fill="#f472b6"
-        fillOpacity="0.85"
-      />
-      {/* Small Floating Mini Heart Pink Right */}
-      <path
-        d="M205,80 C205,76 210,73 214,77 C218,73 223,76 223,80 C223,87 214,92 214,92 C214,92 205,87 205,80 Z"
-        fill="#f472b6"
-        fillOpacity="0.75"
-      />
+      {/* Sparkle Geometris Bintang Amber */}
+      <path d="M75,95 L77,102 L84,104 L77,106 L75,113 L73,106 L66,104 L73,102 Z" fill="#f59e0b" />
+      <path d="M245,105 L247,112 L254,114 L247,116 L245,123 L243,116 L236,114 L243,112 Z" fill="#f59e0b" />
 
-      {/* Open Cardboard Box Isometric */}
+      {/* Bayangan Elips di Bawah Box */}
+      <ellipse cx="160" cy="252" rx="75" ry="12" fill="#d6d3d1" fillOpacity="0.85" />
+
+      {/* BOX KARDUS TERBUKA (Tutup menganga ke kiri-kanan, #d97706 / #f59e0b) */}
       <g transform="translate(160, 205)">
-        {/* Soft Shadow under Box */}
-        <ellipse cx="0" cy="48" rx="80" ry="16" fill="#000000" fillOpacity="0.08" />
+        {/* Badan Box Kiri (#d97706) */}
+        <path d="M0,36 L-62,6 L-62,-36 L0,-8 Z" fill="#d97706" />
+        {/* Badan Box Kanan (#b45309) */}
+        <path d="M0,36 L62,6 L62,-36 L0,-8 Z" fill="#b45309" />
+        {/* Bagian Dalam Box (#78350f) */}
+        <path d="M0,-8 L-62,-36 L0,-66 L62,-36 Z" fill="#78350f" />
 
-        {/* Box Left Panel */}
-        <path d="M0,35 L-65,2 L-65,-45 L0,-12 Z" fill="#d97706" />
-        {/* Box Right Panel */}
-        <path d="M0,35 L65,2 L65,-45 L0,-12 Z" fill="#b45309" />
-        {/* Box Interior (Dark Warm Kraft) */}
-        <path d="M0,-12 L-65,-45 L0,-78 L65,-45 Z" fill="#78350f" />
+        {/* Tutup Menganga Kiri-Kanan (#f59e0b / #d97706) */}
+        {/* Tutup Kiri Depan */}
+        <path d="M-62,-36 L0,-8 L-18,12 L-72,-18 Z" fill="#f59e0b" />
+        {/* Tutup Kanan Depan */}
+        <path d="M0,-8 L62,-36 L72,-18 L18,12 Z" fill="#d97706" />
+        {/* Tutup Kiri Belakang */}
+        <path d="M-62,-36 L0,-66 L-15,-84 L-72,-54 Z" fill="#f59e0b" />
+        {/* Tutup Kanan Belakang */}
+        <path d="M0,-66 L62,-36 L72,-54 L15,-84 Z" fill="#d97706" />
 
-        {/* Open Flaps */}
-        {/* Front-Left Flap hanging down */}
-        <path d="M-65,-45 L0,-12 L-20,10 L-75,-25 Z" fill="#f59e0b" />
-        {/* Front-Right Flap hanging down */}
-        <path d="M0,-12 L65,-45 L75,-25 L20,10 Z" fill="#d97706" />
-        {/* Back-Left Flap flared up */}
-        <path d="M-65,-45 L0,-78 L-15,-98 L-78,-65 Z" fill="#f59e0b" />
-        {/* Back-Right Flap flared up */}
-        <path d="M0,-78 L65,-45 L78,-65 L15,-98 Z" fill="#d97706" />
-
-        {/* Box Label Front */}
-        <g transform="translate(-45, -20) skewY(15)">
-          <rect x="0" y="0" width="28" height="18" rx="2" fill="#ffffff" fillOpacity="0.9" />
-          <line x1="4" y1="5" x2="24" y2="5" stroke="#78716c" strokeWidth="1.5" />
-          <line x1="4" y1="9" x2="18" y2="9" stroke="#78716c" strokeWidth="1.5" />
-          <rect x="4" y="12" width="10" height="3" fill="#10b981" />
+        {/* Label Kotak Krem */}
+        <g transform="translate(-44, -15) skewY(15)">
+          <rect x="0" y="0" width="24" height="15" rx="2" fill="#fffbeb" />
+          <line x1="4" y1="4" x2="20" y2="4" stroke="#a8a29e" strokeWidth="1.5" />
+          <line x1="4" y1="8" x2="16" y2="8" stroke="#a8a29e" strokeWidth="1.5" />
         </g>
       </g>
 
-      {/* Main Big Floating Pink Heart (#f472b6 - Identitas Uti 💗) */}
-      <g transform="translate(160, 115)">
-        {/* Pink Glow Behind Main Heart */}
-        <circle cx="0" cy="0" r="50" fill="url(#si-heart-glow)" />
+      {/* HATI PINK (#f472b6) MELAYANG DI ATAS BOX — IDENTITAS ASISTEN UTI 💗 */}
+      <g transform="translate(160, 100)">
+        {/* Glow Lembut Pink */}
+        <circle cx="0" cy="0" r="44" fill="#f472b6" fillOpacity="0.2" />
 
-        {/* Floating Heart Path */}
+        {/* Bentuk Hati Pink (#f472b6) */}
         <path
-          d="M0,32 C-38,-4 -52,-28 -34,-44 C-18,-56 0,-34 0,-18 C0,-34 18,-56 34,-44 C52,-28 38,-4 0,32 Z"
+          d="M0,32 C-34,-2 -48,-24 -32,-38 C-16,-50 0,-30 0,-16 C0,-30 16,-50 32,-38 C48,-24 34,-2 0,32 Z"
           fill="#f472b6"
         />
-        {/* Heart Highlight / Gloss */}
+
+        {/* Kilau Putih Geometris pada Hati */}
         <path
-          d="M-22,-36 C-30,-26 -22,-14 -12,-8"
+          d="M-20,-32 C-26,-24 -20,-14 -12,-8"
           stroke="#ffffff"
           strokeWidth="3.5"
           strokeLinecap="round"
           fill="none"
-          opacity="0.8"
+          opacity="0.85"
         />
       </g>
     </svg>

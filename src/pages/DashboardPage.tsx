@@ -4,6 +4,7 @@ import { StatCard } from '../components/common/StatCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
+import { WarehouseBanner } from '../components/illustrations/WarehouseBanner';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { ItemStock, Transaksi, MasterMember, PengajuanPengambilan } from '../types';
@@ -108,6 +109,9 @@ export const DashboardPage: React.FC = () => {
           </div>
         }
       />
+
+      {/* Warehouse Vector Art Banner */}
+      <WarehouseBanner className="w-full h-auto rounded-2xl" />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

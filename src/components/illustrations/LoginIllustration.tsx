@@ -11,90 +11,95 @@ export const LoginIllustration: React.FC<LoginIllustrationProps> = ({ className 
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="Ilustrasi bangunan gudang logistik dengan papan verifikasi checklist inventaris"
+      aria-label="Ilustrasi bangunan gudang logistik dan papan checklist verifikasi admin"
       className={className}
     >
       <defs>
-        <linearGradient id="li-bg" x1="0" y1="0" x2="420" y2="520" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fef3c7" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#fde68a" stopOpacity="0.2" />
+        <linearGradient id="li-bg" x1="0" y1="0" x2="0" y2="520" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fffbeb" />
+          <stop offset="100%" stopColor="#fef3c7" />
         </linearGradient>
       </defs>
 
-      {/* Decorative Warm Circular Glow */}
-      <circle cx="210" cy="220" r="160" fill="url(#li-bg)" />
-      <circle cx="210" cy="180" r="80" fill="#fde68a" fillOpacity="0.4" />
+      {/* Background Frame Rounded rx="24" Gradien Krem */}
+      <rect width="420" height="520" rx="24" fill="url(#li-bg)" />
 
-      {/* Warehouse Building in Background */}
-      <g transform="translate(60, 160)">
-        {/* Roof (#b45309) */}
-        <path d="M0,70 L150,0 L300,70 L280,75 L150,15 L20,75 Z" fill="#b45309" />
-        {/* Warehouse Main Body (#f59e0b) */}
-        <rect x="20" y="70" width="260" height="190" rx="4" fill="#f59e0b" fillOpacity="0.95" />
-        {/* Wall Panels Stripes */}
-        <line x1="60" y1="70" x2="60" y2="260" stroke="#d97706" strokeWidth="2" strokeDasharray="6 4" />
-        <line x1="100" y1="70" x2="100" y2="260" stroke="#d97706" strokeWidth="2" strokeDasharray="6 4" />
-        <line x1="200" y1="70" x2="200" y2="260" stroke="#d97706" strokeWidth="2" strokeDasharray="6 4" />
-        <line x1="240" y1="70" x2="240" y2="260" stroke="#d97706" strokeWidth="2" strokeDasharray="6 4" />
-        {/* Warehouse Roll-up Shutter Door */}
-        <rect x="110" y="140" width="80" height="120" rx="3" fill="#78716c" />
-        <rect x="115" y="145" width="70" height="115" fill="#a8a29e" />
-        <line x1="115" y1="165" x2="185" y2="165" stroke="#57534e" strokeWidth="2" />
-        <line x1="115" y1="185" x2="185" y2="185" stroke="#57534e" strokeWidth="2" />
-        <line x1="115" y1="205" x2="185" y2="205" stroke="#57534e" strokeWidth="2" />
-        <line x1="115" y1="225" x2="185" y2="225" stroke="#57534e" strokeWidth="2" />
-        <line x1="115" y1="245" x2="185" y2="245" stroke="#57534e" strokeWidth="2" />
+      {/* Matahari & Awan Kecil */}
+      <circle cx="90" cy="70" r="32" fill="#f59e0b" fillOpacity="0.85" />
+      <circle cx="90" cy="70" r="42" fill="#fbbf24" fillOpacity="0.25" />
+      <path d="M140,75 Q150,62 165,65 Q180,58 195,70 Q205,70 210,78 Q210,85 200,85 L145,85 Z" fill="#ffffff" fillOpacity="0.85" />
+
+      {/* Lantai Stone */}
+      <rect y="440" width="420" height="80" fill="#d6d3d1" />
+      <line x1="0" y1="440" x2="420" y2="440" stroke="#a8a29e" strokeWidth="2" />
+
+      {/* BANGUNAN GUDANG (Dinding #f59e0b, Atap Segitiga #b45309, Pintu #92400e, Jendela Krem) */}
+      <g transform="translate(30, 160)">
+        <path d="M0,80 L130,10 L260,80 Z" fill="#b45309" />
+        <path d="M-6,82 L130,8 L266,82" stroke="#92400e" strokeWidth="4" />
+
+        <rect x="15" y="80" width="230" height="200" fill="#f59e0b" rx="2" />
+        <line x1="60" y1="80" x2="60" y2="280" stroke="#d97706" strokeWidth="1.5" strokeDasharray="6 4" />
+        <line x1="105" y1="80" x2="105" y2="280" stroke="#d97706" strokeWidth="1.5" strokeDasharray="6 4" />
+        <line x1="155" y1="80" x2="155" y2="280" stroke="#d97706" strokeWidth="1.5" strokeDasharray="6 4" />
+        <line x1="200" y1="80" x2="200" y2="280" stroke="#d97706" strokeWidth="1.5" strokeDasharray="6 4" />
+
+        {/* Jendela Krem */}
+        <rect x="40" y="105" width="45" height="35" rx="3" fill="#fffbeb" />
+        <line x1="62" y1="105" x2="62" y2="140" stroke="#d97706" strokeWidth="2" />
+        <line x1="40" y1="122" x2="85" y2="122" stroke="#d97706" strokeWidth="2" />
+        <rect x="175" y="105" width="45" height="35" rx="3" fill="#fffbeb" />
+        <line x1="197" y1="105" x2="197" y2="140" stroke="#d97706" strokeWidth="2" />
+        <line x1="175" y1="122" x2="220" y2="122" stroke="#d97706" strokeWidth="2" />
+
+        {/* Pintu Gudang #92400e */}
+        <rect x="95" y="165" width="70" height="115" rx="3" fill="#92400e" />
+        <rect x="100" y="170" width="60" height="110" fill="#78350f" />
+        <line x1="100" y1="195" x2="160" y2="195" stroke="#92400e" strokeWidth="2" />
+        <line x1="100" y1="220" x2="160" y2="220" stroke="#92400e" strokeWidth="2" />
+        <line x1="100" y1="245" x2="160" y2="245" stroke="#92400e" strokeWidth="2" />
+        <circle cx="150" cy="225" r="3" fill="#f59e0b" />
       </g>
 
-      {/* Ground & Boxes on Floor */}
-      <rect x="30" y="420" width="360" height="6" rx="3" fill="#a8a29e" />
-      {/* Box Stack Left */}
-      <g transform="translate(60, 360)">
-        <rect x="0" y="25" width="45" height="35" rx="3" fill="#d97706" />
-        <rect x="10" y="32" width="12" height="6" rx="1" fill="#fef3c7" />
-        <rect x="40" y="15" width="40" height="45" rx="3" fill="#f59e0b" />
-        <line x1="60" y1="15" x2="60" y2="60" stroke="#d97706" strokeWidth="1.5" />
-        <rect x="15" y="0" width="32" height="25" rx="2" fill="#b45309" />
+      {/* BOX-BOX DI DEPAN BANGUNAN */}
+      <g transform="translate(45, 410)">
+        <rect x="0" y="10" width="40" height="30" fill="#d97706" rx="2" />
+        <rect x="6" y="16" width="10" height="5" fill="#fffbeb" rx="1" />
+        <rect x="35" y="0" width="45" height="40" fill="#f59e0b" rx="2" />
+        <rect x="42" y="8" width="12" height="6" fill="#fffbeb" rx="1" />
+        <rect x="12" y="-18" width="30" height="22" fill="#b45309" rx="2" />
       </g>
-      {/* Box Stack Right */}
-      <g transform="translate(300, 365)">
-        <rect x="0" y="15" width="50" height="40" rx="3" fill="#f59e0b" />
-        <rect x="10" y="0" width="35" height="20" rx="2" fill="#d97706" />
+      <g transform="translate(250, 418)">
+        <rect x="0" y="6" width="44" height="34" fill="#f59e0b" rx="2" />
+        <rect x="8" y="14" width="12" height="5" fill="#fffbeb" rx="1" />
+        <rect x="38" y="12" width="36" height="28" fill="#d97706" rx="2" />
       </g>
 
-      {/* Floating Clipboard Checklist (Angled) */}
-      <g transform="translate(230, 160) rotate(8)">
-        {/* Shadow */}
-        <rect x="-8" y="-8" width="166" height="226" rx="14" fill="#000000" fillOpacity="0.08" />
-        {/* Board */}
-        <rect x="0" y="0" width="160" height="220" rx="12" fill="#92400e" />
-        {/* Metal Clip */}
-        <rect x="52" y="-14" width="56" height="22" rx="4" fill="#78716c" />
-        <rect x="62" y="-8" width="36" height="10" rx="2" fill="#d6d3d1" />
-        <circle cx="80" cy="-3" r="3" fill="#44403c" />
-        {/* Paper */}
-        <rect x="12" y="18" width="136" height="190" rx="6" fill="#ffffff" />
-        {/* Header Line */}
-        <rect x="24" y="32" width="70" height="8" rx="2" fill="#b45309" />
-        <rect x="24" y="44" width="40" height="4" rx="1" fill="#d97706" />
-        {/* Checklist Item 1 */}
-        <rect x="24" y="65" width="14" height="14" rx="3" fill="#10b981" />
-        <path d="M27,72 L30,75 L35,68" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
-        <rect x="44" y="69" width="75" height="6" rx="1.5" fill="#78716c" />
-        {/* Checklist Item 2 */}
-        <rect x="24" y="95" width="14" height="14" rx="3" fill="#10b981" />
-        <path d="M27,102 L30,105 L35,98" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
-        <rect x="44" y="99" width="60" height="6" rx="1.5" fill="#78716c" />
-        {/* Checklist Item 3 */}
-        <rect x="24" y="125" width="14" height="14" rx="3" fill="#f59e0b" />
-        <path d="M27,132 L35,132" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
-        <rect x="44" y="129" width="85" height="6" rx="1.5" fill="#78716c" />
-        {/* Checklist Item 4 */}
-        <rect x="24" y="155" width="14" height="14" rx="3" fill="#e7e5e4" />
-        <rect x="44" y="159" width="50" height="6" rx="1.5" fill="#a8a29e" />
-        {/* Verification Stamp / Seal */}
-        <circle cx="120" cy="180" r="16" fill="#10b981" fillOpacity="0.15" stroke="#10b981" strokeWidth="2" strokeDasharray="3 2" />
-        <path d="M115,180 L118,183 L126,176" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+      {/* CLIPBOARD CHECKLIST (3 baris, lingkaran amber + centang hijau #059669) */}
+      <g transform="translate(245, 95) rotate(10)">
+        <rect x="-4" y="-4" width="148" height="198" rx="12" fill="#78716c" fillOpacity="0.2" />
+        <rect x="0" y="0" width="140" height="190" rx="10" fill="#b45309" />
+        <rect x="42" y="-10" width="56" height="18" rx="4" fill="#78716c" />
+        <circle cx="70" cy="-1" r="3" fill="#ffffff" />
+
+        <rect x="8" y="16" width="124" height="166" rx="6" fill="#ffffff" />
+        <rect x="20" y="28" width="55" height="6" rx="2" fill="#b45309" />
+        <rect x="20" y="38" width="35" height="4" rx="1" fill="#f59e0b" />
+
+        {/* Baris 1 */}
+        <circle cx="30" cy="62" r="8" fill="#fef3c7" stroke="#f59e0b" strokeWidth="1.5" />
+        <path d="M26,62 L29,65 L34,58" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="44" y="59" width="65" height="6" rx="2" fill="#78716c" />
+
+        {/* Baris 2 */}
+        <circle cx="30" cy="94" r="8" fill="#fef3c7" stroke="#f59e0b" strokeWidth="1.5" />
+        <path d="M26,94 L29,97 L34,90" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="44" y="91" width="55" height="6" rx="2" fill="#78716c" />
+
+        {/* Baris 3 */}
+        <circle cx="30" cy="126" r="8" fill="#fef3c7" stroke="#f59e0b" strokeWidth="1.5" />
+        <path d="M26,126 L29,129 L34,122" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="44" y="123" width="70" height="6" rx="2" fill="#78716c" />
       </g>
     </svg>
   );
