@@ -518,7 +518,7 @@ export const AIConfigPanel: React.FC = () => {
                       <option key={k.id} value={k.id}>
                         🔑 {k.label || `API Key ${idx + 1}`}
                         {labelHasMask ? '' : ` •••• (${k.maskedKey})`}
-                        {inCooldown ? ' [Cooldown Kuota 10 Mnt]' : ''}
+                        {inCooldown ? ' [Cooldown Kuota]' : ''}
                       </option>
                     );
                   })}
