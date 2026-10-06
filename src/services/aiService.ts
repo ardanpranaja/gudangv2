@@ -16,6 +16,14 @@ const STORAGE_KEY_GEMINI_SAVED_KEYS = 'GP_GEMINI_SAVED_KEYS';
 const STORAGE_KEY_GEMINI_MODEL = 'GP_GEMINI_MODEL';
 const STORAGE_KEY_GEMINI_CACHED_MODELS = 'GP_GEMINI_CACHED_MODELS';
 
+/**
+ * Cooldown singkat saat sebuah key kena 429/QUOTA.
+ * Limit per-menit (RPM) Gemini pulih dalam hitungan ±60 detik, jadi key tidak perlu
+ * dikunci 10 menit — cukup 90 detik, lalu otomatis bisa dipakai lagi.
+ * (Limit harian/RPD ditangani terpisah lewat penanda pasangan key×model di bawah.)
+ */
+const QUOTA_COOLDOWN_MS = 90 * 1000;
+
 export const SYSTEM_INSTRUCTION = `Anda adalah Uti AI, asisten AI operasional cerdas untuk Kegudangaja (Sistem Pengelolaan Gudang).
 Peran Anda adalah membantu operator dan admin gudang secara proaktif menjalankan pekerjaan operasional gudang selama fungsinya tersedia melalui tools aplikasi.
 
@@ -179,6 +187,10 @@ export class AIService {
   private selectedModel: string = 'gemini-3.7-flash';
   private availableModels: AIModelInfo[] = [];
   private quotaCooldown = new Map<string, number>();
+  /** Model yang 404 (tidak ada) — mati di SEMUA key sampai daftar model di-refresh. */
+  private deadModels = new Set<string>();
+  /** Key yang 401/invalid — mati permanen sampai user menghapus/menggantinya. */
+  private invalidKeyIds = new Set<string>();
 
   constructor() {
     this.loadConfig();
@@ -392,7 +404,7 @@ export class AIService {
 
   public markKeyCooldown(keyId: string) {
     if (!keyId) return;
-    this.quotaCooldown.set(keyId, Date.now() + 10 * 60 * 1000);
+    this.quotaCooldown.set(keyId, Date.now() + QUOTA_COOLDOWN_MS);
   }
 
   private notifyFailover(fromKey: SavedApiKey, toKey: SavedApiKey) {
@@ -433,7 +445,7 @@ export class AIService {
       ];
     }
 
-    return ordered.filter((k) => !this.isKeyInCooldown(k.id));
+    return ordered.filter((k) => !this.isKeyInCooldown(k.id) && !this.invalidKeyIds.has(k.id));
   }
 
   /**
@@ -447,7 +459,7 @@ export class AIService {
     if (candidateKeys.length === 0) {
       if (this.savedKeys.length > 0 && this.savedKeys.every((k) => this.isKeyInCooldown(k.id))) {
         throw new QuotaExceededError(
-          'Semua kunci API Gemini habis kuotanya (sedang dalam cooldown 10 menit).'
+          'Semua kunci API Gemini habis kuotanya (sedang dalam cooldown singkat ±90 detik).'
         );
       }
       return await task('');
@@ -673,6 +685,8 @@ export class AIService {
 
     if (res.ok && data.success && Array.isArray(data.models)) {
       this.availableModels = data.models;
+      // Daftar model segar → reset penanda model-mati (404) dari sesi sebelumnya.
+      this.deadModels.clear();
 
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
         try {
@@ -796,9 +810,13 @@ export class AIService {
         );
       }
       if (data.category === 'INVALID_API_KEY' || res.status === 401) {
-        throw new Error(
+        const err: any = new Error(
           'Kunci API Gemini tidak valid atau belum diatur. Silakan periksa di menu Pengaturan > AI Assistant.'
         );
+        err.status = 401;
+        err.statusCode = 401;
+        err.isInvalidKey = true;
+        throw err;
       }
 
       throw new Error(data.error || 'Terjadi kendala saat memproses permintaan AI.');
@@ -806,75 +824,207 @@ export class AIService {
   }
 
   /**
-   * Single key chat with model fallback on 404 (up to 3 candidate models).
+   * Daftar model kandidat untuk chat: model terpilih dulu, lalu maksimal 3 model
+   * fallback dari daftar model yang tersedia. Model yang pernah 404 (deadModels)
+   * dilewati di semua key. Jika semuanya tertandai mati (info basi), reset lalu susun ulang.
    */
-  private async callChatSingleKeyWithModelFallback(
+  private getCandidateModels(): string[] {
+    const modelsToTry: string[] = [];
+    const push = (id: string) => {
+      const clean = (id || '').trim();
+      if (clean && !this.deadModels.has(clean) && !modelsToTry.includes(clean)) {
+        modelsToTry.push(clean);
+      }
+    };
+
+    push(this.selectedModel);
+    this.availableModels
+      .filter((m) => m.id !== this.selectedModel)
+      .slice(0, 3)
+      .forEach((m) => push(m.id));
+
+    if (modelsToTry.length === 0 && this.deadModels.size > 0) {
+      // Self-heal: semua kandidat tertandai mati — anggap info basi, reset lalu susun ulang.
+      this.deadModels.clear();
+      return this.getCandidateModels();
+    }
+
+    if (modelsToTry.length === 0) {
+      ['gemini-3.7-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'].forEach(push);
+    }
+
+    return modelsToTry;
+  }
+
+  private isModelNotFoundError(err: unknown): boolean {
+    const e = err as any;
+    return Boolean(e && (e.is404 || e.status === 404 || e.statusCode === 404));
+  }
+
+  private isInvalidKeyError(err: unknown): boolean {
+    const e = err as any;
+    return Boolean(e && (e.isInvalidKey || e.status === 401 || e.statusCode === 401));
+  }
+
+  /**
+   * Pair failover (matriks key × model): otomatis memilih pasangan (kunci API, model)
+   * yang masih hidup.
+   *
+   * - Urutan key: key aktif dulu, lalu key lain (lewati yang cooldown/invalid).
+   * - Urutan model: model terpilih dulu, lalu fallback (lewati yang pernah 404).
+   * - 429/QUOTA pada pasangan (key, model) → key ditandai cooldown singkat (±90 detik),
+   *   LANGSUNG pindah ke key berikutnya tanpa menunggu.
+   * - Setelah semua key dicoba, key yang kena quota dicoba lagi dengan model yang belum
+   *   dicoba (limit harian Gemini dihitung per-model, jadi model lain di project yang
+   *   sama bisa masih punya kuota).
+   * - 404 (model tidak ada) → model ditandai mati di SEMUA key, lanjut model berikutnya.
+   * - 401 (key invalid) → key ditandai mati permanen, lanjut key berikutnya.
+   */
+  private async callChatWithPairFailover(
     body: Record<string, unknown>,
     onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void,
     explicitApiKey?: string
   ): Promise<any> {
-    const modelsToTry: string[] = [this.selectedModel];
-    const fallbackCandidates = this.availableModels
-      .filter((m) => m.id !== this.selectedModel)
-      .slice(0, 3)
-      .map((m) => m.id);
-
-    if (fallbackCandidates.length === 0) {
-      ['gemini-3.7-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'].forEach((id) => {
-        if (id !== this.selectedModel && modelsToTry.length < 4) {
-          modelsToTry.push(id);
-        }
-      });
+    let keys: SavedApiKey[];
+    if (explicitApiKey !== undefined) {
+      keys = [
+        {
+          id: 'explicit-key',
+          maskedKey: maskApiKey(explicitApiKey),
+          label: 'API Key eksplisit',
+          fullKey: explicitApiKey,
+          createdAt: new Date().toISOString(),
+        },
+      ];
     } else {
-      modelsToTry.push(...fallbackCandidates);
+      keys = this.getCandidateKeys();
     }
 
+    if (keys.length === 0) {
+      if (this.savedKeys.length > 0) {
+        throw new QuotaExceededError(
+          'Semua kunci API Gemini sedang dalam cooldown kuota. Coba lagi sekitar 90 detik lagi.'
+        );
+      }
+      // Tanpa key tersimpan: satu percobaan tanpa key (server bisa memakai env key).
+      return this.callChatSingleModel(body, this.selectedModel, onRetryProgress, '');
+    }
+
+    const triedPairs = new Set<string>();
+    const quotaHitKeyIds: string[] = [];
+    let lastQuotaError: QuotaExceededError | null = null;
     let lastError: unknown = null;
 
-    for (let i = 0; i < modelsToTry.length; i++) {
-      const model = modelsToTry[i];
+    const attemptPair = async (
+      key: SavedApiKey,
+      model: string
+    ): Promise<{ ok: true; data: any } | { ok: false; err: unknown }> => {
+      const pairId = `${key.id}::${model}`;
+      if (triedPairs.has(pairId)) return { ok: false, err: null };
+      triedPairs.add(pairId);
       try {
-        const data = await this.callChatSingleModel(body, model, onRetryProgress, explicitApiKey);
-        if (i > 0) {
-          this.setModel(model);
+        const data = await this.callChatSingleModel(body, model, onRetryProgress, key.fullKey);
+        const usedFallback = model !== this.selectedModel;
+        if (explicitApiKey === undefined) {
+          if (key.fullKey && key.fullKey !== this.customApiKey) {
+            this.setApiKey(key.fullKey);
+          }
+          if (usedFallback) {
+            this.setModel(model);
+          }
         }
         return {
-          ...data,
-          usedModel: model,
-          fallbackModelUsed: i > 0 ? model : undefined,
+          ok: true,
+          data: {
+            ...data,
+            usedModel: model,
+            fallbackModelUsed: usedFallback ? model : undefined,
+          },
         };
-      } catch (err: any) {
+      } catch (err: unknown) {
+        return { ok: false, err };
+      }
+    };
+
+    // Pass 1 (key-major): untuk tiap key, coba model-modelnya; key kena quota → LANGSUNG key berikutnya.
+    for (let ki = 0; ki < keys.length; ki++) {
+      const key = keys[ki];
+      for (const model of this.getCandidateModels()) {
+        if (this.deadModels.has(model)) continue;
+        const result = await attemptPair(key, model);
+        if (result.ok) return result.data;
+        const err = result.err;
+        if (err === null || err === undefined) continue; // pasangan sudah dicoba
         lastError = err;
         if (err instanceof QuotaExceededError) {
-          throw err;
+          if (explicitApiKey !== undefined) throw err; // tidak ada key lain untuk failover
+          if (key.id) this.markKeyCooldown(key.id);
+          if (key.id && !quotaHitKeyIds.includes(key.id)) quotaHitKeyIds.push(key.id);
+          lastQuotaError = err;
+          const nextKey = keys[ki + 1];
+          if (nextKey) this.notifyFailover(key, nextKey);
+          break; // langsung ke key berikutnya
         }
-        if (err?.is404 || err?.status === 404 || err?.statusCode === 404) {
-          if (i < modelsToTry.length - 1) {
-            console.warn(`[aiService] Model ${model} 404, mencoba model berikutnya: ${modelsToTry[i + 1]}`);
-            continue;
-          }
+        if (this.isModelNotFoundError(err)) {
+          console.warn(
+            `[aiService] Model ${model} 404 → ditandai mati di semua key, coba model berikutnya.`
+          );
+          this.deadModels.add(model);
+          continue; // model berikutnya, key yang sama
+        }
+        if (this.isInvalidKeyError(err)) {
+          console.warn(
+            `[aiService] Key ${key.label || key.maskedKey} invalid (401) → dikeluarkan dari kandidat.`
+          );
+          if (key.id) this.invalidKeyIds.add(key.id);
+          break; // key berikutnya
         }
         throw err;
       }
     }
 
-    throw lastError || new Error('Gagal memproses chat.');
+    // Pass 2: key yang kena quota × model yang belum dicoba.
+    // (Limit harian/RPD Gemini dihitung per-model, jadi model lain bisa masih hidup.)
+    if (explicitApiKey === undefined) {
+      for (const keyId of quotaHitKeyIds) {
+        const key = keys.find((k) => k.id === keyId);
+        if (!key) continue;
+        for (const model of this.getCandidateModels()) {
+          if (this.deadModels.has(model)) continue;
+          const result = await attemptPair(key, model);
+          if (result.ok) return result.data;
+          const err = result.err;
+          if (err === null || err === undefined) continue;
+          lastError = err;
+          if (err instanceof QuotaExceededError) {
+            lastQuotaError = err;
+            break; // key ini masih habis → key berikutnya
+          }
+          if (this.isModelNotFoundError(err)) {
+            this.deadModels.add(model);
+            continue;
+          }
+          throw err;
+        }
+      }
+    }
+
+    // Utamakan error quota; kalau tidak ada, lempar error terakhir yang sebenarnya
+    // (mis. 401 key invalid atau 404 model) agar pesannya akurat.
+    if (lastQuotaError) throw lastQuotaError;
+    if (lastError instanceof Error) throw lastError;
+    throw new QuotaExceededError('Semua kombinasi kunci API & model Gemini habis kuotanya.');
   }
 
   /**
-   * Safe chat caller wrapped with failover across candidate keys and model fallback on 404
+   * Safe chat caller: otomatis memilih pasangan (kunci API, model) yang masih hidup.
    */
   private async callChatWithRetry(
     body: Record<string, unknown>,
     onRetryProgress?: (attempt: number, maxAttempts: number, statusText: string) => void,
     explicitApiKey?: string
   ): Promise<any> {
-    if (explicitApiKey !== undefined) {
-      return this.callChatSingleKeyWithModelFallback(body, onRetryProgress, explicitApiKey);
-    }
-    return this.withKeyFailover((key) =>
-      this.callChatSingleKeyWithModelFallback(body, onRetryProgress, key)
-    );
+    return this.callChatWithPairFailover(body, onRetryProgress, explicitApiKey);
   }
 
   /**
