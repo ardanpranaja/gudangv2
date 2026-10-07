@@ -1213,9 +1213,11 @@ export async function executeAITool(
 
       case 'approve_requests': {
         return await buildApprovalDraft(args, 'APPROVE_REQUESTS', 'Setujui');
+      }
 
       case 'reject_requests': {
         return await buildApprovalDraft(args, 'REJECT_REQUESTS', 'Tolak');
+      }
 
       case 'get_requests': {
         const status = typeof args.status === 'string' ? args.status.trim() : undefined;
