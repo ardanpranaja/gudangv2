@@ -21,6 +21,10 @@ export const AIConfirmation: React.FC<AIConfirmationProps> = ({ confirmation, on
 
       if (confirmation.type === 'REQUEST') {
         addToast('success', 'Pengajuan Berhasil', `Pengajuan ${res.idPengajuan || ''} berhasil dicatat.`);
+      } else if (confirmation.type === 'APPROVE_REQUESTS') {
+        addToast('success', 'Pengajuan Disetujui', res.message);
+      } else if (confirmation.type === 'REJECT_REQUESTS') {
+        addToast('success', 'Pengajuan Ditolak', res.message);
       } else {
         addToast(
           'success',

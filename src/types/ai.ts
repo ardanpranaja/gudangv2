@@ -14,7 +14,9 @@ export type AIConfirmationType =
   | 'BARANG_KELUAR'
   | 'PINJAM'
   | 'KEMBALI'
-  | 'REQUEST';
+  | 'REQUEST'
+  | 'APPROVE_REQUESTS'
+  | 'REJECT_REQUESTS';
 
 export interface AIConfirmationDetail {
   label: string;
