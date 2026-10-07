@@ -1093,6 +1093,28 @@ export class AIService {
     return Boolean(e && (e.isInvalidKey || e.status === 401 || e.statusCode === 401));
   }
 
+  private isServerError(err: unknown): boolean {
+    const e = err as any;
+    return Boolean(
+      e &&
+        (e.status === 500 ||
+          e.statusCode === 500 ||
+          e.status === 502 ||
+          e.statusCode === 502 ||
+          e.status === 503 ||
+          e.statusCode === 503 ||
+          e.status === 504 ||
+          e.statusCode === 504 ||
+          e.category === 'SERVER_ERROR' ||
+          e.category === 'UNAVAILABLE' ||
+          (typeof e.message === 'string' &&
+            (e.message.includes('500') ||
+              e.message.includes('503') ||
+              e.message.toLowerCase().includes('server error') ||
+              e.message.toLowerCase().includes('internal error'))))
+    );
+  }
+
   /**
    * Pair failover (matriks key × model): otomatis memilih pasangan (kunci API, model)
    * yang masih hidup.
@@ -1233,6 +1255,12 @@ export class AIService {
           if (key.id) this.invalidKeyIds.add(key.id);
           break; // key berikutnya
         }
+        if (this.isServerError(err)) {
+          console.warn(
+            `[aiService] Model ${model} mengalami kendala server (500/503) → mencoba model fallback berikutnya.`
+          );
+          continue; // model berikutnya, key yang sama
+        }
         throw err;
       }
     }
@@ -1257,6 +1285,9 @@ export class AIService {
           if (this.isModelNotFoundError(err)) {
             this.deadModels.add(model);
             continue;
+          }
+          if (this.isServerError(err)) {
+            continue; // coba model berikutnya
           }
           throw err;
         }

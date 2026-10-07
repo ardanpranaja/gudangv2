@@ -275,8 +275,9 @@ function calculateBackoffDelay(attempt: number): number {
 }
 
 /**
- * Executes a Gemini operation strictly with the user's selected model with exponential backoff on transient errors (503, 429, 500, 504).
- * No hardcoded fallback models are used.
+ * Executes a Gemini operation with the requested model, with exponential backoff on transient errors.
+ * If the requested model encounters a 500 (SERVER_ERROR) or 503 (UNAVAILABLE), automatically attempts
+ * standard resilient fallback models (gemini-3.7-flash, gemini-2.5-flash) so the user's request succeeds.
  */
 async function executeGeminiGenerate(
   client: GoogleGenAI,
@@ -285,34 +286,61 @@ async function executeGeminiGenerate(
   config: unknown,
   maxRetries = 2
 ): Promise<any> {
-  const targetModel = (selectedModel && selectedModel.trim()) || '';
-  if (!targetModel) {
-    throw new Error('Model belum dipilih. Silakan pilih model di Pengaturan > AI Assistant.');
-  }
-
-  let attempt = 0;
-  while (attempt <= maxRetries) {
-    attempt++;
-    try {
-      return await client.models.generateContent({
-        model: targetModel,
-        contents: contents as any,
-        config: config as any,
-      });
-    } catch (err: unknown) {
-      const classified = classifyError(err);
-      if (classified.isTransient && attempt <= maxRetries) {
-        const delay = calculateBackoffDelay(attempt);
-        console.log(
-          `[AI Server Info] Percobaan ${attempt}/${maxRetries} untuk model ${targetModel} (${classified.category} - ${classified.statusCode}). Menunggu ${delay}ms...`
-        );
-        await sleep(delay);
-        continue;
-      }
-      // Re-throw without changing target model
-      throw err;
+  const targetModel = (selectedModel && selectedModel.trim()) || 'gemini-3.7-flash';
+  const modelsToAttempt = [targetModel];
+  const standardFallbacks = ['gemini-3.7-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+  for (const fb of standardFallbacks) {
+    if (!modelsToAttempt.includes(fb)) {
+      modelsToAttempt.push(fb);
     }
   }
+
+  let lastError: unknown = null;
+
+  for (let mIdx = 0; mIdx < modelsToAttempt.length; mIdx++) {
+    const currentModel = modelsToAttempt[mIdx];
+    let attempt = 0;
+    const modelMaxRetries = mIdx === 0 ? maxRetries : 1;
+
+    while (attempt <= modelMaxRetries) {
+      attempt++;
+      try {
+        const result = await client.models.generateContent({
+          model: currentModel,
+          contents: contents as any,
+          config: config as any,
+        });
+        if (mIdx > 0) {
+          console.log(`[AI Server Info] Berhasil beralih ke model fallback: ${currentModel}`);
+        }
+        return result;
+      } catch (err: unknown) {
+        lastError = err;
+        const classified = classifyError(err);
+
+        // Quota and Auth errors should be returned immediately to trigger proper client handling
+        if (classified.category === 'QUOTA' || classified.category === 'INVALID_API_KEY') {
+          throw err;
+        }
+
+        // Transient retry for the same model
+        if (classified.isTransient && attempt <= modelMaxRetries) {
+          const delay = calculateBackoffDelay(attempt);
+          await sleep(delay);
+          continue;
+        }
+
+        // If this model encountered a server error (500), unavailable (503), or not found (404),
+        // try the next fallback model in modelsToAttempt if available
+        if (mIdx < modelsToAttempt.length - 1) {
+          break; // move to next model
+        }
+        throw err;
+      }
+    }
+  }
+
+  throw lastError || new Error('Gagal memproses permintaan dengan model Gemini.');
 }
 
 // Helper to get Gemini Client safely from request headers
