@@ -17,6 +17,50 @@ export interface ExecuteConfirmationResult {
 export async function executeConfirmationBackend(
   confirmation: AIConfirmationData
 ): Promise<ExecuteConfirmationResult> {
+  if (confirmation.type === 'APPROVE_REQUESTS' || confirmation.type === 'REJECT_REQUESTS') {
+    const isApprove = confirmation.type === 'APPROVE_REQUESTS';
+    const ids = Array.isArray(confirmation.rawInput.requestIds)
+      ? (confirmation.rawInput.requestIds as unknown[]).map((id) => String(id))
+      : [];
+    const note = confirmation.rawInput.note ? String(confirmation.rawInput.note) : undefined;
+    if (ids.length === 0) throw new Error('Tidak ada ID pengajuan pada draf konfirmasi.');
+
+    const succeeded: string[] = [];
+    const failed: string[] = [];
+    for (const id of ids) {
+      try {
+        if (isApprove) {
+          await api.approveRequest({ requestId: id, note });
+        } else {
+          await api.rejectRequest({ requestId: id, note });
+        }
+        succeeded.push(id);
+      } catch (err: unknown) {
+        failed.push(`${id} (${normalizeGasErrorMessage(err, undefined, 'gagal')})`);
+      }
+    }
+
+    const verb = isApprove ? 'disetujui' : 'ditolak';
+    if (failed.length === 0) {
+      return {
+        success: true,
+        message:
+          succeeded.length > 1
+            ? `${succeeded.length} pengajuan berhasil ${verb}.` +
+              (isApprove ? ' Transaksi BARANG_KELUAR telah dicatat.' : '')
+            : `Pengajuan ${succeeded[0]} berhasil ${verb}.` +
+              (isApprove ? ' Transaksi BARANG_KELUAR telah dicatat.' : ''),
+      };
+    }
+    if (succeeded.length === 0) {
+      throw new Error(`Semua pengajuan gagal: ${failed.join('; ')}`);
+    }
+    return {
+      success: true,
+      message: `${succeeded.length} berhasil ${verb}, ${failed.length} gagal: ${failed.join('; ')}`,
+    };
+  }
+
   if (confirmation.type === 'REQUEST') {
     const res = await api.submitRequest({
       memberId: String(confirmation.rawInput.memberId),
