@@ -2,7 +2,10 @@
 /* Generate PWA icons (PNG) from code — zero dependencies.
  * Runs via `prebuild` so `npm run build` (incl. Vercel) always produces
  * public/icons/*.png without committing binaries to git.
- * Design: slate-900 rounded square + white warehouse glyph. Deterministic. */
+ * Design: slate-900 rounded square + white warehouse glyph. Deterministic.
+ * NOTE (Vercel): dashboard Settings → Build & Development Settings → Build Command
+ * must be `node scripts/gen-pwa-icons.mjs && vite build` (or `npm run build`).
+ * A dashboard override of plain `vite build` skips icon generation → icons 404, PWA install breaks. */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
