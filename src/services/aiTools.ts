@@ -349,13 +349,67 @@ export const AI_TOOL_DECLARATIONS = [
   },
   {
     name: 'get_pending_requests',
-    description: 'Ambil daftar pengajuan early pickup / permohonan khusus (PENGAJUAN) yang membutuhkan persetujuan admin.',
+    description: 'Ambil daftar pengajuan early pickup / permohonan barang yang berstatus MENUNGGU persetujuan admin. Diurutkan dari yang paling lama/tertua. Output memuat ID_PENGAJUAN, TANGGAL, NAMA_MEMBER, NAMA_ITEM, JUMLAH, dan ALASAN.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {},
+    },
+  },
+  {
+    name: 'approve_requests',
+    description: 'Setujui satu atau beberapa pengajuan yang berstatus MENUNGGU di backend. Menyetujui pengajuan otomatis mencatat transaksi BARANG_KELUAR (stok barang fisik akan berkurang). HANYA panggil setelah meminta dan menerima konfirmasi eksplisit dari pengguna.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        requestIds: {
+          type: 'ARRAY',
+          description: 'Daftar ID_PENGAJUAN yang akan disetujui (misal: ["REQ0001", "REQ0002"]). Minimal 1 ID.',
+          items: {
+            type: 'STRING',
+          },
+        },
+        note: {
+          type: 'STRING',
+          description: 'Catatan approver / persetujuan (opsional).',
+        },
+      },
+      required: ['requestIds'],
+    },
+  },
+  {
+    name: 'reject_requests',
+    description: 'Tolak satu atau beberapa pengajuan yang berstatus MENUNGGU di backend. HANYA panggil setelah meminta dan menerima konfirmasi eksplisit dari pengguna. Sangat disarankan menyertakan catatan (note) alasan penolakan.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        requestIds: {
+          type: 'ARRAY',
+          description: 'Daftar ID_PENGAJUAN yang akan ditolak (misal: ["REQ0001"]). Minimal 1 ID.',
+          items: {
+            type: 'STRING',
+          },
+        },
+        note: {
+          type: 'STRING',
+          description: 'Catatan alasan penolakan pengajuan.',
+        },
+      },
+      required: ['requestIds'],
+    },
+  },
+  {
+    name: 'get_requests',
+    description: 'Ambil daftar riwayat pengajuan early pickup / permohonan khusus dengan filter status atau member.',
     parameters: {
       type: 'OBJECT',
       properties: {
         status: {
           type: 'STRING',
-          description: 'Filter status (misal "MENUNGGU", "DISETUJUI", "DITOLAK").',
+          description: 'Filter status (misal "MENUNGGU", "DISETUJUI", "DITOLAK", "ALL").',
+        },
+        memberId: {
+          type: 'STRING',
+          description: 'Filter berdasarkan ID Member (opsional).',
         },
       },
     },
@@ -1039,24 +1093,168 @@ export async function executeAITool(
       }
 
       case 'get_pending_requests': {
-        const requests = await api.getRequests();
-        const status = typeof args.status === 'string' ? args.status.trim().toUpperCase() : '';
-        let filtered = requests;
-        if (status) {
-          filtered = filtered.filter((r) => r.STATUS.toUpperCase() === status);
+        const rawRequests = await api.getRequests({ status: 'MENUNGGU' });
+        const pending = rawRequests
+          .filter((r) => String(r.STATUS || '').toUpperCase() === 'MENUNGGU')
+          .sort((a, b) => {
+            const ta = a.TIMESTAMP || a.TANGGAL || '';
+            const tb = b.TIMESTAMP || b.TANGGAL || '';
+            return ta.localeCompare(tb);
+          });
+
+        if (pending.length === 0) {
+          return {
+            success: true,
+            message: 'Tidak ada pengajuan yang sedang menunggu persetujuan.',
+            data: {
+              total: 0,
+              requests: [],
+            },
+          };
         }
+
+        const mapped = pending.map((r) => ({
+          ID_PENGAJUAN: r.ID_PENGAJUAN,
+          TANGGAL: r.TANGGAL,
+          NAMA_MEMBER: r.NAMA_MEMBER || r.ID_MEMBER,
+          NAMA_ITEM: r.NAMA_ITEM || r.ID_ITEM,
+          JUMLAH: r.JUMLAH,
+          ALASAN: r.ALASAN,
+          STATUS: r.STATUS,
+        }));
+
         return {
           success: true,
           data: {
-            total: filtered.length,
-            requests: filtered.slice(0, 10).map((r) => ({
+            total: mapped.length,
+            requests: mapped,
+          },
+        };
+      }
+
+      case 'approve_requests': {
+        const rawIds = args.requestIds;
+        const requestIds = Array.isArray(rawIds)
+          ? rawIds.map((id) => String(id).trim()).filter(Boolean)
+          : typeof rawIds === 'string' && rawIds.trim()
+          ? [rawIds.trim()]
+          : [];
+
+        if (requestIds.length === 0) {
+          return {
+            success: false,
+            errorCode: 'MISSING_PARAMETER',
+            message: 'Parameter requestIds wajib diisi (minimal 1 ID_PENGAJUAN).',
+            missing: ['requestIds'],
+          };
+        }
+
+        const note = typeof args.note === 'string' ? args.note.trim() : undefined;
+        const results: Array<{ id: string; ok: boolean; message?: string; error?: string }> = [];
+
+        for (const id of requestIds) {
+          try {
+            const res = await api.approveRequest({ requestId: id, note });
+            results.push({
+              id,
+              ok: true,
+              message: res.message || `Pengajuan ${id} berhasil disetujui dan transaksi BARANG_KELUAR telah dicatat.`,
+            });
+          } catch (err: unknown) {
+            results.push({
+              id,
+              ok: false,
+              error: err instanceof Error ? err.message : 'Gagal menyetujui pengajuan.',
+            });
+          }
+        }
+
+        const successCount = results.filter((r) => r.ok).length;
+        const failCount = results.filter((r) => !r.ok).length;
+
+        return {
+          success: successCount > 0,
+          message: `${successCount} dari ${requestIds.length} pengajuan berhasil disetujui.${failCount > 0 ? ` (${failCount} gagal)` : ''}`,
+          data: {
+            total: requestIds.length,
+            successCount,
+            failCount,
+            results,
+          },
+        };
+      }
+
+      case 'reject_requests': {
+        const rawIds = args.requestIds;
+        const requestIds = Array.isArray(rawIds)
+          ? rawIds.map((id) => String(id).trim()).filter(Boolean)
+          : typeof rawIds === 'string' && rawIds.trim()
+          ? [rawIds.trim()]
+          : [];
+
+        if (requestIds.length === 0) {
+          return {
+            success: false,
+            errorCode: 'MISSING_PARAMETER',
+            message: 'Parameter requestIds wajib diisi (minimal 1 ID_PENGAJUAN).',
+            missing: ['requestIds'],
+          };
+        }
+
+        const note = typeof args.note === 'string' ? args.note.trim() : undefined;
+        const results: Array<{ id: string; ok: boolean; message?: string; error?: string }> = [];
+
+        for (const id of requestIds) {
+          try {
+            const res = await api.rejectRequest({ requestId: id, note });
+            results.push({
+              id,
+              ok: true,
+              message: res.message || `Pengajuan ${id} berhasil ditolak.`,
+            });
+          } catch (err: unknown) {
+            results.push({
+              id,
+              ok: false,
+              error: err instanceof Error ? err.message : 'Gagal menolak pengajuan.',
+            });
+          }
+        }
+
+        const successCount = results.filter((r) => r.ok).length;
+        const failCount = results.filter((r) => !r.ok).length;
+
+        return {
+          success: successCount > 0,
+          message: `${successCount} dari ${requestIds.length} pengajuan berhasil ditolak.${failCount > 0 ? ` (${failCount} gagal)` : ''}`,
+          data: {
+            total: requestIds.length,
+            successCount,
+            failCount,
+            results,
+          },
+        };
+      }
+
+      case 'get_requests': {
+        const status = typeof args.status === 'string' ? args.status.trim() : undefined;
+        const memberId = typeof args.memberId === 'string' ? args.memberId.trim() : undefined;
+        const requests = await api.getRequests({ status, memberId });
+        return {
+          success: true,
+          data: {
+            total: requests.length,
+            requests: requests.slice(0, 20).map((r) => ({
               id: r.ID_PENGAJUAN,
               tanggal: r.TANGGAL,
               memberId: r.ID_MEMBER,
+              namaMember: r.NAMA_MEMBER || r.ID_MEMBER,
               itemId: r.ID_ITEM,
+              namaItem: r.NAMA_ITEM || r.ID_ITEM,
               jumlah: r.JUMLAH,
               alasan: r.ALASAN,
               status: r.STATUS,
+              catatanApprover: r.CATATAN_APPROVER,
             })),
           },
         };
