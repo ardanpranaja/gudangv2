@@ -77,6 +77,17 @@ export interface SavedApiKey {
   createdAt: string;
 }
 
+export interface KeyUsageStats {
+  /** Tanggal bucket dalam zona America/Los_Angeles (format YYYY-MM-DD). Kuota Google reset tengah malam waktu Pasifik. */
+  dateKey: string;
+  requests: number;      // total percobaan request yang dikirim memakai key ini
+  errors429: number;     // berapa kali key ini kena 429/kuota hari ini
+  errors401: number;     // berapa kali key ini 401/invalid hari ini
+  otherErrors: number;
+  lastErrorAt: string | null;   // ISO timestamp error terakhir
+  lastErrorType: 'QUOTA' | 'INVALID' | 'MODEL_404' | 'OTHER' | null;
+}
+
 export interface AIModelInfo {
   id: string;
   name: string;

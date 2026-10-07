@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { aiService, maskApiKey } from '../../services/aiService';
 import { useApp } from '../../context/AppContext';
-import { GeminiErrorCategory, SavedApiKey, AIModelInfo } from '../../types/ai';
+import { GeminiErrorCategory, SavedApiKey, KeyUsageStats, AIModelInfo } from '../../types/ai';
 import {
   Bot,
   Sparkles,
@@ -75,6 +75,11 @@ export const AIConfigPanel: React.FC = () => {
   // Saved Keys State
   const [savedKeys, setSavedKeys] = useState<SavedApiKey[]>([]);
   const [selectedKeyId, setSelectedKeyId] = useState<string>('');
+
+  // Key Usage & Cooldown State
+  const [keyUsageStats, setKeyUsageStats] = useState<Record<string, KeyUsageStats>>({});
+  const [dailyLimitInput, setDailyLimitInput] = useState<number>(1500);
+  const [cooldownRemainingMap, setCooldownRemainingMap] = useState<Record<string, number>>({});
 
   // New Key Form State
   const [isAddingNewKey, setIsAddingNewKey] = useState(false);
@@ -150,6 +155,8 @@ export const AIConfigPanel: React.FC = () => {
     }
 
     setSelectedModel(aiService.getModel());
+    setKeyUsageStats(aiService.getKeyUsageStats());
+    setDailyLimitInput(aiService.getDailyRequestLimit());
   }, []);
 
   // Initial Load & Event Listeners
@@ -201,9 +208,15 @@ export const AIConfigPanel: React.FC = () => {
       }
     };
 
+    const handleStatsUpdated = () => {
+      setKeyUsageStats(aiService.getKeyUsageStats());
+      setDailyLimitInput(aiService.getDailyRequestLimit());
+    };
+
     window.addEventListener('gemini-key-changed', handleKeyChanged);
     window.addEventListener('gemini-model-changed', handleModelChanged);
     window.addEventListener('gemini-key-failover', handleFailover);
+    window.addEventListener('gemini-key-stats-updated', handleStatsUpdated);
     window.addEventListener('storage', syncStateFromService);
     window.addEventListener('focus', syncStateFromService);
 
@@ -212,10 +225,29 @@ export const AIConfigPanel: React.FC = () => {
       window.removeEventListener('gemini-key-changed', handleKeyChanged);
       window.removeEventListener('gemini-model-changed', handleModelChanged);
       window.removeEventListener('gemini-key-failover', handleFailover);
+      window.removeEventListener('gemini-key-stats-updated', handleStatsUpdated);
       window.removeEventListener('storage', syncStateFromService);
       window.removeEventListener('focus', syncStateFromService);
     };
   }, [addToast, loadModels, syncStateFromService]);
+
+  // Live countdown timer for active cooldowns
+  useEffect(() => {
+    const updateCooldowns = () => {
+      const map: Record<string, number> = {};
+      for (const k of savedKeys) {
+        const sec = aiService.getKeyCooldownRemainingSec(k.id);
+        if (sec > 0) {
+          map[k.id] = sec;
+        }
+      }
+      setCooldownRemainingMap(map);
+    };
+
+    updateCooldowns();
+    const interval = setInterval(updateCooldowns, 1000);
+    return () => clearInterval(interval);
+  }, [savedKeys]);
 
   // Handle switching active API Key centrally
   const handleKeySelectionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -695,6 +727,207 @@ export const AIConfigPanel: React.FC = () => {
               </form>
             </div>
           )}
+
+          {/* ===================================================================== */}
+          {/* SECTION 1.5: STATUS & ESTIMASI KUOTA API KEY */}
+          {/* ===================================================================== */}
+          <div className="pt-3 border-t border-stone-100 dark:border-stone-800 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1">
+              <div>
+                <h4 className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-amber-600 dark:text-amber-500" />
+                  <span>Status &amp; Estimasi Kuota API Key</span>
+                </h4>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                  Estimasi — dihitung dari request yang tercatat di perangkat ini, reset tengah malam waktu Pasifik. Bukan angka resmi Google.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 bg-stone-50 dark:bg-stone-800/60 px-2.5 py-1 rounded-lg border border-stone-200 dark:border-stone-700 text-[11px]">
+                  <span className="text-stone-500 dark:text-stone-400 font-medium">Batas Harian:</span>
+                  <input
+                    type="number"
+                    min={10}
+                    max={100000}
+                    value={dailyLimitInput || ''}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      setDailyLimitInput(isNaN(val) ? 0 : val);
+                    }}
+                    onBlur={() => {
+                      const val = dailyLimitInput > 0 ? dailyLimitInput : 1500;
+                      setDailyLimitInput(val);
+                      aiService.setDailyRequestLimit(val);
+                      addToast('success', 'Batas Harian Diperbarui', `Batas estimasi diatur ke ${val} request/hari.`);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const val = dailyLimitInput > 0 ? dailyLimitInput : 1500;
+                        setDailyLimitInput(val);
+                        aiService.setDailyRequestLimit(val);
+                        addToast('success', 'Batas Harian Diperbarui', `Batas estimasi diatur ke ${val} request/hari.`);
+                      }
+                    }}
+                    className="w-16 px-1 py-0.5 text-center font-mono font-semibold bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-600 rounded text-stone-800 dark:text-stone-200 focus:ring-1 focus:ring-amber-600 text-xs"
+                    title="Batas estimasi request harian (default 1500 untuk tier flash gratis)"
+                  />
+                  <span className="text-stone-400 font-medium">req</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm('Reset semua statistik request dan error API key di perangkat ini?')) {
+                      aiService.resetKeyUsageStats();
+                      addToast('info', 'Statistik Direset', 'Statistik penggunaan API key telah direset ke nol.');
+                    }
+                  }}
+                  className="px-2.5 py-1.5 text-[11px] font-medium text-stone-600 dark:text-stone-300 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 rounded-lg transition-colors shadow-2xs"
+                  title="Reset akumulasi request dan error hari ini"
+                >
+                  Reset statistik
+                </button>
+              </div>
+            </div>
+
+            {savedKeys.length === 0 ? (
+              <div className="p-3.5 bg-stone-50/60 dark:bg-stone-800/30 border border-dashed border-stone-200 dark:border-stone-700 rounded-xl text-center text-xs text-stone-500 dark:text-stone-400">
+                Belum ada API Key tersimpan. Tambahkan API Key di atas untuk memantau status dan estimasi kuota.
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {savedKeys.map((k, idx) => {
+                  const isSelected = k.fullKey === aiService.getApiKey();
+                  const isInvalid = aiService.isKeyInvalid(k.id);
+                  const cooldownSec = cooldownRemainingMap[k.id] || 0;
+                  const isCooldown = cooldownSec > 0 || aiService.isKeyInCooldown(k.id);
+                  const stats = keyUsageStats[k.id] || {
+                    dateKey: '',
+                    requests: 0,
+                    errors429: 0,
+                    errors401: 0,
+                    otherErrors: 0,
+                    lastErrorAt: null,
+                    lastErrorType: null,
+                  };
+
+                  const requests = stats.requests || 0;
+                  const limit = dailyLimitInput || 1500;
+                  const percentage = Math.min(100, Math.round((requests / limit) * 100));
+
+                  let barColorClass = 'bg-emerald-500';
+                  let barTextColorClass = 'text-emerald-700 dark:text-emerald-400';
+                  if (percentage >= 95) {
+                    barColorClass = 'bg-rose-500';
+                    barTextColorClass = 'text-rose-700 dark:text-rose-400';
+                  } else if (percentage >= 70) {
+                    barColorClass = 'bg-amber-500';
+                    barTextColorClass = 'text-amber-700 dark:text-amber-400';
+                  }
+
+                  let formattedErrorTime = '-';
+                  if (stats.lastErrorAt) {
+                    try {
+                      const d = new Date(stats.lastErrorAt);
+                      formattedErrorTime = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    } catch {
+                      formattedErrorTime = '-';
+                    }
+                  }
+
+                  const hasErrors = stats.errors429 > 0 || stats.errors401 > 0 || stats.otherErrors > 0;
+
+                  return (
+                    <div
+                      key={k.id}
+                      className={`p-3 rounded-xl border transition-all ${
+                        isSelected
+                          ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/80 shadow-2xs'
+                          : 'bg-white dark:bg-stone-900/60 border-stone-200 dark:border-stone-700'
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-xs text-stone-900 dark:text-stone-100">
+                            {k.label || `API Key ${idx + 1}`}
+                          </span>
+                          <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                            •••• ({k.maskedKey})
+                          </span>
+
+                          {isSelected && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-semibold text-[10px]">
+                              <Check className="w-3 h-3 text-amber-700 dark:text-amber-400" />
+                              <span>Sedang dipakai</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {isInvalid ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-semibold text-[10px] border border-rose-200 dark:border-rose-800">
+                                <AlertCircle className="w-3 h-3 text-rose-600" />
+                                <span>Invalid</span>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteKey(k.id, e)}
+                                className="px-2 py-0.5 text-[10px] text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded border border-rose-200 dark:border-rose-800 transition-colors"
+                                title="Hapus key invalid"
+                              >
+                                Hapus
+                              </button>
+                            </div>
+                          ) : isCooldown ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold text-[10px] border border-amber-200 dark:border-amber-800 animate-pulse">
+                              <AlertTriangle className="w-3 h-3 text-amber-600" />
+                              <span>Cooldown — sisa {cooldownSec}s</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-[10px] border border-emerald-200 dark:border-emerald-800">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              <span>Aktif</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-stone-600 dark:text-stone-400 font-medium">
+                            ≈ {requests} / {limit} request hari ini
+                          </span>
+                          <span className={`font-mono font-bold ${barTextColorClass}`}>
+                            {percentage}%
+                          </span>
+                        </div>
+                        <div className="h-2 w-full bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden border border-stone-200/60 dark:border-stone-700/60">
+                          <div
+                            className={`h-full transition-all duration-500 rounded-full ${barColorClass}`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-2 text-[11px] text-stone-500 dark:text-stone-400 font-mono flex items-center justify-between">
+                        {hasErrors ? (
+                          <span>
+                            429 ×{stats.errors429} · 401 ×{stats.errors401} · terakhir: {formattedErrorTime} ({stats.lastErrorType || 'OTHER'})
+                          </span>
+                        ) : (
+                          <span className="font-sans text-stone-400 dark:text-stone-500">
+                            Belum ada error hari ini
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ===================================================================== */}

@@ -4,6 +4,7 @@ import {
   AIConfirmationData,
   GeminiErrorCategory,
   SavedApiKey,
+  KeyUsageStats,
   AIModelInfo,
   AIConversationContext,
   StructuredToolResult,
@@ -15,6 +16,25 @@ const STORAGE_KEY_GEMINI_KEY = 'GP_GEMINI_API_KEY';
 const STORAGE_KEY_GEMINI_SAVED_KEYS = 'GP_GEMINI_SAVED_KEYS';
 const STORAGE_KEY_GEMINI_MODEL = 'GP_GEMINI_MODEL';
 const STORAGE_KEY_GEMINI_CACHED_MODELS = 'GP_GEMINI_CACHED_MODELS';
+const STORAGE_KEY_GEMINI_KEY_USAGE = 'kegudangaja_gemini_key_usage_v1';
+const STORAGE_KEY_GEMINI_DAILY_LIMIT = 'kegudangaja_gemini_daily_limit_v1';
+
+/**
+ * Mengembalikan tanggal hari ini dalam zona waktu America/Los_Angeles (format YYYY-MM-DD).
+ * Kuota harian Gemini (RPD) direset oleh Google setiap tengah malam waktu Pasifik.
+ */
+function getPacificDateKey(): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+  } catch {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
 
 /**
  * Cooldown singkat saat sebuah key kena 429/QUOTA.
@@ -191,6 +211,11 @@ export class AIService {
   private deadModels = new Set<string>();
   /** Key yang 401/invalid — mati permanen sampai user menghapus/menggantinya. */
   private invalidKeyIds = new Set<string>();
+  /** Pencatatan penggunaan per key (keyId -> KeyUsageStats) */
+  private keyUsage = new Map<string, KeyUsageStats>();
+  /** Estimasi batas request harian untuk UI meter (default 1500) */
+  private dailyRequestLimit: number = 1500;
+  private usageSaveTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.loadConfig();
@@ -232,6 +257,41 @@ export class AIService {
           const parsed = JSON.parse(cachedModels);
           if (Array.isArray(parsed) && parsed.length > 0) {
             this.availableModels = parsed;
+          }
+        }
+
+        const rawKeyUsage = localStorage.getItem(STORAGE_KEY_GEMINI_KEY_USAGE);
+        if (rawKeyUsage) {
+          const parsed = JSON.parse(rawKeyUsage);
+          if (parsed && typeof parsed === 'object') {
+            const today = getPacificDateKey();
+            for (const [kId, stat] of Object.entries(parsed)) {
+              if (stat && typeof stat === 'object') {
+                const s = stat as KeyUsageStats;
+                if (s.dateKey === today) {
+                  this.keyUsage.set(kId, { ...s });
+                } else {
+                  // Hari baru waktu Pasifik: reset counter
+                  this.keyUsage.set(kId, {
+                    dateKey: today,
+                    requests: 0,
+                    errors429: 0,
+                    errors401: 0,
+                    otherErrors: 0,
+                    lastErrorAt: null,
+                    lastErrorType: null,
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        const savedDailyLimit = localStorage.getItem(STORAGE_KEY_GEMINI_DAILY_LIMIT);
+        if (savedDailyLimit) {
+          const num = parseInt(savedDailyLimit, 10);
+          if (!isNaN(num) && num > 0) {
+            this.dailyRequestLimit = num;
           }
         }
       } catch {
@@ -402,9 +462,154 @@ export class AIService {
     return true;
   }
 
+  public getKeyCooldownRemainingSec(keyId: string): number {
+    if (!keyId) return 0;
+    const expiry = this.quotaCooldown.get(keyId);
+    if (!expiry) return 0;
+    const remainingMs = expiry - Date.now();
+    if (remainingMs <= 0) {
+      this.quotaCooldown.delete(keyId);
+      return 0;
+    }
+    return Math.ceil(remainingMs / 1000);
+  }
+
+  public isKeyInvalid(keyId: string): boolean {
+    if (!keyId) return false;
+    return this.invalidKeyIds.has(keyId);
+  }
+
   public markKeyCooldown(keyId: string) {
     if (!keyId) return;
     this.quotaCooldown.set(keyId, Date.now() + QUOTA_COOLDOWN_MS);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('gemini-key-stats-updated'));
+    }
+  }
+
+  private getOrCreateKeyStats(keyId: string): KeyUsageStats {
+    const today = getPacificDateKey();
+    const existing = this.keyUsage.get(keyId);
+    if (!existing || existing.dateKey !== today) {
+      const fresh: KeyUsageStats = {
+        dateKey: today,
+        requests: 0,
+        errors429: 0,
+        errors401: 0,
+        otherErrors: 0,
+        lastErrorAt: null,
+        lastErrorType: null,
+      };
+      this.keyUsage.set(keyId, fresh);
+      return fresh;
+    }
+    return existing;
+  }
+
+  private schedulePersistKeyUsage() {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('gemini-key-stats-updated'));
+    }
+
+    if (this.usageSaveTimeout) return;
+    this.usageSaveTimeout = setTimeout(() => {
+      this.usageSaveTimeout = null;
+      this.persistKeyUsage();
+    }, 1500);
+  }
+
+  private persistKeyUsage() {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      try {
+        const obj: Record<string, KeyUsageStats> = {};
+        for (const [k, v] of this.keyUsage.entries()) {
+          obj[k] = v;
+        }
+        localStorage.setItem(STORAGE_KEY_GEMINI_KEY_USAGE, JSON.stringify(obj));
+      } catch {
+        // Safe ignore
+      }
+    }
+  }
+
+  public getKeyUsageStats(): Record<string, KeyUsageStats> {
+    const result: Record<string, KeyUsageStats> = {};
+    const today = getPacificDateKey();
+
+    for (const k of this.savedKeys) {
+      const existing = this.getOrCreateKeyStats(k.id);
+      result[k.id] = { ...existing };
+    }
+
+    for (const [id, stat] of this.keyUsage.entries()) {
+      if (!result[id]) {
+        if (stat.dateKey === today) {
+          result[id] = { ...stat };
+        } else {
+          result[id] = {
+            dateKey: today,
+            requests: 0,
+            errors429: 0,
+            errors401: 0,
+            otherErrors: 0,
+            lastErrorAt: null,
+            lastErrorType: null,
+          };
+        }
+      }
+    }
+    return result;
+  }
+
+  public getDailyRequestLimit(): number {
+    return this.dailyRequestLimit;
+  }
+
+  public setDailyRequestLimit(n: number): void {
+    const valid = Math.max(1, Math.floor(n || 1500));
+    this.dailyRequestLimit = valid;
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY_GEMINI_DAILY_LIMIT, String(valid));
+      } catch {
+        // Safe ignore
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('gemini-key-stats-updated'));
+    }
+  }
+
+  public resetKeyUsageStats(keyId?: string): void {
+    const today = getPacificDateKey();
+    if (keyId) {
+      this.keyUsage.set(keyId, {
+        dateKey: today,
+        requests: 0,
+        errors429: 0,
+        errors401: 0,
+        otherErrors: 0,
+        lastErrorAt: null,
+        lastErrorType: null,
+      });
+    } else {
+      this.keyUsage.clear();
+      for (const k of this.savedKeys) {
+        this.keyUsage.set(k.id, {
+          dateKey: today,
+          requests: 0,
+          errors429: 0,
+          errors401: 0,
+          otherErrors: 0,
+          lastErrorAt: null,
+          lastErrorType: null,
+        });
+      }
+    }
+    this.persistKeyUsage();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('gemini-key-stats-updated'));
+    }
   }
 
   private notifyFailover(fromKey: SavedApiKey, toKey: SavedApiKey) {
@@ -922,6 +1127,14 @@ export class AIService {
       const pairId = `${key.id}::${model}`;
       if (triedPairs.has(pairId)) return { ok: false, err: null };
       triedPairs.add(pairId);
+
+      // Catat request percobaan untuk key ini
+      if (key.id) {
+        const stats = this.getOrCreateKeyStats(key.id);
+        stats.requests += 1;
+        this.schedulePersistKeyUsage();
+      }
+
       try {
         const data = await this.callChatSingleModel(body, model, onRetryProgress, key.fullKey);
         const usedFallback = model !== this.selectedModel;
@@ -942,6 +1155,25 @@ export class AIService {
           },
         };
       } catch (err: unknown) {
+        // Catat error sesuai klasifikasinya
+        if (key.id) {
+          const stats = this.getOrCreateKeyStats(key.id);
+          stats.lastErrorAt = new Date().toISOString();
+
+          if (err instanceof QuotaExceededError) {
+            stats.errors429 += 1;
+            stats.lastErrorType = 'QUOTA';
+          } else if (this.isInvalidKeyError(err)) {
+            stats.errors401 += 1;
+            stats.lastErrorType = 'INVALID';
+          } else if (this.isModelNotFoundError(err)) {
+            stats.lastErrorType = 'MODEL_404';
+          } else {
+            stats.otherErrors += 1;
+            stats.lastErrorType = 'OTHER';
+          }
+          this.schedulePersistKeyUsage();
+        }
         return { ok: false, err };
       }
     };
