@@ -357,7 +357,7 @@ export const AI_TOOL_DECLARATIONS = [
   },
   {
     name: 'approve_requests',
-    description: 'Setujui satu atau beberapa pengajuan yang berstatus MENUNGGU di backend. Menyetujui pengajuan otomatis mencatat transaksi BARANG_KELUAR (stok barang fisik akan berkurang). HANYA panggil setelah meminta dan menerima konfirmasi eksplisit dari pengguna.',
+    description: 'Siapkan draf persetujuan satu atau beberapa pengajuan MENUNGGU. TIDAK langsung mengeksekusi — menampilkan kartu konfirmasi; eksekusi ke backend hanya setelah pengguna menekan Konfirmasi & Eksekusi. Menyetujui otomatis mencatat BARANG_KELUAR (stok berkurang).',
     parameters: {
       type: 'OBJECT',
       properties: {
@@ -378,7 +378,7 @@ export const AI_TOOL_DECLARATIONS = [
   },
   {
     name: 'reject_requests',
-    description: 'Tolak satu atau beberapa pengajuan yang berstatus MENUNGGU di backend. HANYA panggil setelah meminta dan menerima konfirmasi eksplisit dari pengguna. Sangat disarankan menyertakan catatan (note) alasan penolakan.',
+    description: 'Siapkan draf penolakan satu atau beberapa pengajuan MENUNGGU. TIDAK langsung mengeksekusi — menampilkan kartu konfirmasi; eksekusi ke backend hanya setelah pengguna menekan Konfirmasi & Eksekusi. Disarankan menyertakan catatan (note) alasan penolakan.',
     parameters: {
       type: 'OBJECT',
       properties: {
@@ -501,6 +501,85 @@ export const AI_TOOL_DECLARATIONS = [
     },
   },
 ];
+
+
+/**
+ * Bangun draf konfirmasi untuk approve/reject pengajuan.
+ * TIDAK mengeksekusi ke backend — eksekusi hanya terjadi setelah pengguna
+ * menekan "Konfirmasi & Eksekusi" pada kartu konfirmasi (via aiConfirmationHandler).
+ */
+async function buildApprovalDraft(
+  args: Record<string, unknown>,
+  type: 'APPROVE_REQUESTS' | 'REJECT_REQUESTS',
+  actionLabel: string
+): Promise<StructuredToolResult> {
+  const rawIds = args.requestIds;
+  const requestIds = Array.isArray(rawIds)
+    ? rawIds.map((id) => String(id).trim()).filter(Boolean)
+    : typeof rawIds === 'string' && rawIds.trim()
+    ? [rawIds.trim()]
+    : [];
+
+  if (requestIds.length === 0) {
+    return {
+      success: false,
+      errorCode: 'MISSING_PARAMETER',
+      message: 'Parameter requestIds wajib diisi (minimal 1 ID_PENGAJUAN).',
+      missing: ['requestIds'],
+    };
+  }
+
+  const note = typeof args.note === 'string' ? args.note.trim() : undefined;
+
+  // Ambil detail pengajuan untuk kartu konfirmasi (fallback: tampilkan ID saja)
+  const detailMap = new Map<string, { member: string; item: string; jumlah: string | number }>();
+  try {
+    const all = await api.getRequests({ status: 'MENUNGGU' });
+    for (const r of all) {
+      const rid = String((r as any).ID_PENGAJUAN || '').trim();
+      if (rid) {
+        detailMap.set(rid.toUpperCase(), {
+          member: (r as any).NAMA_MEMBER || (r as any).ID_MEMBER || '-',
+          item: (r as any).NAMA_ITEM || (r as any).ID_ITEM || '-',
+          jumlah: (r as any).JUMLAH ?? '-',
+        });
+      }
+    }
+  } catch {
+    // abaikan — kartu tetap tampil dengan ID saja
+  }
+
+  const isApprove = type === 'APPROVE_REQUESTS';
+  const confirmation: AIConfirmationData = {
+    id: `appr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    type,
+    title: `Konfirmasi ${actionLabel} Pengajuan (${requestIds.length})`,
+    description: isApprove
+      ? 'Menyetujui pengajuan otomatis mencatat transaksi BARANG_KELUAR — stok fisik akan berkurang.'
+      : undefined,
+    details: [
+      { label: 'Aksi', value: isApprove ? 'SETUJUI' : 'TOLAK', highlight: true },
+      ...requestIds.map((id, idx) => {
+        const d = detailMap.get(id.toUpperCase());
+        return {
+          label: `Pengajuan ${idx + 1}`,
+          value: d ? `${id} — ${d.member} | ${d.item} × ${d.jumlah}` : id,
+          highlight: true,
+        };
+      }),
+      ...(note ? [{ label: 'Catatan', value: note }] : []),
+    ],
+    rawInput: { requestIds, note },
+    status: 'pending',
+  };
+
+  return {
+    success: true,
+    message: `Draf ${actionLabel.toLowerCase()} ${requestIds.length} pengajuan telah disiapkan dan menunggu konfirmasi pengguna pada kartu konfirmasi.`,
+    data: { status: 'PROPOSED', requestIds },
+    confirmation,
+  };
+}
 
 /**
  * Execute AI warehouse tools directly against GudangV2 API services with structured results
@@ -1133,108 +1212,10 @@ export async function executeAITool(
       }
 
       case 'approve_requests': {
-        const rawIds = args.requestIds;
-        const requestIds = Array.isArray(rawIds)
-          ? rawIds.map((id) => String(id).trim()).filter(Boolean)
-          : typeof rawIds === 'string' && rawIds.trim()
-          ? [rawIds.trim()]
-          : [];
-
-        if (requestIds.length === 0) {
-          return {
-            success: false,
-            errorCode: 'MISSING_PARAMETER',
-            message: 'Parameter requestIds wajib diisi (minimal 1 ID_PENGAJUAN).',
-            missing: ['requestIds'],
-          };
-        }
-
-        const note = typeof args.note === 'string' ? args.note.trim() : undefined;
-        const results: Array<{ id: string; ok: boolean; message?: string; error?: string }> = [];
-
-        for (const id of requestIds) {
-          try {
-            const res = await api.approveRequest({ requestId: id, note });
-            results.push({
-              id,
-              ok: true,
-              message: res.message || `Pengajuan ${id} berhasil disetujui dan transaksi BARANG_KELUAR telah dicatat.`,
-            });
-          } catch (err: unknown) {
-            results.push({
-              id,
-              ok: false,
-              error: err instanceof Error ? err.message : 'Gagal menyetujui pengajuan.',
-            });
-          }
-        }
-
-        const successCount = results.filter((r) => r.ok).length;
-        const failCount = results.filter((r) => !r.ok).length;
-
-        return {
-          success: successCount > 0,
-          message: `${successCount} dari ${requestIds.length} pengajuan berhasil disetujui.${failCount > 0 ? ` (${failCount} gagal)` : ''}`,
-          data: {
-            total: requestIds.length,
-            successCount,
-            failCount,
-            results,
-          },
-        };
-      }
+        return await buildApprovalDraft(args, 'APPROVE_REQUESTS', 'Setujui');
 
       case 'reject_requests': {
-        const rawIds = args.requestIds;
-        const requestIds = Array.isArray(rawIds)
-          ? rawIds.map((id) => String(id).trim()).filter(Boolean)
-          : typeof rawIds === 'string' && rawIds.trim()
-          ? [rawIds.trim()]
-          : [];
-
-        if (requestIds.length === 0) {
-          return {
-            success: false,
-            errorCode: 'MISSING_PARAMETER',
-            message: 'Parameter requestIds wajib diisi (minimal 1 ID_PENGAJUAN).',
-            missing: ['requestIds'],
-          };
-        }
-
-        const note = typeof args.note === 'string' ? args.note.trim() : undefined;
-        const results: Array<{ id: string; ok: boolean; message?: string; error?: string }> = [];
-
-        for (const id of requestIds) {
-          try {
-            const res = await api.rejectRequest({ requestId: id, note });
-            results.push({
-              id,
-              ok: true,
-              message: res.message || `Pengajuan ${id} berhasil ditolak.`,
-            });
-          } catch (err: unknown) {
-            results.push({
-              id,
-              ok: false,
-              error: err instanceof Error ? err.message : 'Gagal menolak pengajuan.',
-            });
-          }
-        }
-
-        const successCount = results.filter((r) => r.ok).length;
-        const failCount = results.filter((r) => !r.ok).length;
-
-        return {
-          success: successCount > 0,
-          message: `${successCount} dari ${requestIds.length} pengajuan berhasil ditolak.${failCount > 0 ? ` (${failCount} gagal)` : ''}`,
-          data: {
-            total: requestIds.length,
-            successCount,
-            failCount,
-            results,
-          },
-        };
-      }
+        return await buildApprovalDraft(args, 'REJECT_REQUESTS', 'Tolak');
 
       case 'get_requests': {
         const status = typeof args.status === 'string' ? args.status.trim() : undefined;
