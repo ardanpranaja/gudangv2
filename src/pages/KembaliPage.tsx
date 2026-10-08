@@ -7,7 +7,7 @@ import { MasterItem, MasterMember, ItemStock } from '../types';
 import { Undo2, Loader2, CheckCircle2, ScrollText, Boxes } from 'lucide-react';
 
 export const KembaliPage: React.FC = () => {
-  const { navigateTo, canPerformAction, addToast, refreshKey, triggerRefresh } = useApp();
+  const { navigateTo, canPerformAction, addToast, refreshKey, triggerRefresh, pageParams } = useApp();
 
   const [members, setMembers] = useState<MasterMember[]>([]);
   const [items, setItems] = useState<MasterItem[]>([]);
@@ -16,8 +16,8 @@ export const KembaliPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
-  const [selectedMemberId, setSelectedMemberId] = useState('');
-  const [selectedItemId, setSelectedItemId] = useState('');
+  const [selectedMemberId, setSelectedMemberId] = useState(pageParams?.memberId || '');
+  const [selectedItemId, setSelectedItemId] = useState(pageParams?.itemId || '');
   const [jumlah, setJumlah] = useState<number>(1);
   const [tanggal, setTanggal] = useState(new Date().toISOString().slice(0, 10));
   const [keterangan, setKeterangan] = useState('');
@@ -37,10 +37,17 @@ export const KembaliPage: React.FC = () => {
       setItems(itemsData);
       setStocks(stockData);
 
-      if (membersData.length > 0 && !selectedMemberId) {
+      const targetMember = pageParams?.memberId || selectedMemberId;
+      if (targetMember && membersData.some((m) => m.ID_MEMBER === targetMember)) {
+        setSelectedMemberId(targetMember);
+      } else if (membersData.length > 0 && !selectedMemberId) {
         setSelectedMemberId(membersData[0].ID_MEMBER);
       }
-      if (itemsData.length > 0 && !selectedItemId) {
+
+      const targetItem = pageParams?.itemId || selectedItemId;
+      if (targetItem && itemsData.some((i) => i.ID_ITEM === targetItem)) {
+        setSelectedItemId(targetItem);
+      } else if (itemsData.length > 0 && !selectedItemId) {
         setSelectedItemId(itemsData[0].ID_ITEM);
       }
     } catch (err: any) {
@@ -53,6 +60,11 @@ export const KembaliPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [refreshKey]);
+
+  useEffect(() => {
+    if (pageParams?.memberId) setSelectedMemberId(pageParams.memberId);
+    if (pageParams?.itemId) setSelectedItemId(pageParams.itemId);
+  }, [pageParams]);
 
   const selectedMember = members.find((m) => m.ID_MEMBER === selectedMemberId);
   const selectedItem = items.find((i) => i.ID_ITEM === selectedItemId);

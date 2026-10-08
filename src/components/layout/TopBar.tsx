@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, ShieldCheck, LogOut, Boxes, Sun, Moon } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { NotificationBell } from '../notifications/NotificationBell';
 
 interface TopBarProps {
   onToggleSidebar: () => void;
@@ -25,8 +26,10 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
           </span>
         </div>
 
-        {/* Right Actions: Theme Toggle + Admin Login Link */}
+        {/* Right Actions: Notification Bell + Theme Toggle + Admin Login Link */}
         <div className="flex items-center gap-2 sm:gap-3">
+          <NotificationBell />
+
           <button
             type="button"
             onClick={toggleTheme}
@@ -148,6 +151,9 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
           <span className="w-2 h-2 rounded-full bg-stone-950 shrink-0" />
           <span className="font-mono">GAS {health.status}</span>
         </button>
+
+        {/* Notification Bell */}
+        <NotificationBell />
 
         {/* Theme Toggle Button */}
         <button

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export const StokPage: React.FC = () => {
-  const { navigateTo, refreshKey, role, addToast } = useApp();
+  const { navigateTo, refreshKey, role, addToast, pageParams } = useApp();
   const isAdmin = role === 'ADMIN';
 
   const [stocks, setStocks] = useState<ItemStock[]>([]);
@@ -28,7 +28,15 @@ export const StokPage: React.FC = () => {
 
   // Filters
   const [selectedKategori, setSelectedKategori] = useState<string>('ALL');
-  const [selectedStockFilter, setSelectedStockFilter] = useState<'ALL' | 'LOW' | 'AVAILABLE'>('ALL');
+  const [selectedStockFilter, setSelectedStockFilter] = useState<'ALL' | 'LOW' | 'AVAILABLE'>(
+    pageParams?.filter === 'LOW' ? 'LOW' : 'ALL'
+  );
+
+  useEffect(() => {
+    if (pageParams?.filter === 'LOW') {
+      setSelectedStockFilter('LOW');
+    }
+  }, [pageParams]);
 
   // Penyesuaian Stok State (Khusus Admin)
   const [adjustItemId, setAdjustItemId] = useState<string>('');
