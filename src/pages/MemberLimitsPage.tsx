@@ -419,17 +419,17 @@ export const MemberLimitsPage: React.FC = () => {
                     <button
                       onClick={() => handleOpenEdit(l)}
                       title="Edit Limit"
-                      className="px-2 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 rounded inline-flex items-center gap-1 transition-colors"
+                      className="px-2.5 py-1 text-xs font-black text-stone-950 bg-amber-300 hover:bg-amber-400 border-2 border-stone-900 rounded shadow-[2px_2px_0px_#18181b] inline-flex items-center gap-1 transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                     >
-                      <Pencil className="w-3 h-3 text-stone-600 dark:text-stone-400" />
+                      <Pencil className="w-3 h-3 stroke-[2.5]" />
                       <span>Edit</span>
                     </button>
                     <button
                       onClick={() => setDeactivateTarget(l)}
                       title="Nonaktifkan Limit"
-                      className="px-2 py-1 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded inline-flex items-center gap-1 transition-colors dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 dark:hover:bg-rose-900/40"
+                      className="px-2.5 py-1 text-xs font-black text-stone-950 bg-rose-300 hover:bg-rose-400 border-2 border-stone-900 rounded shadow-[2px_2px_0px_#18181b] inline-flex items-center gap-1 transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                     >
-                      <PowerOff className="w-3 h-3 text-rose-600" />
+                      <PowerOff className="w-3 h-3 stroke-[2.5]" />
                       <span>Nonaktifkan</span>
                     </button>
                   </>
@@ -437,9 +437,9 @@ export const MemberLimitsPage: React.FC = () => {
                   <button
                     onClick={() => setActivateTarget(l)}
                     title="Aktifkan Kembali Limit"
-                    className="px-2 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded inline-flex items-center gap-1 transition-colors dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-900/40"
+                    className="px-2.5 py-1 text-xs font-black text-stone-950 bg-emerald-300 hover:bg-emerald-400 border-2 border-stone-900 rounded shadow-[2px_2px_0px_#18181b] inline-flex items-center gap-1 transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <CheckCircle2 className="w-3 h-3 stroke-[2.5]" />
                     <span>Aktifkan</span>
                   </button>
                 )}
@@ -449,10 +449,10 @@ export const MemberLimitsPage: React.FC = () => {
             <button
               onClick={() => navigateTo('riwayat-member', { memberId: l.ID_MEMBER })}
               title="Lihat Histori Pengambilan Member"
-              className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 inline-flex items-center gap-0.5 font-medium hover:underline px-1.5 py-1"
+              className="px-2 py-1 text-xs font-bold text-stone-950 dark:text-stone-100 bg-sky-200 dark:bg-stone-800 hover:bg-sky-300 border-2 border-stone-900 dark:border-stone-500 rounded shadow-[2px_2px_0px_#18181b] inline-flex items-center gap-1 transition-transform active:translate-x-0.5 active:translate-y-0.5"
             >
               <span>Histori</span>
-              <ArrowRight className="w-3 h-3" />
+              <ArrowRight className="w-3 h-3 stroke-[2.5]" />
             </button>
           </div>
         );
@@ -476,7 +476,7 @@ export const MemberLimitsPage: React.FC = () => {
               setFormStatus('AKTIF');
               setIsCreateModalOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-700 text-white rounded text-xs font-semibold hover:bg-amber-800 transition-colors shadow-xs shrink-0 self-start sm:self-auto"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-amber-400 text-stone-950 border-2 border-stone-900 rounded-lg text-xs font-black shadow-[3px_3px_0px_#18181b] hover:bg-amber-300 transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0 self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Limit</span>
