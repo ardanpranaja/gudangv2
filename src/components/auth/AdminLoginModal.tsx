@@ -83,37 +83,37 @@ export const AdminLoginModal: React.FC = () => {
         />
 
         {/* Modal Window */}
-        <div className="inline-block w-full max-w-sm p-6 my-8 text-left align-middle bg-white dark:bg-stone-900 shadow-2xl rounded-2xl border border-stone-200 dark:border-stone-700 relative z-10 animate-fadeIn transition-colors">
+        <div className="inline-block w-full max-w-sm p-6 my-8 text-left align-middle bg-white dark:bg-stone-900 shadow-[8px_8px_0px_#18181b] rounded-2xl border-2 border-stone-900 dark:border-stone-400 relative z-10 animate-fadeIn transition-colors">
           {/* Close button */}
           <button
             type="button"
             disabled={isLoading}
             onClick={() => setIsAdminLoginOpen(false)}
-            className="absolute top-4 right-4 p-1 rounded-lg text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="absolute top-4 right-4 p-1.5 rounded-lg border-2 border-stone-900 bg-stone-100 hover:bg-stone-200 text-stone-900 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
             title="Tutup"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 stroke-[2.5]" />
           </button>
 
           {/* Top Login Illustration: Di layar sempit (< 640px) sembunyikan agar form tetap nyaman dipakai */}
-          <div className="hidden sm:flex w-full mb-4 rounded-xl overflow-hidden items-center justify-center bg-stone-50/80 dark:bg-stone-800/40 border border-stone-100 dark:border-stone-800 p-2">
+          <div className="hidden sm:flex w-full mb-4 rounded-xl overflow-hidden items-center justify-center bg-amber-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-500 p-2 shadow-[3px_3px_0px_#18181b]">
             <LoginIllustration className="w-full max-w-xs h-auto max-h-44 object-contain" />
           </div>
 
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 flex items-center justify-center shadow-xs">
-              <ShieldCheck className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+            <div className="w-10 h-10 rounded-xl bg-amber-300 border-2 border-stone-900 text-stone-950 flex items-center justify-center shadow-[2px_2px_0px_#18181b]">
+              <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">Masuk sebagai Admin</h3>
-              <p className="text-[11px] text-stone-500 dark:text-stone-400">Masukkan PIN Keamanan Admin Gudang</p>
+              <h3 className="text-sm font-black text-stone-950 dark:text-stone-100">Masuk sebagai Admin</h3>
+              <p className="text-[11px] font-medium text-stone-600 dark:text-stone-400">Masukkan PIN Keamanan Admin Gudang</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1.5">
+              <label className="block text-xs font-black text-stone-950 dark:text-stone-200 mb-1.5">
                 PIN Admin:
               </label>
               <div className="relative">
@@ -128,16 +128,16 @@ export const AdminLoginModal: React.FC = () => {
                   placeholder="••••••"
                   maxLength={10}
                   autoComplete="current-password"
-                  className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-sm text-center tracking-widest font-mono font-bold text-stone-900 dark:text-stone-100 focus:bg-white dark:focus:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 disabled:opacity-50 transition-all"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-500 rounded-lg text-sm text-center tracking-widest font-mono font-black text-stone-950 dark:text-stone-100 focus:bg-white dark:focus:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50 transition-all shadow-[2.5px_2.5px_0px_#18181b]"
                 />
-                <Lock className="w-4 h-4 text-stone-400 dark:text-stone-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Lock className="w-4 h-4 text-stone-600 dark:text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2.5]" />
               </div>
             </div>
 
             {/* Lockout Warning */}
             {isLocked && (
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-lg text-amber-900 dark:text-amber-300 text-xs flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+              <div className="p-3 bg-amber-200 border-2 border-stone-900 rounded-lg text-stone-950 text-xs font-bold flex items-center gap-2 shadow-[2px_2px_0px_#18181b]">
+                <Clock className="w-4 h-4 text-amber-900 shrink-0 stroke-[2.5] animate-pulse" />
                 <span>
                   Terkunci sementara. Coba lagi dalam <strong>{lockoutRemaining} detik</strong>.
                 </span>
@@ -146,8 +146,8 @@ export const AdminLoginModal: React.FC = () => {
 
             {/* Error Message */}
             {errorMsg && !isLocked && (
-              <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-lg text-rose-900 dark:text-rose-300 text-xs flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+              <div className="p-3 bg-rose-200 border-2 border-stone-900 rounded-lg text-stone-950 text-xs font-bold flex items-start gap-2 shadow-[2px_2px_0px_#18181b]">
+                <AlertCircle className="w-4 h-4 text-rose-800 shrink-0 mt-0.5 stroke-[2.5]" />
                 <div className="flex-1 leading-relaxed">{errorMsg}</div>
               </div>
             )}
@@ -158,18 +158,18 @@ export const AdminLoginModal: React.FC = () => {
                 type="button"
                 disabled={isLoading}
                 onClick={() => setIsAdminLoginOpen(false)}
-                className="flex-1 py-2 px-3 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-xs font-medium transition-colors"
+                className="flex-1 py-2 px-3 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-950 dark:text-stone-200 border-2 border-stone-900 dark:border-stone-600 rounded-lg text-xs font-black transition-all shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={isLocked || isLoading || !pin.trim()}
-                className="flex-1 py-2 px-4 bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 text-white rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5 shadow-xs"
+                className="flex-1 py-2 px-4 bg-amber-400 hover:bg-amber-300 text-stone-950 border-2 border-stone-900 rounded-lg text-xs font-black transition-all disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5 shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span className="neo-spinner-multicolor-sm" />
                     <span>Memverifikasi...</span>
                   </>
                 ) : (

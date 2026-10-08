@@ -26,11 +26,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  let btnColor = 'bg-amber-700 hover:bg-amber-800 text-white dark:bg-amber-600 dark:hover:bg-amber-500';
+  let btnColor = 'bg-amber-400 hover:bg-amber-300 text-stone-950 border-2 border-stone-900 shadow-[3px_3px_0px_#18181b]';
+  let iconBoxColor = 'bg-amber-300 text-stone-950';
+
   if (variant === 'danger') {
-    btnColor = 'bg-rose-600 hover:bg-rose-700 text-white dark:bg-rose-600 dark:hover:bg-rose-500';
+    btnColor = 'bg-rose-400 hover:bg-rose-300 text-stone-950 border-2 border-stone-900 shadow-[3px_3px_0px_#18181b]';
+    iconBoxColor = 'bg-rose-300 text-stone-950';
   } else if (variant === 'warning') {
-    btnColor = 'bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-600 dark:hover:bg-amber-500';
+    btnColor = 'bg-amber-400 hover:bg-amber-300 text-stone-950 border-2 border-stone-900 shadow-[3px_3px_0px_#18181b]';
+    iconBoxColor = 'bg-amber-300 text-stone-950';
   }
 
   return (
@@ -38,29 +42,33 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <div className="min-h-screen px-4 text-center flex items-center justify-center">
         <div className="fixed inset-0 bg-stone-900/60 dark:bg-stone-950/80 backdrop-blur-xs transition-opacity" onClick={onClose} />
 
-        <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-stone-900 shadow-xl rounded-xl border border-stone-200 dark:border-stone-700 relative z-10">
+        <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 shadow-[6px_6px_0px_#18181b] relative z-10">
           <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2.5 text-stone-900 dark:text-stone-100">
-              <AlertCircle className={`w-5 h-5 ${variant === 'danger' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}`} />
-              <h3 className="text-base font-semibold">{title}</h3>
+            <div className="flex items-center gap-3 text-stone-900 dark:text-stone-100">
+              <div className={`p-2 rounded-md border-2 border-stone-900 shadow-[2px_2px_0px_#18181b] ${iconBoxColor}`}>
+                <AlertCircle className="w-5 h-5 stroke-[2.5]" />
+              </div>
+              <h3 className="text-base font-black tracking-tight">{title}</h3>
             </div>
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="p-1.5 rounded-lg text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+              className="p-1 rounded border-2 border-stone-900 text-stone-900 dark:text-stone-100 hover:bg-rose-200 dark:hover:bg-rose-900/60 shadow-[1.5px_1.5px_0px_#18181b] transition-all"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4 stroke-[2.5]" />
             </button>
           </div>
 
-          <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed mb-6">{message}</p>
+          <p className="text-xs font-medium text-stone-700 dark:text-stone-300 leading-relaxed mb-6 bg-stone-50 dark:bg-stone-800/60 p-3 rounded-lg border-2 border-stone-900/40 dark:border-stone-700">
+            {message}
+          </p>
 
           <div className="flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 text-xs font-medium text-stone-700 dark:text-stone-300 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-xs font-bold text-stone-900 dark:text-stone-200 bg-stone-100 dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-500 rounded-lg shadow-[2.5px_2.5px_0px_#18181b] hover:bg-stone-200 dark:hover:bg-stone-700 transition-all disabled:opacity-50"
             >
               {cancelLabel}
             </button>
@@ -68,9 +76,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               type="button"
               onClick={onConfirm}
               disabled={isLoading}
-              className={`px-4 py-2 text-xs font-semibold rounded-lg shadow-xs transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 ${btnColor}`}
+              className={`px-4 py-2 text-xs font-black rounded-lg transition-all disabled:opacity-50 inline-flex items-center gap-2 ${btnColor}`}
             >
-              {isLoading && <span className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />}
+              {isLoading && <span className="neo-spinner-multicolor-sm" />}
               <span>{confirmLabel}</span>
             </button>
           </div>

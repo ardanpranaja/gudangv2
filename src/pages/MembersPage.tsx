@@ -225,10 +225,10 @@ export const MembersPage: React.FC = () => {
         description="Data personil lapangan, jabatan sesuai MASTER_MEMBER, dan status kepesertaan dari MASTER_MEMBER Spreadsheet."
       />
 
-      <div className="p-3.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-600 dark:text-stone-400 flex items-center gap-2">
-        <Info className="w-4 h-4 text-stone-500 dark:text-stone-400 shrink-0" />
+      <div className="p-3.5 bg-yellow-100 dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-500 rounded-xl text-xs text-stone-950 dark:text-stone-100 font-bold flex items-center gap-2 shadow-[2.5px_2.5px_0px_#18181b]">
+        <Info className="w-4 h-4 text-stone-900 dark:text-stone-100 shrink-0 stroke-[2.5]" />
         <span>
-          Data Master Member disinkronkan langsung dari Google Spreadsheet (<span className="font-mono font-medium">MASTER_MEMBER</span>).
+          Data Master Member disinkronkan langsung dari Google Spreadsheet (<span className="font-mono font-black text-amber-900 dark:text-amber-300">MASTER_MEMBER</span>).
         </span>
       </div>
 
@@ -249,7 +249,7 @@ export const MembersPage: React.FC = () => {
             <select
               value={selectedJabatan}
               onChange={(e) => setSelectedJabatan(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-700 dark:text-stone-200"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 font-bold shadow-[2px_2px_0px_#18181b]"
             >
               <option value="ALL">Semua Jabatan</option>
               {Array.from(new Set(members.map((m) => m.JABATAN).filter(Boolean))).sort().map((jabatan, idx) => (
@@ -260,7 +260,7 @@ export const MembersPage: React.FC = () => {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-700 dark:text-stone-200"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 font-bold shadow-[2px_2px_0px_#18181b]"
             >
               <option value="ALL">Semua Status</option>
               <option value="AKTIF">AKTIF</option>
@@ -280,31 +280,31 @@ export const MembersPage: React.FC = () => {
         {selectedMember && (
           <div className="space-y-6 text-xs">
             {/* Section Informasi */}
-            <div className="p-4 bg-stone-50 dark:bg-stone-800/60 rounded-lg border border-stone-200 dark:border-stone-700 space-y-3">
+            <div className="p-4 bg-stone-50 dark:bg-stone-800/80 rounded-xl border-2 border-stone-900 dark:border-stone-500 space-y-3 shadow-[3px_3px_0px_#18181b]">
               <div className="flex items-center justify-between">
-                <span className="text-stone-500 dark:text-stone-400 font-medium">Status Member</span>
+                <span className="text-stone-700 dark:text-stone-300 font-bold">Status Member</span>
                 <StatusBadge status={selectedMember.STATUS} size="sm" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-500 dark:text-stone-400 font-medium">Jabatan</span>
+                <span className="text-stone-700 dark:text-stone-300 font-bold">Jabatan</span>
                 <StatusBadge status={selectedMember.JABATAN} size="sm" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-500 dark:text-stone-400 font-medium">No. Handphone</span>
-                <span className="font-mono text-stone-800 dark:text-stone-200">{selectedMember.NO_HP || '-'}</span>
+                <span className="text-stone-700 dark:text-stone-300 font-bold">No. Handphone</span>
+                <span className="font-mono font-black text-stone-950 dark:text-stone-100">{selectedMember.NO_HP || '-'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-500 dark:text-stone-400 font-medium">Tanggal Mulai Bergabung</span>
-                <span className="font-mono text-stone-800 dark:text-stone-200">{selectedMember.TANGGAL_MULAI || '-'}</span>
+                <span className="text-stone-700 dark:text-stone-300 font-bold">Tanggal Mulai Bergabung</span>
+                <span className="font-mono font-black text-stone-950 dark:text-stone-100">{selectedMember.TANGGAL_MULAI || '-'}</span>
               </div>
             </div>
 
             {/* Section Ringkasan Limit */}
-            <div className="border border-stone-200 dark:border-stone-700 rounded-lg p-4 space-y-3 bg-white dark:bg-stone-900">
+            <div className="border-2 border-stone-900 dark:border-stone-600 rounded-xl p-4 space-y-3 bg-white dark:bg-stone-900 shadow-[3px_3px_0px_#18181b]">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-semibold text-stone-900 dark:text-stone-100">Ringkasan Kuota Limit</h4>
-                  <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                  <h4 className="font-black text-stone-950 dark:text-stone-100">Ringkasan Kuota Limit</h4>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-400 mt-0.5 font-medium">
                     {memberLimits.length} batas alokasi item terkonfigurasi
                   </p>
                 </div>
@@ -314,15 +314,15 @@ export const MembersPage: React.FC = () => {
                     setSelectedMember(null);
                     navigateTo('limits', { memberId: id });
                   }}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-stone-800 dark:text-stone-200 hover:text-stone-950 underline"
+                  className="inline-flex items-center gap-1 text-xs font-black text-amber-700 dark:text-amber-400 hover:underline"
                 >
-                  <Sliders className="w-3 h-3" />
+                  <Sliders className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Lihat Semua Limit</span>
                 </button>
               </div>
 
               {memberLimits.length === 0 ? (
-                <div className="text-[11px] text-stone-400 dark:text-stone-500 italic">
+                <div className="text-[11px] text-stone-500 dark:text-stone-400 italic">
                   Belum ada limit khusus untuk member ini di lembar MEMBER_LIMIT.
                 </div>
               ) : (
@@ -330,18 +330,18 @@ export const MembersPage: React.FC = () => {
                   {memberLimits.slice(0, 3).map((l, idx) => (
                     <div
                       key={`${l.ID_LIMIT}-${idx}`}
-                      className="flex items-center justify-between p-2 bg-stone-50 dark:bg-stone-800/60 rounded border border-stone-100 text-[11px]"
+                      className="flex items-center justify-between p-2 bg-stone-50 dark:bg-stone-800/80 rounded border-2 border-stone-900 dark:border-stone-600 text-[11px] font-bold"
                     >
-                      <span className="font-medium text-stone-800 dark:text-stone-200">
+                      <span className="text-stone-950 dark:text-stone-100">
                         {l.NAMA_ITEM || l.ID_ITEM}
                       </span>
-                      <span className="font-mono font-semibold text-stone-900 dark:text-stone-100">
+                      <span className="font-mono font-black text-stone-950 dark:text-stone-100">
                         Maks {l.MAX_QTY} {l.SATUAN}
                       </span>
                     </div>
                   ))}
                   {memberLimits.length > 3 && (
-                    <div className="text-[11px] text-stone-400 dark:text-stone-500 text-center pt-1">
+                    <div className="text-[11px] text-stone-600 dark:text-stone-400 font-bold text-center pt-1">
                       +{memberLimits.length - 3} limit lainnya
                     </div>
                   )}
@@ -350,11 +350,11 @@ export const MembersPage: React.FC = () => {
             </div>
 
             {/* Section Ringkasan Aktivitas */}
-            <div className="border border-stone-200 dark:border-stone-700 rounded-lg p-4 space-y-3 bg-white dark:bg-stone-900">
+            <div className="border-2 border-stone-900 dark:border-stone-600 rounded-xl p-4 space-y-3 bg-white dark:bg-stone-900 shadow-[3px_3px_0px_#18181b]">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-semibold text-stone-900 dark:text-stone-100">Ringkasan Aktivitas Pengambilan</h4>
-                  <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                  <h4 className="font-black text-stone-950 dark:text-stone-100">Ringkasan Aktivitas Pengambilan</h4>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-400 mt-0.5 font-medium">
                     Data diambil dari API memberhistory backend
                   </p>
                 </div>
@@ -364,39 +364,39 @@ export const MembersPage: React.FC = () => {
                     setSelectedMember(null);
                     navigateTo('riwayat-member', { memberId: id });
                   }}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-stone-800 dark:text-stone-200 hover:text-stone-950 underline"
+                  className="inline-flex items-center gap-1 text-xs font-black text-amber-700 dark:text-amber-400 hover:underline"
                 >
-                  <History className="w-3 h-3" />
+                  <History className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Lihat Riwayat Lengkap</span>
                 </button>
               </div>
 
               {isLoadingDrawerSummary ? (
-                <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 py-3">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                <div className="flex items-center gap-2 text-stone-700 dark:text-stone-300 py-3 font-bold">
+                  <div className="w-4 h-4 neo-spinner-multicolor shrink-0" />
                   <span>Memuat ringkasan aktivitas dari GAS...</span>
                 </div>
               ) : memberHistorySummary ? (
                 <div className="grid grid-cols-2 gap-2 text-center">
-                  <div className="p-2.5 bg-stone-50 dark:bg-stone-800/60 rounded border border-stone-100">
-                    <div className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  <div className="p-2.5 bg-yellow-100 dark:bg-stone-800/80 rounded-lg border-2 border-stone-900 dark:border-stone-500 shadow-[1.5px_1.5px_0px_#18181b]">
+                    <div className="text-[10px] text-stone-700 dark:text-stone-400 uppercase tracking-wider font-bold">
                       Total Transaksi
                     </div>
-                    <div className="font-mono text-base font-semibold text-stone-900 dark:text-stone-100 mt-0.5 tabular-nums">
+                    <div className="font-mono text-base font-black text-stone-950 dark:text-stone-100 mt-0.5 tabular-nums">
                       {memberHistorySummary.totalTransaksi}
                     </div>
                   </div>
-                  <div className="p-2.5 bg-stone-50 dark:bg-stone-800/60 rounded border border-stone-100">
-                    <div className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  <div className="p-2.5 bg-cyan-100 dark:bg-stone-800/80 rounded-lg border-2 border-stone-900 dark:border-stone-500 shadow-[1.5px_1.5px_0px_#18181b]">
+                    <div className="text-[10px] text-stone-700 dark:text-stone-400 uppercase tracking-wider font-bold">
                       Total Unit Diambil
                     </div>
-                    <div className="font-mono text-base font-semibold text-stone-900 dark:text-stone-100 mt-0.5 tabular-nums">
+                    <div className="font-mono text-base font-black text-stone-950 dark:text-stone-100 mt-0.5 tabular-nums">
                       {memberHistorySummary.totalQty}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-[11px] text-stone-400 dark:text-stone-500 italic">
+                <div className="text-[11px] text-stone-500 dark:text-stone-400 italic">
                   Belum ada aktivitas transaksi untuk member ini di backend.
                 </div>
               )}
@@ -407,18 +407,18 @@ export const MembersPage: React.FC = () => {
 
       {/* Edit Member Modal */}
       {editingMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/50 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 shadow-xl max-w-lg w-full overflow-hidden animate-scaleIn">
-            <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border-2 border-stone-900 dark:border-stone-400 shadow-[8px_8px_0px_#18181b] max-w-lg w-full overflow-hidden animate-scaleIn">
+            <div className="px-6 py-4 border-b-2 border-stone-900 dark:border-stone-700 bg-amber-300 dark:bg-stone-800 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-700 text-white flex items-center justify-center shrink-0">
-                  <Pencil className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-stone-950 text-amber-300 border-2 border-stone-950 flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#fff]">
+                  <Pencil className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">Ubah Info Member</h3>
+                  <h3 className="text-sm font-black text-stone-950 dark:text-stone-100">Ubah Info Member</h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-[11px] text-stone-500 dark:text-stone-400">ID Member:</span>
-                    <span className="font-mono text-[11px] font-semibold text-stone-800 dark:text-stone-200 bg-stone-100 dark:bg-stone-800 px-1.5 py-0.2 rounded border border-stone-200 dark:border-stone-700">
+                    <span className="text-[11px] text-stone-700 dark:text-stone-400 font-bold">ID:</span>
+                    <span className="font-mono text-[11px] font-black text-stone-950 dark:text-stone-200 bg-white dark:bg-stone-900 px-1.5 py-0.2 rounded border border-stone-900 dark:border-stone-600">
                       {editingMember.ID_MEMBER}
                     </span>
                   </div>
@@ -427,17 +427,17 @@ export const MembersPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setEditingMember(null)}
-                className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-stone-600 rounded-lg hover:bg-stone-100 transition-colors"
+                className="p-1.5 text-stone-950 dark:text-stone-200 hover:bg-stone-950 hover:text-white rounded-lg border-2 border-stone-900 dark:border-stone-500 transition-colors shadow-[1.5px_1.5px_0px_#18181b]"
                 title="Tutup Modal"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
             <form onSubmit={handleSaveEdit} className="p-6 space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="block font-semibold text-stone-700 dark:text-stone-200">
-                  Nama Member <span className="text-rose-500">*</span>
+                <label className="block font-bold text-stone-900 dark:text-stone-100">
+                  Nama Member <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -445,48 +445,48 @@ export const MembersPage: React.FC = () => {
                   value={editForm.namaMember}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, namaMember: e.target.value }))}
                   placeholder="Nama lengkap member..."
-                  className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900"
+                  className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 font-bold shadow-[2px_2px_0px_#18181b]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">Jabatan:</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">Jabatan:</label>
                   <input
                     type="text"
                     value={editForm.jabatan}
                     onChange={(e) => setEditForm((prev) => ({ ...prev, jabatan: e.target.value }))}
                     placeholder="Contoh: CREW, SPV, TL, SM..."
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900 uppercase"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 uppercase font-bold shadow-[2px_2px_0px_#18181b]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">Penempatan Lantai:</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">Penempatan Lantai:</label>
                   <input
                     type="text"
                     value={editForm.lantai}
                     onChange={(e) => setEditForm((prev) => ({ ...prev, lantai: e.target.value }))}
                     placeholder="Contoh: 1, 2, 3, Dasar..."
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 font-bold shadow-[2px_2px_0px_#18181b]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">No. Handphone:</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">No. Handphone:</label>
                   <input
                     type="text"
                     value={editForm.noHp}
                     onChange={(e) => setEditForm((prev) => ({ ...prev, noHp: e.target.value }))}
                     placeholder="Contoh: 08123456789..."
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 font-mono bg-white dark:bg-stone-900"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 font-mono font-bold bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">Status Keanggotaan:</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">Status Keanggotaan:</label>
                   <select
                     value={editForm.status}
                     onChange={(e) =>
@@ -495,7 +495,7 @@ export const MembersPage: React.FC = () => {
                         status: e.target.value as 'AKTIF' | 'NONAKTIF',
                       }))
                     }
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900 font-medium"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 font-black shadow-[2px_2px_0px_#18181b]"
                   >
                     <option value="AKTIF">AKTIF</option>
                     <option value="NONAKTIF">NONAKTIF</option>
@@ -503,21 +503,21 @@ export const MembersPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-2.5">
+              <div className="pt-4 border-t-2 border-stone-900 dark:border-stone-700 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   disabled={isSaving}
                   onClick={() => setEditingMember(null)}
-                  className="px-4 py-2 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50 rounded-lg font-medium transition-colors"
+                  className="px-4 py-2 border-2 border-stone-900 dark:border-stone-500 text-stone-950 dark:text-stone-200 hover:bg-stone-100 rounded-lg font-black transition-all shadow-[2px_2px_0px_#18181b]"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving || !editForm.namaMember.trim()}
-                  className="px-5 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg font-semibold transition-all inline-flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+                  className="px-5 py-2 bg-emerald-300 hover:bg-emerald-400 text-stone-950 border-2 border-stone-900 rounded-lg font-black transition-all inline-flex items-center gap-1.5 disabled:opacity-50 shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
-                  {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  {isSaving ? <div className="w-3.5 h-3.5 neo-spinner-multicolor shrink-0" /> : <Check className="w-3.5 h-3.5 stroke-[3]" />}
                   <span>{isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
                 </button>
               </div>

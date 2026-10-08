@@ -434,20 +434,22 @@ export const AIConfigPanel: React.FC = () => {
   const isSelectedSpecialist = selectedModelObj ? categorizeModel(selectedModelObj) === 'specialist' : false;
 
   return (
-    <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 shadow-xs p-6 space-y-6">
+    <div className="bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 shadow-[5px_5px_0px_#18181b] p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3.5">
-        <div className="flex items-center gap-2 text-stone-900 dark:text-stone-100">
-          <Bot className="w-4 h-4 text-emerald-600" />
-          <h3 className="text-sm font-semibold">Konfigurasi Uti AI (Gemini API)</h3>
+      <div className="flex items-center justify-between border-b-2 border-stone-900 dark:border-stone-700 pb-3.5">
+        <div className="flex items-center gap-2 text-stone-950 dark:text-stone-100">
+          <div className="w-8 h-8 rounded-lg bg-emerald-300 border-2 border-stone-900 flex items-center justify-center shadow-[2px_2px_0px_#18181b]">
+            <Bot className="w-4 h-4 text-stone-950 stroke-[2.5]" />
+          </div>
+          <h3 className="text-base font-black tracking-tight">Konfigurasi Uti AI (Gemini API)</h3>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+        <div className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 bg-amber-300 text-stone-950 border-2 border-stone-900 rounded-lg shadow-[2px_2px_0px_#18181b]">
+          <Sparkles className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
           <span>Chat &amp; Operasional Engine</span>
         </div>
       </div>
 
-      <div className="space-y-5 text-xs">
+      <div className="space-y-6 text-xs">
         {/* ===================================================================== */}
         {/* SECTION 1: API KEYS MANAGEMENT */}
         {/* ===================================================================== */}
@@ -455,41 +457,41 @@ export const AIConfigPanel: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <label className="block font-semibold text-stone-800 dark:text-stone-200">
+                <label className="block font-black text-stone-950 dark:text-stone-100 text-xs">
                   Pengelolaan API Key Gemini:
                 </label>
                 {activeKeyObj && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-semibold">
-                    <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-300 text-stone-950 border border-stone-900 text-[10px] font-black shadow-[1.5px_1.5px_0px_#18181b]">
+                    <Check className="w-3 h-3 stroke-[3]" />
                     Aktif: {activeKeyObj.label}
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-1 mt-0.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 inline shrink-0" />
+              <p className="text-[11px] font-medium text-stone-600 dark:text-stone-400 flex items-center gap-1 mt-0.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 inline shrink-0 stroke-[2.5]" />
                 <span>Tersimpan terpusat di database — berlaku untuk semua perangkat.</span>
               </p>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400">
-              <Key className="w-3 h-3 text-stone-400 dark:text-stone-500" />
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-stone-800 dark:text-stone-300">
+              <Key className="w-3.5 h-3.5 text-amber-600 stroke-[2.5]" />
               <span>
-                Aktif: <strong className="font-mono text-stone-700 dark:text-stone-200">{activeMaskedText}</strong>
+                Aktif: <strong className="font-mono bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded border border-stone-900 dark:border-stone-600 text-stone-950 dark:text-stone-100">{activeMaskedText}</strong>
               </span>
             </div>
           </div>
 
           {/* EMPTY STATE: When no keys are saved at all */}
           {savedKeys.length === 0 && !isAddingNewKey ? (
-            <div className="p-4 bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 rounded-xl space-y-3">
+            <div className="p-4 bg-amber-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-500 rounded-xl space-y-3 shadow-[3.5px_3.5px_0px_#18181b]">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-                  <Key className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-lg bg-amber-300 border-2 border-stone-900 text-stone-950 flex items-center justify-center shrink-0 mt-0.5 shadow-[2px_2px_0px_#18181b]">
+                  <Key className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <div className="space-y-1 flex-1">
-                  <h4 className="font-semibold text-stone-900 dark:text-stone-100 text-xs">
+                  <h4 className="font-black text-stone-950 dark:text-stone-100 text-xs">
                     Belum Ada API Key Gemini Tersimpan
                   </h4>
-                  <p className="text-stone-500 dark:text-stone-400 text-[11px] leading-relaxed">
+                  <p className="text-stone-700 dark:text-stone-300 text-[11px] leading-relaxed font-medium">
                     Untuk menggunakan Uti AI secara optimal dengan kuota penuh Anda sendiri,
                     tambahkan API Key resmi dari Google AI Studio. Kunci akan tersimpan terpusat di database untuk seluruh perangkat.
                   </p>
@@ -497,16 +499,16 @@ export const AIConfigPanel: React.FC = () => {
               </div>
 
               {/* Steps Guide */}
-              <div className="bg-white dark:bg-stone-900 p-3 rounded-lg border border-stone-200 dark:border-stone-700 space-y-2 text-[11px]">
-                <div className="font-medium text-stone-700 dark:text-stone-200">Langkah Cepat Mendapatkan Kunci:</div>
-                <ol className="list-decimal list-inside space-y-1 text-stone-600 dark:text-stone-400">
+              <div className="bg-white dark:bg-stone-900 p-3 rounded-lg border-2 border-stone-900 dark:border-stone-600 space-y-2 text-[11px] shadow-[2px_2px_0px_#18181b]">
+                <div className="font-bold text-stone-950 dark:text-stone-100">Langkah Cepat Mendapatkan Kunci:</div>
+                <ol className="list-decimal list-inside space-y-1 text-stone-700 dark:text-stone-300 font-medium">
                   <li>
                     Kunjungi{' '}
                     <a
                       href="https://aistudio.google.com/apikey"
                       target="_blank"
                       rel="noreferrer"
-                      className="text-amber-700 dark:text-amber-400 hover:underline font-medium inline-flex items-center gap-0.5"
+                      className="text-amber-800 dark:text-amber-300 underline font-bold inline-flex items-center gap-0.5 hover:text-amber-600"
                     >
                       Google AI Studio <ExternalLink className="w-2.5 h-2.5" />
                     </a>
@@ -517,16 +519,16 @@ export const AIConfigPanel: React.FC = () => {
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <span className="text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-[11px] font-medium text-stone-600 dark:text-stone-400 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
                   <span>Tersimpan terpusat di database — berlaku untuk semua perangkat.</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsAddingNewKey(true)}
-                  className="px-4 py-2 bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 text-white rounded-lg font-semibold transition-colors inline-flex items-center gap-1.5 shadow-xs"
+                  className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-stone-950 border-2 border-stone-900 rounded-lg font-black transition-all inline-flex items-center gap-1.5 shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
                   <span>+ Tambah API Key Baru</span>
                 </button>
               </div>
@@ -538,7 +540,7 @@ export const AIConfigPanel: React.FC = () => {
                 <select
                   value={isAddingNewKey ? '__add_new__' : selectedKeyId}
                   onChange={handleKeySelectionChange}
-                  className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 dark:focus:ring-amber-500 text-stone-800 dark:text-stone-200 text-xs bg-white dark:bg-stone-900 pr-8 font-medium"
+                  className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-500 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 text-xs bg-white dark:bg-stone-900 font-bold shadow-[2.5px_2.5px_0px_#18181b]"
                 >
                   <option value="__env__">
                     ⚙️ Kunci Server Environment (Default / Otomatis)
@@ -554,7 +556,7 @@ export const AIConfigPanel: React.FC = () => {
                       </option>
                     );
                   })}
-                  <option value="__add_new__" className="font-semibold text-amber-700 dark:text-amber-400">
+                  <option value="__add_new__" className="font-black text-amber-700 dark:text-amber-400">
                     + Masukkan API Key Baru...
                   </option>
                 </select>
@@ -565,10 +567,10 @@ export const AIConfigPanel: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsAddingNewKey(true)}
-                    className="px-3 py-2 bg-stone-50 dark:bg-stone-800/60 hover:bg-stone-100 border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-200 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5 shrink-0"
+                    className="px-3.5 py-2 bg-yellow-300 hover:bg-yellow-200 text-stone-950 border-2 border-stone-900 rounded-lg font-black transition-all inline-flex items-center gap-1.5 shrink-0 shadow-[2.5px_2.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                     title="Tambah API Key Baru"
                   >
-                    <Plus className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" />
+                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
                     <span>Tambah Kunci</span>
                   </button>
                 )}
@@ -577,10 +579,10 @@ export const AIConfigPanel: React.FC = () => {
                   <button
                     type="button"
                     onClick={(e) => handleDeleteKey(activeKeyObj.id, e)}
-                    className="px-2.5 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-lg font-medium transition-colors inline-flex items-center gap-1 shrink-0"
+                    className="px-3 py-2 bg-rose-200 hover:bg-rose-300 text-stone-950 border-2 border-stone-900 rounded-lg font-black transition-all inline-flex items-center gap-1 shrink-0 shadow-[2.5px_2.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                     title="Hapus Kunci Aktif"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span className="hidden sm:inline">Hapus</span>
                   </button>
                 )}
@@ -590,16 +592,16 @@ export const AIConfigPanel: React.FC = () => {
 
           {/* ACTIVE KEY STATUS CARD */}
           {activeKeyObj && (
-            <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="p-3.5 bg-emerald-100 dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-500 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-[3px_3px_0px_#18181b]">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">
-                    <Check className="w-3 h-3" />
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-400 text-stone-950 border border-stone-900 text-[10px] font-black shadow-[1.5px_1.5px_0px_#18181b]">
+                    <Check className="w-3 h-3 stroke-[3]" />
                     Kunci Aktif
                   </span>
-                  <span className="font-semibold text-stone-800 dark:text-stone-200">{activeKeyObj.label}</span>
+                  <span className="font-black text-stone-950 dark:text-stone-100 text-xs">{activeKeyObj.label}</span>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400 font-mono">
+                <div className="flex items-center gap-2 text-[11px] text-stone-700 dark:text-stone-300 font-mono font-medium">
                   <span>Masked: {activeKeyObj.maskedKey}</span>
                   {activeKeyObj.createdAt && (
                     <>
@@ -620,9 +622,9 @@ export const AIConfigPanel: React.FC = () => {
                 type="button"
                 onClick={handleTestConnection}
                 disabled={isTesting || isLoadingModels}
-                className="px-3 py-1.5 bg-white dark:bg-stone-900 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 rounded-lg font-medium hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors inline-flex items-center gap-1.5 shrink-0 shadow-2xs text-xs"
+                className="px-3.5 py-1.5 bg-emerald-300 hover:bg-emerald-400 text-stone-950 border-2 border-stone-900 rounded-lg font-black transition-all inline-flex items-center gap-1.5 shrink-0 shadow-[2.5px_2.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-xs"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin text-emerald-600' : 'text-emerald-700 dark:text-emerald-400'}`} />
+                <RefreshCw className={`w-3.5 h-3.5 stroke-[2.5] ${isTesting ? 'animate-spin' : ''}`} />
                 <span>{testingProgressText ? 'Menguji...' : 'Uji Koneksi Kunci Ini'}</span>
               </button>
             </div>
@@ -630,10 +632,10 @@ export const AIConfigPanel: React.FC = () => {
 
           {/* FORM: INPUT API KEY BARU */}
           {isAddingNewKey && (
-            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg space-y-3 transition-all animate-fadeIn">
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700/70 pb-2 dark:border-slate-700">
-                <div className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200 font-semibold">
-                  <Plus className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="p-4 bg-sky-50 dark:bg-stone-800/90 border-2 border-stone-900 dark:border-stone-500 rounded-xl space-y-3 transition-all shadow-[3.5px_3.5px_0px_#18181b]">
+              <div className="flex items-center justify-between border-b-2 border-stone-900 dark:border-stone-700 pb-2">
+                <div className="flex items-center gap-1.5 text-stone-950 dark:text-stone-100 font-black">
+                  <Plus className="w-4 h-4 stroke-[3] text-stone-950 dark:text-stone-100" />
                   <span>Input &amp; Simpan API Key Baru</span>
                 </div>
                 <button
@@ -642,7 +644,7 @@ export const AIConfigPanel: React.FC = () => {
                     setIsAddingNewKey(false);
                     setSaveKeyError(null);
                   }}
-                  className="text-slate-400 dark:text-slate-500 hover:text-slate-600 text-xs font-medium"
+                  className="text-stone-600 dark:text-stone-400 hover:text-stone-950 font-bold text-xs"
                 >
                   Batal
                 </button>
@@ -651,7 +653,7 @@ export const AIConfigPanel: React.FC = () => {
               <form onSubmit={handleSaveNewKey} className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <div className="sm:col-span-2 space-y-1">
-                    <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-200">
+                    <label className="block text-[11px] font-bold text-stone-900 dark:text-stone-200">
                       Kunci API Gemini (AIzaSy...):
                     </label>
                     <div className="relative">
@@ -661,21 +663,21 @@ export const AIConfigPanel: React.FC = () => {
                         onChange={(e) => setNewKeyInput(e.target.value)}
                         placeholder="Tempel API Key baru di sini..."
                         autoComplete="off"
-                        className="w-full pl-3 pr-10 py-2 border border-slate-300 dark:border-slate-600 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 dark:text-slate-200 font-mono text-xs bg-white dark:bg-slate-900"
+                        className="w-full pl-3 pr-10 py-2 border-2 border-stone-900 dark:border-stone-500 rounded-lg text-stone-950 dark:text-stone-100 font-mono text-xs bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                       />
                       <button
                         type="button"
                         onClick={() => setShowNewKey(!showNewKey)}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 p-0.5"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-400 hover:text-stone-950 p-0.5"
                         title={showNewKey ? 'Sembunyikan' : 'Tampilkan'}
                       >
-                        {showNewKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showNewKey ? <EyeOff className="w-4 h-4 stroke-[2.5]" /> : <Eye className="w-4 h-4 stroke-[2.5]" />}
                       </button>
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-200">
+                    <label className="block text-[11px] font-bold text-stone-900 dark:text-stone-200">
                       Label Kunci (Opsional):
                     </label>
                     <input
@@ -683,14 +685,14 @@ export const AIConfigPanel: React.FC = () => {
                       value={newKeyLabel}
                       onChange={(e) => setNewKeyLabel(e.target.value)}
                       placeholder={`API Key ${savedKeys.length + 1}`}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 dark:text-slate-200 text-xs bg-white dark:bg-slate-900"
+                      className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-500 rounded-lg text-stone-950 dark:text-stone-100 text-xs bg-white dark:bg-stone-900 font-bold shadow-[2px_2px_0px_#18181b]"
                     />
                   </div>
                 </div>
 
                 {saveKeyError && (
-                  <div className="p-2.5 bg-rose-50 border border-rose-200 rounded text-rose-800 text-[11px] flex items-center gap-2">
-                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <div className="p-2.5 bg-rose-200 border-2 border-stone-900 rounded-lg text-stone-950 font-bold text-[11px] flex items-center gap-2 shadow-[2px_2px_0px_#18181b]">
+                    <AlertCircle className="w-4 h-4 text-rose-800 shrink-0 stroke-[2.5]" />
                     <span>{saveKeyError}</span>
                   </div>
                 )}
@@ -702,23 +704,23 @@ export const AIConfigPanel: React.FC = () => {
                       setIsAddingNewKey(false);
                       setSaveKeyError(null);
                     }}
-                    className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded font-medium hover:bg-slate-50 transition-colors"
+                    className="px-3 py-1.5 bg-white dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-600 text-stone-950 dark:text-stone-200 rounded-lg font-bold hover:bg-stone-100 shadow-[2px_2px_0px_#18181b]"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={isSavingKey || !newKeyInput.trim()}
-                    className="px-4 py-1.5 bg-slate-900 text-white rounded font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors inline-flex items-center gap-1.5 shadow-2xs"
+                    className="px-4 py-1.5 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-stone-950 border-2 border-stone-900 rounded-lg font-black transition-all inline-flex items-center gap-1.5 shadow-[2.5px_2.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
                     {isSavingKey ? (
                       <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin stroke-[2.5]" />
                         <span>Memvalidasi &amp; Menyimpan...</span>
                       </>
                     ) : (
                       <>
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
                         <span>Simpan &amp; Jadikan Kunci Aktif</span>
                       </>
                     )}
@@ -731,21 +733,21 @@ export const AIConfigPanel: React.FC = () => {
           {/* ===================================================================== */}
           {/* SECTION 1.5: STATUS & ESTIMASI KUOTA API KEY */}
           {/* ===================================================================== */}
-          <div className="pt-3 border-t border-stone-100 dark:border-stone-800 space-y-3">
+          <div className="pt-4 border-t-2 border-stone-900 dark:border-stone-700 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1">
               <div>
-                <h4 className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-amber-600 dark:text-amber-500" />
+                <h4 className="text-xs font-black text-stone-950 dark:text-stone-100 flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-amber-600 dark:text-amber-400 stroke-[2.5]" />
                   <span>Status &amp; Estimasi Kuota API Key</span>
                 </h4>
-                <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
-                  Estimasi — dihitung dari request yang tercatat di perangkat ini, reset tengah malam waktu Pasifik. Bukan angka resmi Google.
+                <p className="text-[11px] font-medium text-stone-600 dark:text-stone-400 mt-0.5">
+                  Estimasi — dihitung dari request yang tercatat di perangkat ini, reset tengah malam waktu Pasifik.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <div className="flex items-center gap-1.5 bg-stone-50 dark:bg-stone-800/60 px-2.5 py-1 rounded-lg border border-stone-200 dark:border-stone-700 text-[11px]">
-                  <span className="text-stone-500 dark:text-stone-400 font-medium">Batas Harian:</span>
+                <div className="flex items-center gap-1.5 bg-yellow-100 dark:bg-stone-800 px-3 py-1 rounded-lg border-2 border-stone-900 dark:border-stone-500 text-[11px] shadow-[2px_2px_0px_#18181b]">
+                  <span className="text-stone-900 dark:text-stone-200 font-bold">Batas Harian:</span>
                   <input
                     type="number"
                     min={10}
@@ -769,10 +771,10 @@ export const AIConfigPanel: React.FC = () => {
                         addToast('success', 'Batas Harian Diperbarui', `Batas estimasi diatur ke ${val} request/hari.`);
                       }
                     }}
-                    className="w-16 px-1 py-0.5 text-center font-mono font-semibold bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-600 rounded text-stone-800 dark:text-stone-200 focus:ring-1 focus:ring-amber-600 text-xs"
+                    className="w-16 px-1 py-0.5 text-center font-mono font-black bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-500 rounded text-stone-950 dark:text-stone-100 text-xs"
                     title="Batas estimasi request harian (default 1500 untuk tier flash gratis)"
                   />
-                  <span className="text-stone-400 font-medium">req</span>
+                  <span className="text-stone-700 dark:text-stone-300 font-bold">req</span>
                 </div>
 
                 <button
@@ -783,7 +785,7 @@ export const AIConfigPanel: React.FC = () => {
                       addToast('info', 'Statistik Direset', 'Statistik penggunaan API key telah direset ke nol.');
                     }
                   }}
-                  className="px-2.5 py-1.5 text-[11px] font-medium text-stone-600 dark:text-stone-300 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 rounded-lg transition-colors shadow-2xs"
+                  className="px-3 py-1.5 text-[11px] font-bold text-stone-950 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 border-2 border-stone-900 dark:border-stone-500 rounded-lg shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   title="Reset akumulasi request dan error hari ini"
                 >
                   Reset statistik
@@ -792,11 +794,11 @@ export const AIConfigPanel: React.FC = () => {
             </div>
 
             {savedKeys.length === 0 ? (
-              <div className="p-3.5 bg-stone-50/60 dark:bg-stone-800/30 border border-dashed border-stone-200 dark:border-stone-700 rounded-xl text-center text-xs text-stone-500 dark:text-stone-400">
+              <div className="p-4 bg-stone-50 dark:bg-stone-800/40 border-2 border-dashed border-stone-900 dark:border-stone-600 rounded-xl text-center text-xs font-semibold text-stone-600 dark:text-stone-400">
                 Belum ada API Key tersimpan. Tambahkan API Key di atas untuk memantau status dan estimasi kuota.
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {savedKeys.map((k, idx) => {
                   const isSelected = k.fullKey === aiService.getApiKey();
                   const isInvalid = aiService.isKeyInvalid(k.id);
@@ -816,14 +818,14 @@ export const AIConfigPanel: React.FC = () => {
                   const limit = dailyLimitInput || 1500;
                   const percentage = Math.min(100, Math.round((requests / limit) * 100));
 
-                  let barColorClass = 'bg-emerald-500';
-                  let barTextColorClass = 'text-emerald-700 dark:text-emerald-400';
+                  let barColorClass = 'bg-emerald-400';
+                  let barTextColorClass = 'text-emerald-800 dark:text-emerald-300';
                   if (percentage >= 95) {
-                    barColorClass = 'bg-rose-500';
-                    barTextColorClass = 'text-rose-700 dark:text-rose-400';
+                    barColorClass = 'bg-rose-400';
+                    barTextColorClass = 'text-rose-800 dark:text-rose-300';
                   } else if (percentage >= 70) {
-                    barColorClass = 'bg-amber-500';
-                    barTextColorClass = 'text-amber-700 dark:text-amber-400';
+                    barColorClass = 'bg-amber-400';
+                    barTextColorClass = 'text-amber-800 dark:text-amber-300';
                   }
 
                   let formattedErrorTime = '-';
@@ -841,24 +843,24 @@ export const AIConfigPanel: React.FC = () => {
                   return (
                     <div
                       key={k.id}
-                      className={`p-3 rounded-xl border transition-all ${
+                      className={`p-3.5 rounded-xl border-2 transition-all ${
                         isSelected
-                          ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/80 shadow-2xs'
-                          : 'bg-white dark:bg-stone-900/60 border-stone-200 dark:border-stone-700'
+                          ? 'bg-amber-100/70 dark:bg-amber-950/40 border-stone-900 dark:border-amber-500 shadow-[3.5px_3.5px_0px_#18181b]'
+                          : 'bg-white dark:bg-stone-900 border-stone-900 dark:border-stone-600 shadow-[2.5px_2.5px_0px_#18181b]'
                       }`}
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-xs text-stone-900 dark:text-stone-100">
+                          <span className="font-black text-xs text-stone-950 dark:text-stone-100">
                             {k.label || `API Key ${idx + 1}`}
                           </span>
-                          <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                          <span className="text-[11px] font-mono font-medium text-stone-600 dark:text-stone-400">
                             •••• ({k.maskedKey})
                           </span>
 
                           {isSelected && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-semibold text-[10px]">
-                              <Check className="w-3 h-3 text-amber-700 dark:text-amber-400" />
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-300 text-stone-950 border border-stone-900 font-black text-[10px] shadow-[1.5px_1.5px_0px_#18181b]">
+                              <Check className="w-3 h-3 stroke-[3]" />
                               <span>Sedang dipakai</span>
                             </span>
                           )}
@@ -867,57 +869,57 @@ export const AIConfigPanel: React.FC = () => {
                         <div className="flex items-center gap-2 shrink-0">
                           {isInvalid ? (
                             <div className="flex items-center gap-1.5">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-semibold text-[10px] border border-rose-200 dark:border-rose-800">
-                                <AlertCircle className="w-3 h-3 text-rose-600" />
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-200 text-stone-950 font-black text-[10px] border border-stone-900 shadow-[1.5px_1.5px_0px_#18181b]">
+                                <AlertCircle className="w-3 h-3 text-rose-800 stroke-[2.5]" />
                                 <span>Invalid</span>
                               </span>
                               <button
                                 type="button"
                                 onClick={(e) => handleDeleteKey(k.id, e)}
-                                className="px-2 py-0.5 text-[10px] text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded border border-rose-200 dark:border-rose-800 transition-colors"
+                                className="px-2 py-0.5 text-[10px] font-bold text-rose-800 bg-rose-100 hover:bg-rose-200 rounded border border-stone-900 shadow-[1px_1px_0px_#18181b]"
                                 title="Hapus key invalid"
                               >
                                 Hapus
                               </button>
                             </div>
                           ) : isCooldown ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold text-[10px] border border-amber-200 dark:border-amber-800 animate-pulse">
-                              <AlertTriangle className="w-3 h-3 text-amber-600" />
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-200 text-stone-950 font-black text-[10px] border border-stone-900 shadow-[1.5px_1.5px_0px_#18181b] animate-pulse">
+                              <AlertTriangle className="w-3.5 h-3.5 text-amber-800 stroke-[2.5]" />
                               <span>Cooldown — sisa {cooldownSec}s</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-[10px] border border-emerald-200 dark:border-emerald-800">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-200 text-stone-950 font-black text-[10px] border border-stone-900 shadow-[1.5px_1.5px_0px_#18181b]">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-800 stroke-[2.5]" />
                               <span>Aktif</span>
                             </span>
                           )}
                         </div>
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-stone-600 dark:text-stone-400 font-medium">
+                          <span className="text-stone-700 dark:text-stone-300 font-bold">
                             ≈ {requests} / {limit} request hari ini
                           </span>
-                          <span className={`font-mono font-bold ${barTextColorClass}`}>
+                          <span className={`font-mono font-black ${barTextColorClass}`}>
                             {percentage}%
                           </span>
                         </div>
-                        <div className="h-2 w-full bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden border border-stone-200/60 dark:border-stone-700/60">
+                        <div className="h-3 w-full bg-stone-200 dark:bg-stone-800 rounded-md overflow-hidden border-2 border-stone-900 dark:border-stone-600">
                           <div
-                            className={`h-full transition-all duration-500 rounded-full ${barColorClass}`}
+                            className={`h-full transition-all duration-500 ${barColorClass}`}
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
                       </div>
 
-                      <div className="mt-2 text-[11px] text-stone-500 dark:text-stone-400 font-mono flex items-center justify-between">
+                      <div className="mt-2 text-[11px] text-stone-600 dark:text-stone-400 font-mono font-semibold flex items-center justify-between">
                         {hasErrors ? (
-                          <span>
+                          <span className="text-rose-700 dark:text-rose-400">
                             429 ×{stats.errors429} · 401 ×{stats.errors401} · terakhir: {formattedErrorTime} ({stats.lastErrorType || 'OTHER'})
                           </span>
                         ) : (
-                          <span className="font-sans text-stone-400 dark:text-stone-500">
+                          <span className="font-sans text-stone-500 dark:text-stone-400">
                             Belum ada error hari ini
                           </span>
                         )}
@@ -933,30 +935,30 @@ export const AIConfigPanel: React.FC = () => {
         {/* ===================================================================== */}
         {/* SECTION 2: DYNAMIC MODEL SELECTOR (GROUPED) */}
         {/* ===================================================================== */}
-        <div className="pt-2 border-t border-slate-100">
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block font-medium text-slate-700 dark:text-slate-200">
+        <div className="pt-4 border-t-2 border-stone-900 dark:border-stone-700">
+          <div className="flex items-center justify-between mb-2">
+            <label className="block font-black text-stone-950 dark:text-stone-100 text-xs">
               Model Gemini (Discovery Dinamis dari API):
             </label>
             <button
               type="button"
               onClick={handleRefreshModels}
               disabled={isLoadingModels}
-              className="text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 inline-flex items-center gap-1 transition-colors"
+              className="text-[11px] font-bold text-stone-800 dark:text-stone-300 hover:text-stone-950 inline-flex items-center gap-1.5 transition-colors px-2 py-0.5 bg-stone-100 dark:bg-stone-800 border border-stone-900 dark:border-stone-600 rounded shadow-[1px_1px_0px_#18181b]"
               title="Perbarui daftar model dari Google AI Studio"
             >
-              <RefreshCw className={`w-3 h-3 ${isLoadingModels ? 'animate-spin text-emerald-600' : 'text-slate-400 dark:text-slate-500'}`} />
+              <RefreshCw className={`w-3 h-3 ${isLoadingModels ? 'animate-spin text-emerald-600' : 'text-stone-700 dark:text-stone-300'}`} />
               <span>{isLoadingModels ? 'Memuat model...' : 'Refresh Models'}</span>
             </button>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2.5">
             <div className="relative flex-1">
               <select
                 value={selectedModel}
                 onChange={handleModelChange}
                 disabled={isLoadingModels}
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-slate-900 text-slate-800 dark:text-slate-200 text-xs bg-white dark:bg-slate-900 font-medium"
+                className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-500 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 text-xs bg-white dark:bg-stone-900 font-bold shadow-[2.5px_2.5px_0px_#18181b]"
               >
                 {isLoadingModels && availableModels.length === 0 && (
                   <option value={selectedModel}>Memuat daftar model dari API...</option>
@@ -1008,17 +1010,17 @@ export const AIConfigPanel: React.FC = () => {
               type="button"
               onClick={handleTestConnection}
               disabled={isTesting || isLoadingModels}
-              className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded font-medium hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5 shrink-0"
+              className="px-4 py-2 bg-emerald-300 hover:bg-emerald-400 text-stone-950 border-2 border-stone-900 rounded-lg font-black transition-all inline-flex items-center gap-1.5 shrink-0 shadow-[2.5px_2.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 stroke-[2.5] ${isTesting ? 'animate-spin' : ''}`} />
               <span>{testingProgressText ? 'Mencoba...' : 'Test Connection'}</span>
             </button>
           </div>
 
           {/* Warning badge if user explicitly selected a specialist model */}
           {isSelectedSpecialist && (
-            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-800 flex items-start gap-2">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="mt-2 p-3 bg-amber-100 border-2 border-stone-900 rounded-lg text-xs text-stone-950 font-bold flex items-start gap-2 shadow-[2px_2px_0px_#18181b]">
+              <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5 stroke-[2.5]" />
               <div>
                 <strong>Perhatian:</strong> Model ini tergolong model spesialis (audio/vision/research/robotics) dan tidak dioptimalkan untuk percakapan chat operasional atau tool calling gudang. Sebaiknya gunakan seri <strong>Gemini Flash</strong> atau <strong>Pro</strong>.
               </div>
@@ -1027,19 +1029,19 @@ export const AIConfigPanel: React.FC = () => {
 
           {/* Model Description & Metadata */}
           {selectedModelObj && (
-            <div className="mt-2 p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-100 rounded text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
+            <div className="mt-2 p-3 bg-stone-100 dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-600 rounded-lg text-xs text-stone-900 dark:text-stone-200 space-y-1 shadow-[2px_2px_0px_#18181b]">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1">
-                  <Cpu className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+                <span className="font-black text-stone-950 dark:text-stone-100 flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-stone-700 dark:text-stone-300 stroke-[2.5]" />
                   {selectedModelObj.displayName}
                 </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 dark:text-slate-200 font-mono text-[10px]">
-                  <Layers className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-300 text-stone-950 border border-stone-900 font-mono font-bold text-[10px] shadow-[1px_1px_0px_#18181b]">
+                  <Layers className="w-2.5 h-2.5 text-stone-950" />
                   {selectedModelObj.id}
                 </span>
               </div>
               {selectedModelObj.description && (
-                <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-[11px]">
+                <p className="text-stone-600 dark:text-stone-400 font-medium leading-relaxed text-[11px] pt-1">
                   {selectedModelObj.description}
                 </p>
               )}
@@ -1047,15 +1049,15 @@ export const AIConfigPanel: React.FC = () => {
           )}
 
           {modelsError && (
-            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded text-amber-800 text-[11px] flex items-center justify-between">
+            <div className="mt-2 p-3 bg-amber-100 border-2 border-stone-900 rounded-lg text-stone-950 text-xs font-bold flex items-center justify-between shadow-[2px_2px_0px_#18181b]">
               <div className="flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <AlertTriangle className="w-4 h-4 text-amber-800 stroke-[2.5]" />
                 <span>{modelsError}</span>
               </div>
               <button
                 type="button"
                 onClick={() => loadModels(true)}
-                className="font-medium underline hover:text-amber-900 ml-2 shrink-0"
+                className="font-black underline hover:text-amber-900 ml-2 shrink-0"
               >
                 Coba Lagi
               </button>
@@ -1066,8 +1068,8 @@ export const AIConfigPanel: React.FC = () => {
 
       {/* Progress feedback while testing */}
       {isTesting && testingProgressText && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs flex items-center gap-2 animate-pulse">
-          <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 shrink-0" />
+        <div className="p-3 bg-amber-100 border-2 border-stone-900 rounded-lg text-stone-950 font-black text-xs flex items-center gap-2 shadow-[2.5px_2.5px_0px_#18181b]">
+          <span className="neo-spinner-multicolor-sm" />
           <span>{testingProgressText}</span>
         </div>
       )}
@@ -1075,24 +1077,24 @@ export const AIConfigPanel: React.FC = () => {
       {/* Test Connection Result Box */}
       {testResult && (
         <div
-          className={`p-3.5 rounded border text-xs flex items-start gap-2.5 ${
+          className={`p-3.5 rounded-xl border-2 border-stone-900 shadow-[4px_4px_0px_#18181b] text-xs flex items-start gap-2.5 ${
             testResult.success
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              ? 'bg-emerald-100 text-stone-950'
               : testResult.category === 'UNAVAILABLE' || testResult.category === 'QUOTA'
-              ? 'bg-amber-50 border-amber-200 text-amber-900'
-              : 'bg-rose-50 border-rose-200 text-rose-900'
+              ? 'bg-amber-100 text-stone-950'
+              : 'bg-rose-100 text-stone-950'
           }`}
         >
           {testResult.success ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-800 shrink-0 mt-0.5 stroke-[2.5]" />
           ) : testResult.category === 'UNAVAILABLE' || testResult.category === 'QUOTA' ? (
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-amber-800 shrink-0 mt-0.5 stroke-[2.5]" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-rose-800 shrink-0 mt-0.5 stroke-[2.5]" />
           )}
 
           <div className="space-y-1">
-            <div className="font-semibold">
+            <div className="font-black text-sm">
               {testResult.success
                 ? 'Koneksi Berhasil'
                 : testResult.category === 'UNAVAILABLE'
@@ -1103,7 +1105,7 @@ export const AIConfigPanel: React.FC = () => {
                 ? 'Kunci API Tidak Valid (401)'
                 : 'Koneksi Gagal'}
             </div>
-            <p className="leading-relaxed opacity-90">{testResult.message}</p>
+            <p className="leading-relaxed font-semibold opacity-95">{testResult.message}</p>
           </div>
         </div>
       )}

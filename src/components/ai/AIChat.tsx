@@ -528,61 +528,61 @@ export const AIChat: React.FC = () => {
   });
 
   return (
-    <div className="flex h-[calc(100vh-14rem)] min-h-[540px] bg-stone-50/60 dark:bg-stone-950 rounded-xl border border-stone-200 dark:border-stone-700 overflow-hidden shadow-xs relative transition-colors">
+    <div className="flex h-[calc(100vh-14rem)] min-h-[540px] bg-stone-50 dark:bg-stone-950 rounded-xl border-2 border-stone-900 dark:border-stone-400 overflow-hidden shadow-[5px_5px_0px_#18181b] relative transition-colors">
       {/* --------------------------------------------------------------------- */}
       {/* HISTORY SIDEBAR (Collapsible / Responsive Drawer) */}
       {/* --------------------------------------------------------------------- */}
       <div
-        className={`bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-700 flex flex-col z-20 transition-all duration-200 absolute md:static inset-y-0 left-0 ${
+        className={`bg-white dark:bg-stone-900 border-r-2 border-stone-900 dark:border-stone-600 flex flex-col z-20 transition-all duration-200 absolute md:static inset-y-0 left-0 ${
           isHistoryOpen
             ? 'w-72 shadow-lg md:shadow-none translate-x-0'
             : 'w-0 md:w-64 -translate-x-full md:translate-x-0 overflow-hidden'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="p-3 border-b border-stone-200 dark:border-stone-700 flex items-center justify-between gap-2 bg-stone-50/80 dark:bg-stone-800/60">
-          <div className="flex items-center gap-1.5 font-semibold text-xs text-stone-800 dark:text-stone-200">
-            <History className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
+        <div className="p-3 border-b-2 border-stone-900 dark:border-stone-700 flex items-center justify-between gap-2 bg-amber-100 dark:bg-stone-800">
+          <div className="flex items-center gap-1.5 font-black text-xs text-stone-950 dark:text-stone-100">
+            <History className="w-4 h-4 text-stone-950 dark:text-stone-300 stroke-[2.5]" />
             <span>Riwayat Percakapan</span>
           </div>
           <button
             type="button"
             onClick={handleNewChat}
-            className="px-2.5 py-1 bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 text-white rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1 shadow-2xs"
+            className="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-stone-950 border-2 border-stone-900 rounded-lg text-xs font-black transition-all inline-flex items-center gap-1 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             title="Mulai Percakapan Baru"
           >
-            <Plus className="w-3 h-3" />
+            <Plus className="w-3.5 h-3.5 stroke-[3]" />
             <span>Chat Baru</span>
           </button>
         </div>
 
         {/* Search in History */}
-        <div className="p-2 border-b border-stone-100 dark:border-stone-800">
+        <div className="p-2 border-b-2 border-stone-900 dark:border-stone-800 bg-stone-50 dark:bg-stone-900">
           <div className="relative">
-            <Search className="w-3 h-3 text-stone-400 dark:text-stone-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-stone-700 dark:text-stone-400 absolute left-2.5 top-1/2 -translate-y-1/2 stroke-[2.5]" />
             <input
               type="text"
               value={historySearchQuery}
               onChange={(e) => setHistorySearchQuery(e.target.value)}
               placeholder="Cari riwayat chat..."
-              className="w-full pl-7 pr-2.5 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-800 dark:text-stone-100 focus:bg-white dark:focus:bg-stone-800 focus:outline-none focus:ring-1 focus:ring-amber-700 dark:focus:ring-amber-500 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors"
+              className="w-full pl-8 pr-2.5 py-1.5 bg-white dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-600 rounded-lg text-xs text-stone-950 dark:text-stone-100 font-bold focus:bg-white dark:focus:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-stone-400 shadow-[1.5px_1.5px_0px_#18181b]"
             />
             {historySearchQuery && (
               <button
                 type="button"
                 onClick={() => setHistorySearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-700 hover:text-stone-950 p-0.5"
               >
-                <X className="w-3 h-3" />
+                <X className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             )}
           </div>
         </div>
 
         {/* Conversation List */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
           {filteredConversations.length === 0 ? (
-            <div className="text-center py-8 px-3 text-xs text-stone-400 dark:text-stone-500">
+            <div className="text-center py-8 px-3 text-xs font-semibold text-stone-500 dark:text-stone-400">
               {historySearchQuery ? 'Tidak ada hasil pencarian.' : 'Belum ada riwayat percakapan.'}
             </div>
           ) : (
@@ -599,22 +599,22 @@ export const AIChat: React.FC = () => {
                 <div
                   key={c.id}
                   onClick={() => handleOpenConversation(c.id)}
-                  className={`group px-2.5 py-2 rounded-lg cursor-pointer transition-all text-xs flex items-center justify-between gap-2 ${
+                  className={`group px-2.5 py-2 rounded-lg cursor-pointer transition-all text-xs flex items-center justify-between gap-2 border-2 ${
                     isActive
-                      ? 'bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-200 font-medium'
-                      : 'hover:bg-stone-100/80 dark:hover:bg-stone-800/80 text-stone-700 dark:text-stone-300 border border-transparent'
+                      ? 'bg-amber-200 dark:bg-amber-950/60 border-stone-900 dark:border-amber-400 text-stone-950 dark:text-stone-100 font-bold shadow-[2px_2px_0px_#18181b]'
+                      : 'hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-300 border-transparent hover:border-stone-900'
                   }`}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 truncate">
                       <MessageSquare
-                        className={`w-3.5 h-3.5 shrink-0 ${
-                          isActive ? 'text-amber-700 dark:text-amber-400' : 'text-stone-400 group-hover:text-stone-600 dark:group-hover:text-stone-300'
+                        className={`w-3.5 h-3.5 shrink-0 stroke-[2.5] ${
+                          isActive ? 'text-stone-950 dark:text-amber-400' : 'text-stone-500 group-hover:text-stone-900'
                         }`}
                       />
                       <span className="truncate">{c.title || 'Percakapan'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-stone-400 dark:text-stone-500 mt-0.5 pl-5">
+                    <div className="flex items-center gap-2 text-[10px] text-stone-600 dark:text-stone-400 mt-0.5 pl-5 font-mono">
                       <span>{dateStr}</span>
                       <span>•</span>
                       <span>{c.messages?.length || 0} pesan</span>
@@ -624,10 +624,10 @@ export const AIChat: React.FC = () => {
                   <button
                     type="button"
                     onClick={(e) => handleDeleteConversation(c.id, e)}
-                    className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 p-1 rounded transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 text-rose-600 hover:text-rose-800 p-1 rounded transition-opacity"
                     title="Hapus percakapan"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
                   </button>
                 </div>
               );
@@ -637,20 +637,20 @@ export const AIChat: React.FC = () => {
 
         {/* Active Entity Context Badge in Sidebar */}
         {(conversationContext.activeMember || conversationContext.activeItem) && (
-          <div className="p-2.5 bg-stone-50 dark:bg-stone-800/60 border-t border-stone-200 dark:border-stone-700 text-[11px] text-stone-600 dark:text-stone-300 space-y-1">
-            <div className="font-semibold text-stone-700 dark:text-stone-300 text-[10px] uppercase tracking-wider">
+          <div className="p-2.5 bg-yellow-100 dark:bg-stone-800 border-t-2 border-stone-900 dark:border-stone-700 text-[11px] text-stone-950 dark:text-stone-300 space-y-1">
+            <div className="font-black text-stone-950 dark:text-stone-200 text-[10px] uppercase tracking-wider">
               Konteks Aktif Sesi
             </div>
             {conversationContext.activeMember && (
-              <div className="flex items-center gap-1.5 text-stone-700 dark:text-stone-200 truncate">
-                <UserCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="truncate font-medium">{conversationContext.activeMember.name}</span>
+              <div className="flex items-center gap-1.5 text-stone-900 dark:text-stone-200 truncate">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0 stroke-[2.5]" />
+                <span className="truncate font-bold">{conversationContext.activeMember.name}</span>
               </div>
             )}
             {conversationContext.activeItem && (
-              <div className="flex items-center gap-1.5 text-stone-700 dark:text-stone-200 truncate">
-                <Package className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
-                <span className="truncate font-medium">{conversationContext.activeItem.name}</span>
+              <div className="flex items-center gap-1.5 text-stone-900 dark:text-stone-200 truncate">
+                <Package className="w-3.5 h-3.5 text-sky-700 shrink-0 stroke-[2.5]" />
+                <span className="truncate font-bold">{conversationContext.activeItem.name}</span>
               </div>
             )}
           </div>
@@ -662,36 +662,36 @@ export const AIChat: React.FC = () => {
       {/* --------------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-stone-900 transition-colors">
         {/* Chat Subheader */}
-        <div className="px-4 py-3 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 flex items-center justify-between gap-3 shrink-0">
+        <div className="px-4 py-3 bg-white dark:bg-stone-900 border-b-2 border-stone-900 dark:border-stone-700 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             {/* Toggle History Button (Mobile/Desktop) */}
             <button
               type="button"
               onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-              className="md:hidden p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-400 transition-colors"
+              className="md:hidden p-1.5 rounded-lg border-2 border-stone-900 bg-stone-100 hover:bg-stone-200 text-stone-950 transition-colors shadow-[1.5px_1.5px_0px_#18181b]"
               title="Toggle Riwayat"
             >
-              <History className="w-4 h-4" />
+              <History className="w-4 h-4 stroke-[2.5]" />
             </button>
 
             <div
-              className={`w-2 h-2 rounded-full shrink-0 ${
+              className={`w-3 h-3 rounded-full border border-stone-900 shrink-0 ${
                 liveStatus === 'LISTENING' || liveStatus === 'SPEAKING'
-                  ? 'bg-teal-500 animate-ping'
+                  ? 'bg-sky-400 animate-ping'
                   : liveStatus === 'CONNECTING'
-                  ? 'bg-amber-500 animate-spin'
-                  : 'bg-emerald-500 animate-pulse'
+                  ? 'bg-amber-400 animate-spin'
+                  : 'bg-emerald-400'
               }`}
             />
             <div className="min-w-0">
-              <span className="text-xs font-semibold text-stone-800 dark:text-stone-100 block truncate">
+              <span className="text-xs font-black text-stone-950 dark:text-stone-100 block truncate">
                 {liveStatus !== 'DISCONNECTED'
                   ? `Gemini Live Voice (${liveStatus})`
                   : activeModelId
                   ? `Uti AI Terhubung (${aiService.getModelDisplayName(activeModelId)})`
                   : 'Uti AI — Model belum dipilih'}
               </span>
-              <span className="text-[10px] text-stone-400 dark:text-stone-500 block truncate">
+              <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold block truncate">
                 {conversationTitle}
               </span>
             </div>
@@ -701,27 +701,27 @@ export const AIChat: React.FC = () => {
             <button
               type="button"
               onClick={handleNewChat}
-              className="px-2.5 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 rounded-lg text-xs font-medium transition-colors inline-flex items-center gap-1"
+              className="px-3 py-1 bg-yellow-300 hover:bg-yellow-200 text-stone-950 border-2 border-stone-900 rounded-lg text-xs font-black transition-all inline-flex items-center gap-1 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               title="Buat Chat Baru"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-3.5 h-3.5 stroke-[3]" />
               <span className="hidden sm:inline">Chat Baru</span>
             </button>
           </div>
         </div>
 
         {/* Messages Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-stone-50/40 dark:bg-stone-950/40">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-amber-50/20 dark:bg-stone-950/40">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
               <div className="animate-float">
                 <AIAvatarIcon size="xl" showStatusDot status="online" />
               </div>
-              <div className="max-w-md space-y-1">
-                <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+              <div className="max-w-md space-y-1.5">
+                <h3 className="text-sm font-black text-stone-950 dark:text-stone-100">
                   Ada yang bisa dibantu untuk operasional gudang hari ini?
                 </h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-medium">
                   Tanyakan posisi stok barang, validasi kuota limit member, cek mutasi kartu stok,
                   atau siapkan draf transaksi dengan mengetik pesan atau menggunakan percakapan suara realtime (Gemini Live).
                 </p>
@@ -729,16 +729,16 @@ export const AIChat: React.FC = () => {
 
               {/* Quick Suggestions Chips */}
               <div className="w-full max-w-lg pt-2">
-                <div className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-2">
+                <div className="text-[11px] font-black text-stone-800 dark:text-stone-300 uppercase tracking-wider mb-2.5">
                   Contoh Perintah Cepat
                 </div>
-                <div className="flex flex-wrap justify-center gap-1.5">
+                <div className="flex flex-wrap justify-center gap-2">
                   {SUGGESTIONS.map((item, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => handleSendMessage(item)}
-                      className="text-xs px-3 py-1.5 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:border-stone-400 dark:hover:border-stone-500 hover:bg-stone-50 dark:hover:bg-stone-700/60 transition-colors shadow-2xs text-left"
+                      className="text-xs px-3.5 py-1.5 rounded-lg bg-white dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-500 text-stone-950 dark:text-stone-100 hover:bg-yellow-200 dark:hover:bg-amber-950/60 font-bold transition-all shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-left"
                     >
                       {item}
                     </button>
@@ -759,12 +759,12 @@ export const AIChat: React.FC = () => {
           {/* Loading / Tool executing indicator in chat mode */}
           {isLoading && (
             <div className="flex gap-3 justify-start animate-fadeIn">
-              <div className="w-8 h-8 rounded-full bg-stone-900 dark:bg-stone-800 text-white flex items-center justify-center shrink-0">
-                <Bot className="w-4 h-4 text-emerald-400" />
+              <div className="w-8 h-8 rounded-full bg-stone-900 dark:bg-stone-800 text-white flex items-center justify-center shrink-0 border-2 border-stone-900 shadow-[1.5px_1.5px_0px_#18181b]">
+                <Bot className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
               </div>
-              <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl rounded-tl-none p-3.5 shadow-xs flex items-center gap-2.5 text-xs text-stone-600 dark:text-stone-300">
-                <Loader2 className={`w-4 h-4 animate-spin ${retryStatus ? 'text-amber-500' : 'text-stone-800 dark:text-stone-200'}`} />
-                <span className={retryStatus ? 'text-amber-700 dark:text-amber-300 font-medium' : ''}>
+              <div className="bg-amber-100 dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-600 rounded-xl rounded-tl-none p-3.5 shadow-[3px_3px_0px_#18181b] flex items-center gap-2.5 text-xs text-stone-950 dark:text-stone-100 font-bold">
+                <span className="neo-spinner-multicolor-sm" />
+                <span className={retryStatus ? 'text-amber-900 dark:text-amber-300 font-black' : ''}>
                   {retryStatus || (activeTool ? `Memeriksa data ${activeTool}...` : 'Sedang berpikir...')}
                 </span>
               </div>
@@ -785,7 +785,7 @@ export const AIChat: React.FC = () => {
         />
 
         {/* Input Form Bar */}
-        <div className="p-3 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700">
+        <div className="p-3 bg-white dark:bg-stone-900 border-t-2 border-stone-900 dark:border-stone-700">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -801,15 +801,15 @@ export const AIChat: React.FC = () => {
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Ketik instruksi gudang, stok, limit member, atau draf transaksi..."
                 disabled={isLoading}
-                className="w-full pl-3.5 pr-10 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-900 dark:text-stone-100 focus:bg-white dark:focus:bg-stone-800 focus:outline-none focus:ring-1 focus:ring-amber-700 dark:focus:ring-amber-500 transition-all placeholder:text-stone-400 dark:placeholder:text-stone-500"
+                className="w-full pl-3.5 pr-11 py-2 bg-stone-50 dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-500 rounded-lg text-xs font-bold text-stone-950 dark:text-stone-100 focus:bg-white dark:focus:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all placeholder:text-stone-400 shadow-[2px_2px_0px_#18181b]"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim() || isLoading}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 text-white rounded-lg disabled:opacity-30 transition-all shadow-xs"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-amber-400 hover:bg-amber-300 text-stone-950 border border-stone-900 rounded-md disabled:opacity-30 transition-all shadow-[1.5px_1.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5"
                 title="Kirim Pesan"
               >
-                <Send className="w-3.5 h-3.5" />
+                <Send className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             </div>
 

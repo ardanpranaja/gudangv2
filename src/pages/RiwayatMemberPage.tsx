@@ -140,10 +140,10 @@ export const RiwayatMemberPage: React.FC = () => {
       />
 
       {/* Member Selector Bar */}
-      <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-5 space-y-4">
+      <div className="bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 p-5 space-y-4 shadow-[4.5px_4.5px_0px_#18181b]">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex-1 max-w-xl">
-            <label className="block text-xs font-semibold text-stone-700 dark:text-stone-200 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-black text-stone-950 dark:text-stone-100 uppercase tracking-wider mb-1.5">
               Pilih Member:
             </label>
             <SearchableSelect
@@ -156,21 +156,21 @@ export const RiwayatMemberPage: React.FC = () => {
           </div>
 
           {selectedMember && (
-            <div className="flex items-center gap-4 bg-stone-50 dark:bg-stone-800/60 p-3.5 rounded-lg border border-stone-200 dark:border-stone-700">
+            <div className="flex items-center gap-4 bg-amber-100 dark:bg-stone-800/80 p-3.5 rounded-xl border-2 border-stone-900 dark:border-stone-500 shadow-[3px_3px_0px_#18181b]">
               <div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">Jabatan / Role</div>
-                <div className="font-semibold text-stone-900 dark:text-stone-100">{selectedMember.JABATAN || '-'}</div>
+                <div className="text-[11px] text-stone-700 dark:text-stone-400 font-bold">Jabatan / Role</div>
+                <div className="font-black text-stone-950 dark:text-stone-100">{selectedMember.JABATAN || '-'}</div>
               </div>
-              <div className="h-8 w-px bg-stone-200 dark:bg-stone-700" />
+              <div className="h-8 w-0.5 bg-stone-900 dark:bg-stone-600" />
               <div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">Kontak</div>
-                <div className="font-mono text-xs font-medium text-stone-800 dark:text-stone-200">
+                <div className="text-[11px] text-stone-700 dark:text-stone-400 font-bold">Kontak</div>
+                <div className="font-mono text-xs font-black text-stone-950 dark:text-stone-200">
                   {selectedMember.NO_HP || '-'}
                 </div>
               </div>
-              <div className="h-8 w-px bg-stone-200 dark:bg-stone-700" />
+              <div className="h-8 w-0.5 bg-stone-900 dark:bg-stone-600" />
               <div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">Status</div>
+                <div className="text-[11px] text-stone-700 dark:text-stone-400 font-bold">Status</div>
                 <StatusBadge status={selectedMember.STATUS} size="sm" />
               </div>
             </div>
@@ -178,10 +178,10 @@ export const RiwayatMemberPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-3.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-600 dark:text-stone-400 flex items-center gap-2">
-        <Info className="w-4 h-4 text-stone-500 dark:text-stone-400 shrink-0" />
+      <div className="p-3.5 bg-yellow-100 dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-500 rounded-xl text-xs text-stone-950 dark:text-stone-100 font-bold flex items-center gap-2 shadow-[2.5px_2.5px_0px_#18181b]">
+        <Info className="w-4 h-4 text-stone-900 dark:text-stone-100 shrink-0 stroke-[2.5]" />
         <span>
-          Data riwayat pengambilan member bersumber langsung dari backend GAS (<span className="font-mono">action=memberhistory</span>).
+          Data riwayat pengambilan member bersumber langsung dari backend GAS (<span className="font-mono font-black text-amber-900 dark:text-amber-300">action=memberhistory</span>).
         </span>
       </div>
 
@@ -194,6 +194,7 @@ export const RiwayatMemberPage: React.FC = () => {
             unit="Kali"
             subtitle="Akumulasi pengambilan & pinjaman di GAS"
             icon={History}
+            variant="cyan"
           />
           <StatCard
             label="Total Unit Barang Diambil"
@@ -201,6 +202,7 @@ export const RiwayatMemberPage: React.FC = () => {
             unit="Unit"
             subtitle="Keseluruhan barang yang pernah didistribusikan"
             icon={PackageCheck}
+            variant="warning"
           />
           <StatCard
             label="Pengambilan Bulan Ini"
@@ -208,16 +210,17 @@ export const RiwayatMemberPage: React.FC = () => {
             unit="Unit"
             subtitle="Periode bulan berjalan"
             icon={Calendar}
+            variant="purple"
           />
         </div>
       )}
 
       {/* Breakdown Barang yang Pernah Diambil */}
       {summary && summary.items.length > 0 && (
-        <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-5 space-y-3">
-          <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-            <h3 className="text-xs font-semibold text-stone-900 dark:text-stone-100 uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+        <div className="bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 p-5 space-y-3 shadow-[4.5px_4.5px_0px_#18181b]">
+          <div className="flex items-center justify-between border-b-2 border-stone-900 dark:border-stone-700 pb-2">
+            <h3 className="text-xs font-black text-stone-950 dark:text-stone-100 uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-stone-950 dark:text-stone-200 stroke-[2.5]" />
               <span>Daftar Barang yang Pernah Diambil ({summary.items.length} SKU)</span>
             </h3>
           </div>
@@ -226,19 +229,19 @@ export const RiwayatMemberPage: React.FC = () => {
             {summary.items.map((item, idx) => (
               <div
                 key={`${item.idItem}-${idx}`}
-                className="p-3 bg-stone-50 dark:bg-stone-800/60 rounded-lg border border-stone-200 dark:border-stone-700/80 flex items-center justify-between dark:border-stone-700"
+                className="p-3 bg-stone-50 dark:bg-stone-800/80 rounded-lg border-2 border-stone-900 dark:border-stone-500 flex items-center justify-between shadow-[2px_2px_0px_#18181b]"
               >
                 <div>
-                  <div className="font-semibold text-stone-900 dark:text-stone-100 text-xs">{item.namaItem}</div>
-                  <div className="text-[11px] text-stone-400 dark:text-stone-500 font-mono mt-0.5">
+                  <div className="font-black text-stone-950 dark:text-stone-100 text-xs">{item.namaItem}</div>
+                  <div className="text-[11px] text-stone-600 dark:text-stone-400 font-mono mt-0.5 font-semibold">
                     Terakhir: {item.lastDate} · {item.count}x transaksi
                   </div>
                 </div>
                 <div className="text-right shrink-0 ml-3">
-                  <div className="font-mono font-bold text-stone-900 dark:text-stone-100 text-sm tabular-nums">
+                  <div className="font-mono font-black text-stone-950 dark:text-amber-400 text-sm tabular-nums">
                     {item.totalQty}
                   </div>
-                  <div className="text-[10px] text-stone-500 dark:text-stone-400 uppercase">{item.satuan}</div>
+                  <div className="text-[10px] text-stone-600 dark:text-stone-400 uppercase font-bold">{item.satuan}</div>
                 </div>
               </div>
             ))}

@@ -136,30 +136,30 @@ export const KembaliPage: React.FC = () => {
       />
 
       {lastSubmittedTx && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start justify-between text-xs text-emerald-900 animate-fadeIn dark:bg-emerald-950/40 dark:text-emerald-100 dark:border-emerald-800">
+        <div className="p-4 bg-emerald-100 border-2 border-stone-900 rounded-xl flex items-start justify-between text-xs text-stone-950 animate-fadeIn shadow-[4px_4px_0px_#18181b]">
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-800 shrink-0 mt-0.5 stroke-[2.5]" />
             <div>
-              <div className="font-semibold text-sm text-emerald-950 dark:text-emerald-100">
+              <div className="font-black text-sm text-stone-950">
                 Pengembalian Berhasil Disimpan di GAS
               </div>
-              <p className="mt-1 text-emerald-800 dark:text-emerald-200">
-                Dokumen <span className="font-mono font-bold">{lastSubmittedTx.NO_DOKUMEN}</span> telah
-                diterbitkan untuk member <span className="font-semibold">{lastSubmittedTx.NAMA_MEMBER}</span>.
+              <p className="mt-1 text-stone-800 font-medium">
+                Dokumen <span className="font-mono font-black text-stone-950">{lastSubmittedTx.NO_DOKUMEN}</span> telah
+                diterbitkan untuk member <span className="font-bold text-stone-950">{lastSubmittedTx.NAMA_MEMBER}</span>.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => navigateTo('bincard', { itemId: lastSubmittedTx.ID_ITEM })}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 rounded font-medium hover:bg-emerald-100 transition-colors dark:bg-emerald-900/40 dark:text-emerald-100 dark:border-emerald-700 dark:hover:bg-emerald-900/40"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-stone-900 text-stone-950 rounded-lg font-black hover:bg-stone-100 transition-colors shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
-              <ScrollText className="w-3.5 h-3.5" />
+              <ScrollText className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Lihat Bin Card</span>
             </button>
             <button
               onClick={() => setLastSubmittedTx(null)}
-              className="text-emerald-700 hover:text-emerald-900 px-2 py-1 dark:text-emerald-300"
+              className="px-2.5 py-1 text-xs font-black bg-stone-100 hover:bg-stone-200 border-2 border-stone-900 rounded text-stone-950 shadow-[1.5px_1.5px_0px_#18181b]"
             >
               Tutup
             </button>
@@ -169,11 +169,11 @@ export const KembaliPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Form Container */}
-        <div className="md:col-span-2 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6">
+        <div className="md:col-span-2 bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 p-6 shadow-[5px_5px_0px_#18181b]">
           <form onSubmit={handleSubmit} className="space-y-5 text-xs">
             <div>
-              <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                Pilih Member yang Mengembalikan <span className="text-rose-500">*</span>
+              <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
+                Pilih Member yang Mengembalikan <span className="text-rose-600">*</span>
               </label>
               <SearchableSelect
                 disabled={isLoading || isSubmitting}
@@ -187,8 +187,8 @@ export const KembaliPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                Pilih Barang / Alat yang Dikembalikan <span className="text-rose-500">*</span>
+              <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
+                Pilih Barang / Alat yang Dikembalikan <span className="text-rose-600">*</span>
               </label>
               <SearchableSelect
                 disabled={isLoading || isSubmitting}
@@ -203,8 +203,8 @@ export const KembaliPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                  Jumlah Dikembalikan <span className="text-rose-500">*</span>
+                <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
+                  Jumlah Dikembalikan <span className="text-rose-600">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -214,17 +214,17 @@ export const KembaliPage: React.FC = () => {
                     disabled={isSubmitting}
                     value={jumlah}
                     onChange={(e) => setJumlah(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 font-mono text-xs pr-16"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 font-mono font-bold text-xs pr-16 bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 font-mono text-xs">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-300 font-mono font-bold text-xs">
                     {selectedItem?.SATUAN || 'UNIT'}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                  Tanggal Pengembalian <span className="text-rose-500">*</span>
+                <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
+                  Tanggal Pengembalian <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="date"
@@ -232,13 +232,13 @@ export const KembaliPage: React.FC = () => {
                   disabled={isSubmitting}
                   value={tanggal}
                   onChange={(e) => setTanggal(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 text-xs"
+                  className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 text-xs font-bold bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
+              <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
                 Kondisi Barang Saat Kembali & Keterangan
               </label>
               <textarea
@@ -247,27 +247,27 @@ export const KembaliPage: React.FC = () => {
                 value={keterangan}
                 onChange={(e) => setKeterangan(e.target.value)}
                 placeholder="Contoh: Dikembalikan dalam keadaan bersih, kabel rapi, aksesoris lengkap dan berfungsi normal."
-                className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 text-xs"
+                className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 text-xs font-medium bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
               />
             </div>
 
-            <div className="pt-4 border-t border-stone-200 dark:border-stone-700 flex items-center justify-between">
-              <span className="text-[11px] text-stone-400 dark:text-stone-500">
+            <div className="pt-4 border-t-2 border-stone-900 dark:border-stone-700 flex items-center justify-between">
+              <span className="text-[11px] text-stone-600 dark:text-stone-400 font-bold">
                 Pencatatan dikirim langsung via POST action=transaction ke GAS.
               </span>
               <button
                 type="submit"
                 disabled={isSubmitting || isLoading}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-stone-900 rounded hover:bg-stone-800 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black text-stone-950 bg-amber-400 hover:bg-amber-300 border-2 border-stone-900 rounded-lg shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#18181b] transition-all disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <div className="w-3.5 h-3.5 neo-spinner-multicolor shrink-0" />
                     <span>Menyimpan ke GAS...</span>
                   </>
                 ) : (
                   <>
-                    <Undo2 className="w-3.5 h-3.5" />
+                    <Undo2 className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Catat Pengembalian</span>
                   </>
                 )}
@@ -278,17 +278,17 @@ export const KembaliPage: React.FC = () => {
 
         {/* Sidebar Info */}
         <div className="space-y-4">
-          <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-4 space-y-3 text-xs">
-            <h4 className="font-semibold text-stone-900 dark:text-stone-100 border-b border-stone-100 pb-2 flex items-center gap-1.5">
-              <Boxes className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+          <div className="bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 p-4 space-y-3 text-xs shadow-[4px_4px_0px_#18181b]">
+            <h4 className="font-black text-stone-950 dark:text-stone-100 border-b-2 border-stone-900 dark:border-stone-700 pb-2 flex items-center gap-1.5">
+              <Boxes className="w-4 h-4 stroke-[2.5]" />
               <span>Efek ke Saldo Stok</span>
             </h4>
 
             {selectedItem && (
               <div className="space-y-2">
-                <div className="flex justify-between py-1 border-b border-stone-100">
-                  <span className="text-stone-500 dark:text-stone-400">Stok Saat Ini (GAS)</span>
-                  <span className="font-mono font-semibold text-stone-900 dark:text-stone-100 tabular-nums">
+                <div className="flex justify-between py-1 border-b-2 border-stone-100 dark:border-stone-800">
+                  <span className="text-stone-600 dark:text-stone-400 font-semibold">Stok Saat Ini (GAS)</span>
+                  <span className="font-mono font-black text-stone-950 dark:text-stone-100 tabular-nums">
                     {currentStock} {selectedItem.SATUAN}
                   </span>
                 </div>

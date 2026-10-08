@@ -11,7 +11,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
   const displayStatus = rawStatus.length > 0 ? rawStatus : '-';
   const normalized = displayStatus.toUpperCase();
 
-  let colorClasses = 'text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700';
+  let colorClasses = 'text-stone-950 bg-yellow-200 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]';
   let Icon = Clock;
 
   switch (normalized) {
@@ -19,21 +19,24 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     case 'SELESAI':
     case 'TERSEDIA':
     case 'BAIK':
-      colorClasses = 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800';
+      colorClasses = 'text-stone-950 bg-emerald-300 dark:bg-emerald-400 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]';
       Icon = CheckCircle2;
       break;
     case 'DISETUJUI':
-      colorClasses = 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800';
+      colorClasses = 'text-stone-950 bg-sky-300 dark:bg-sky-400 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]';
       Icon = CheckCircle2;
       break;
     case 'DIPROSES':
-      colorClasses = 'text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/60 border-orange-200 dark:border-orange-800';
+    case 'BARANG_MASUK':
+    case 'MASUK':
+      colorClasses = 'text-stone-950 bg-indigo-200 dark:bg-indigo-300 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]';
       Icon = Clock;
       break;
     case 'MENUNGGU':
     case 'SEDANG_DIGUNAKAN':
     case 'MAINTENANCE':
-      colorClasses = 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800';
+    case 'PINJAM':
+      colorClasses = 'text-stone-950 bg-amber-300 dark:bg-amber-400 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]';
       Icon = AlertTriangle;
       break;
     case 'NONAKTIF':
@@ -41,33 +44,35 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     case 'DIBATALKAN':
     case 'RUSAK':
     case 'TIDAK_AKTIF':
-      colorClasses = 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800';
+    case 'BARANG_KELUAR':
+    case 'KELUAR':
+      colorClasses = 'text-stone-950 bg-rose-300 dark:bg-rose-400 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]';
       Icon = XCircle;
       break;
     case 'SM':
     case 'SPV':
     case 'TL':
-      colorClasses = 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800';
+      colorClasses = 'text-stone-950 bg-purple-300 dark:bg-purple-400 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]';
       Icon = ShieldCheck;
       break;
     case 'CREW':
     case 'VENDOR':
-      colorClasses = 'text-stone-700 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700';
+      colorClasses = 'text-stone-950 bg-stone-200 dark:bg-stone-300 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]';
       Icon = CheckCircle2;
       break;
     default:
-      colorClasses = 'text-stone-700 dark:text-stone-300 bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700';
+      colorClasses = 'text-stone-950 bg-yellow-200 dark:bg-yellow-300 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]';
       Icon = CheckCircle2;
   }
 
-  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs';
+  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs';
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-medium rounded border ${colorClasses} ${sizeClasses} whitespace-nowrap`}
+      className={`inline-flex items-center gap-1.5 font-black rounded ${colorClasses} ${sizeClasses} whitespace-nowrap`}
     >
-      <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-      <span>{displayStatus}</span>
+      <Icon className="w-3.5 h-3.5 shrink-0 stroke-[2.5]" aria-hidden="true" />
+      <span className="tracking-tight">{displayStatus}</span>
     </span>
   );
 };

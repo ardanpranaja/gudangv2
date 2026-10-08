@@ -14,18 +14,20 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   actions,
 }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 mb-6 border-b border-stone-200 dark:border-stone-700 dark:border-stone-800">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 mb-6 border-b-2 border-stone-900 dark:border-stone-600">
       <div>
         {kicker && (
-          <div className="text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">
-            {kicker}
+          <div className="mb-1.5">
+            <span className="inline-block px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase bg-amber-300 text-stone-950 border-2 border-stone-900 rounded shadow-[1.5px_1.5px_0px_#18181b]">
+              {kicker}
+            </span>
           </div>
         )}
-        <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100 text-balance">
+        <h1 className="text-xl md:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100 text-balance">
           {title}
         </h1>
         {description && (
-          <p className="text-sm text-stone-500 dark:text-stone-400 mt-1 max-w-2xl leading-normal">
+          <p className="text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-400 mt-1 max-w-2xl leading-normal">
             {description}
           </p>
         )}

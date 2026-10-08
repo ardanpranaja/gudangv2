@@ -257,10 +257,10 @@ export const ItemsPage: React.FC = () => {
         description="Katalog item gudang, spesifikasi kategori, satuan, dan aturan masa pakai dari lembar MASTER_ITEM Spreadsheet."
       />
 
-      <div className="p-3.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-600 dark:text-stone-400 flex items-center gap-2">
-        <Info className="w-4 h-4 text-stone-500 dark:text-stone-400 shrink-0" />
+      <div className="p-3.5 bg-yellow-100 dark:bg-stone-800 border-2 border-stone-900 dark:border-stone-500 rounded-xl text-xs text-stone-950 dark:text-stone-100 font-bold flex items-center gap-2 shadow-[2.5px_2.5px_0px_#18181b]">
+        <Info className="w-4 h-4 text-stone-900 dark:text-stone-100 shrink-0 stroke-[2.5]" />
         <span>
-          Data Master Barang disinkronkan secara langsung dari Google Spreadsheet (<span className="font-mono font-medium">MASTER_ITEM</span>).
+          Data Master Barang disinkronkan secara langsung dari Google Spreadsheet (<span className="font-mono font-black text-amber-900 dark:text-amber-300">MASTER_ITEM</span>).
         </span>
       </div>
 
@@ -281,7 +281,7 @@ export const ItemsPage: React.FC = () => {
             <select
               value={selectedKategori}
               onChange={(e) => setSelectedKategori(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-700 dark:text-stone-200"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 font-bold shadow-[2px_2px_0px_#18181b]"
             >
               <option value="ALL">Semua Kategori</option>
               <option value="CHEMICAL">CHEMICAL</option>
@@ -292,7 +292,7 @@ export const ItemsPage: React.FC = () => {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-700 dark:text-stone-200"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 font-bold shadow-[2px_2px_0px_#18181b]"
             >
               <option value="ALL">Semua Status</option>
               <option value="AKTIF">AKTIF</option>
@@ -316,9 +316,9 @@ export const ItemsPage: React.FC = () => {
                   setSelectedItem(null);
                   navigateTo('stok');
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-600 rounded hover:bg-stone-50 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-stone-950 bg-amber-300 hover:bg-amber-400 border-2 border-stone-900 rounded-lg shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
               >
-                <Boxes className="w-3.5 h-3.5" />
+                <Boxes className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Lihat di Stok</span>
               </button>
               <button
@@ -327,9 +327,9 @@ export const ItemsPage: React.FC = () => {
                   setSelectedItem(null);
                   navigateTo('bincard', { itemId: id });
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-stone-900 rounded hover:bg-stone-800 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-stone-950 bg-cyan-300 hover:bg-cyan-400 border-2 border-stone-900 rounded-lg shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
               >
-                <ScrollText className="w-3.5 h-3.5" />
+                <ScrollText className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Buka Bin Card</span>
               </button>
             </div>
@@ -338,44 +338,44 @@ export const ItemsPage: React.FC = () => {
       >
         {selectedItem && (
           <div className="space-y-6 text-xs">
-            <div className="p-4 bg-stone-50 dark:bg-stone-800/60 rounded-lg border border-stone-200 dark:border-stone-700 space-y-3">
+            <div className="p-4 bg-stone-50 dark:bg-stone-800/80 rounded-xl border-2 border-stone-900 dark:border-stone-500 space-y-3 shadow-[3px_3px_0px_#18181b]">
               <div className="flex items-center justify-between">
-                <span className="text-stone-500 dark:text-stone-400 font-medium">Status Item</span>
+                <span className="text-stone-700 dark:text-stone-300 font-bold">Status Item</span>
                 <StatusBadge status={selectedItem.STATUS} size="sm" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-500 dark:text-stone-400 font-medium">Kategori</span>
-                <span className="font-semibold text-stone-800 dark:text-stone-200">{selectedItem.KATEGORI}</span>
+                <span className="text-stone-700 dark:text-stone-300 font-bold">Kategori</span>
+                <span className="font-black text-stone-950 dark:text-stone-100">{selectedItem.KATEGORI}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-500 dark:text-stone-400 font-medium">Satuan Ukuran</span>
-                <span className="font-mono text-stone-800 dark:text-stone-200">{selectedItem.SATUAN}</span>
+                <span className="text-stone-700 dark:text-stone-300 font-bold">Satuan Ukuran</span>
+                <span className="font-mono font-black text-stone-950 dark:text-stone-100">{selectedItem.SATUAN}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-500 dark:text-stone-400 font-medium">Lokasi Gudang</span>
-                <span className="text-stone-800 dark:text-stone-200">{selectedItem.LOKASI || '-'}</span>
+                <span className="text-stone-700 dark:text-stone-300 font-bold">Lokasi Gudang</span>
+                <span className="text-stone-950 dark:text-stone-100 font-bold">{selectedItem.LOKASI || '-'}</span>
               </div>
             </div>
 
             <div className="space-y-3">
-              <h4 className="font-semibold text-stone-900 dark:text-stone-100 border-b border-stone-200 dark:border-stone-700 pb-1.5">
+              <h4 className="font-black text-stone-950 dark:text-stone-100 border-b-2 border-stone-900 dark:border-stone-700 pb-1.5">
                 Aturan & Batasan Operasional
               </h4>
-              <div className="flex items-center justify-between py-1 border-b border-stone-100">
-                <span className="text-stone-500 dark:text-stone-400">Masa Pakai (Bulan)</span>
-                <span className="font-mono font-semibold text-stone-800 dark:text-stone-200">
+              <div className="flex items-center justify-between py-1 border-b-2 border-stone-100 dark:border-stone-800">
+                <span className="text-stone-700 dark:text-stone-300 font-medium">Masa Pakai (Bulan)</span>
+                <span className="font-mono font-black text-stone-950 dark:text-stone-100">
                   {selectedItem.MASA_PAKAI_BULAN} Bulan
                 </span>
               </div>
-              <div className="flex items-center justify-between py-1 border-b border-stone-100">
-                <span className="text-stone-500 dark:text-stone-400">Batas Minimum Stok</span>
-                <span className="font-mono font-semibold text-stone-800 dark:text-stone-200">
+              <div className="flex items-center justify-between py-1 border-b-2 border-stone-100 dark:border-stone-800">
+                <span className="text-stone-700 dark:text-stone-300 font-medium">Batas Minimum Stok</span>
+                <span className="font-mono font-black text-rose-600 dark:text-rose-400">
                   {selectedItem.MIN_STOK} {selectedItem.SATUAN}
                 </span>
               </div>
-              <div className="flex items-center justify-between py-1 border-b border-stone-100">
-                <span className="text-stone-500 dark:text-stone-400">Stok Awal Terdaftar</span>
-                <span className="font-mono text-stone-700 dark:text-stone-200">
+              <div className="flex items-center justify-between py-1 border-b-2 border-stone-100 dark:border-stone-800">
+                <span className="text-stone-700 dark:text-stone-300 font-medium">Stok Awal Terdaftar</span>
+                <span className="font-mono font-bold text-stone-850 dark:text-stone-200">
                   {selectedItem.STOK_AWAL} {selectedItem.SATUAN}
                 </span>
               </div>
@@ -383,31 +383,31 @@ export const ItemsPage: React.FC = () => {
 
             {(selectedItem.CARA_PAKAI || selectedItem.TAKARAN || selectedItem.PERHATIAN) && (
               <div className="space-y-3">
-                <h4 className="font-semibold text-stone-900 dark:text-stone-100 border-b border-stone-200 dark:border-stone-700 pb-1.5">
+                <h4 className="font-black text-stone-950 dark:text-stone-100 border-b-2 border-stone-900 dark:border-stone-700 pb-1.5">
                   Pengetahuan Produk
                 </h4>
                 {selectedItem.CARA_PAKAI && (
-                  <div className="py-1 border-b border-stone-100">
-                    <div className="text-stone-500 dark:text-stone-400 text-[11px] font-medium mb-0.5">Cara Pakai</div>
-                    <div className="text-stone-800 dark:text-stone-200 leading-relaxed">{selectedItem.CARA_PAKAI}</div>
+                  <div className="py-1 border-b-2 border-stone-100 dark:border-stone-800">
+                    <div className="text-stone-600 dark:text-stone-400 text-[11px] font-bold mb-0.5">Cara Pakai</div>
+                    <div className="text-stone-950 dark:text-stone-100 leading-relaxed font-medium">{selectedItem.CARA_PAKAI}</div>
                   </div>
                 )}
                 {selectedItem.TAKARAN && selectedItem.TAKARAN !== '-' && (
-                  <div className="py-1 border-b border-stone-100">
-                    <div className="text-stone-500 dark:text-stone-400 text-[11px] font-medium mb-0.5">Takaran</div>
-                    <div className="font-mono font-semibold text-stone-800 dark:text-stone-200">{selectedItem.TAKARAN}</div>
+                  <div className="py-1 border-b-2 border-stone-100 dark:border-stone-800">
+                    <div className="text-stone-600 dark:text-stone-400 text-[11px] font-bold mb-0.5">Takaran</div>
+                    <div className="font-mono font-black text-stone-950 dark:text-stone-100">{selectedItem.TAKARAN}</div>
                   </div>
                 )}
                 {selectedItem.PERHATIAN && (
-                  <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-                    <span className="font-semibold">Perhatian: </span>{selectedItem.PERHATIAN}
+                  <div className="p-3 bg-rose-100 dark:bg-rose-950/60 border-2 border-stone-900 dark:border-stone-500 rounded-lg text-[11px] text-stone-950 dark:text-rose-200 leading-relaxed font-bold shadow-[2px_2px_0px_#18181b]">
+                    <span className="font-black text-rose-700 dark:text-rose-400">Perhatian: </span>{selectedItem.PERHATIAN}
                   </div>
                 )}
               </div>
             )}
 
-            <div className="p-3 bg-stone-50 dark:bg-stone-800/60 rounded border border-stone-200 dark:border-stone-700 text-[11px] text-stone-500 dark:text-stone-400 space-y-1">
-              <div>ID Item Permanen: <span className="font-mono font-semibold text-stone-700 dark:text-stone-200">{selectedItem.ID_ITEM}</span></div>
+            <div className="p-3 bg-stone-100 dark:bg-stone-800/80 rounded-lg border-2 border-stone-900 dark:border-stone-600 text-[11px] text-stone-700 dark:text-stone-300 space-y-1">
+              <div>ID Item Permanen: <span className="font-mono font-black text-stone-950 dark:text-stone-100">{selectedItem.ID_ITEM}</span></div>
             </div>
           </div>
         )}
@@ -415,18 +415,18 @@ export const ItemsPage: React.FC = () => {
 
       {/* Edit Item Modal */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/50 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 shadow-xl max-w-lg w-full overflow-hidden animate-scaleIn">
-            <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border-2 border-stone-900 dark:border-stone-400 shadow-[8px_8px_0px_#18181b] max-w-lg w-full overflow-hidden animate-scaleIn">
+            <div className="px-6 py-4 border-b-2 border-stone-900 dark:border-stone-700 bg-amber-300 dark:bg-stone-800 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-700 text-white flex items-center justify-center shrink-0">
-                  <Pencil className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-stone-950 text-amber-300 border-2 border-stone-950 flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#fff]">
+                  <Pencil className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">Ubah Info Barang</h3>
+                  <h3 className="text-sm font-black text-stone-950 dark:text-stone-100">Ubah Info Barang</h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-[11px] text-stone-500 dark:text-stone-400">ID Barang:</span>
-                    <span className="font-mono text-[11px] font-semibold text-stone-800 dark:text-stone-200 bg-stone-100 dark:bg-stone-800 px-1.5 py-0.2 rounded border border-stone-200 dark:border-stone-700">
+                    <span className="text-[11px] text-stone-700 dark:text-stone-400 font-bold">ID:</span>
+                    <span className="font-mono text-[11px] font-black text-stone-950 dark:text-stone-200 bg-white dark:bg-stone-900 px-1.5 py-0.2 rounded border border-stone-900 dark:border-stone-600">
                       {editingItem.ID_ITEM}
                     </span>
                   </div>
@@ -435,17 +435,17 @@ export const ItemsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setEditingItem(null)}
-                className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-stone-600 rounded-lg hover:bg-stone-100 transition-colors"
+                className="p-1.5 text-stone-950 dark:text-stone-200 hover:bg-stone-950 hover:text-white rounded-lg border-2 border-stone-900 dark:border-stone-500 transition-colors shadow-[1.5px_1.5px_0px_#18181b]"
                 title="Tutup Modal"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
             <form onSubmit={handleSaveEdit} className="p-6 space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="block font-semibold text-stone-700 dark:text-stone-200">
-                  Nama Barang <span className="text-rose-500">*</span>
+                <label className="block font-bold text-stone-900 dark:text-stone-100">
+                  Nama Barang <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -453,17 +453,17 @@ export const ItemsPage: React.FC = () => {
                   value={editForm.namaItem}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, namaItem: e.target.value }))}
                   placeholder="Nama barang..."
-                  className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900 font-medium"
+                  className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 font-bold shadow-[2px_2px_0px_#18181b]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">Kategori:</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">Kategori:</label>
                   <select
                     value={editForm.kategori}
                     onChange={(e) => setEditForm((prev) => ({ ...prev, kategori: e.target.value }))}
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 font-bold shadow-[2px_2px_0px_#18181b]"
                   >
                     <option value="CHEMICAL">CHEMICAL</option>
                     <option value="PERALATAN">PERALATAN</option>
@@ -472,20 +472,20 @@ export const ItemsPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">Satuan:</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">Satuan:</label>
                   <input
                     type="text"
                     value={editForm.satuan}
                     onChange={(e) => setEditForm((prev) => ({ ...prev, satuan: e.target.value }))}
                     placeholder="Contoh: UNIT, ROLL, PACK, LITER..."
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900 uppercase font-mono"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 uppercase font-mono font-bold shadow-[2px_2px_0px_#18181b]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">Masa Pakai (Bulan):</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">Masa Pakai (Bulan):</label>
                   <input
                     type="number"
                     min={0}
@@ -496,13 +496,13 @@ export const ItemsPage: React.FC = () => {
                         masaPakaiBulan: Math.max(0, parseInt(e.target.value, 10) || 0),
                       }))
                     }
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 font-mono bg-white dark:bg-stone-900"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 font-mono font-bold bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                   />
-                  <p className="text-[10px] text-stone-400 dark:text-stone-500">1 = Habis Pakai bulanan, &gt;=3 = Siklus periode</p>
+                  <p className="text-[10px] text-stone-600 dark:text-stone-400 font-medium">1 = Habis Pakai bulanan, &gt;=3 = Siklus periode</p>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">Batas Minimum Stok:</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">Batas Minimum Stok:</label>
                   <input
                     type="number"
                     min={0}
@@ -513,26 +513,26 @@ export const ItemsPage: React.FC = () => {
                         minStok: Math.max(0, parseInt(e.target.value, 10) || 0),
                       }))
                     }
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 font-mono bg-white dark:bg-stone-900"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 font-mono font-bold bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                   />
-                  <p className="text-[10px] text-stone-400 dark:text-stone-500">Peringatan saat saldo di bawah angka ini</p>
+                  <p className="text-[10px] text-stone-600 dark:text-stone-400 font-medium">Peringatan saat saldo di bawah angka ini</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">Lokasi Gudang / Rak:</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">Lokasi Gudang / Rak:</label>
                   <input
                     type="text"
                     value={editForm.lokasi}
                     onChange={(e) => setEditForm((prev) => ({ ...prev, lokasi: e.target.value }))}
                     placeholder="Contoh: Rak A1, Lemari B, dsb..."
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 font-bold shadow-[2px_2px_0px_#18181b]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-medium text-stone-700 dark:text-stone-200">Status Barang:</label>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100">Status Barang:</label>
                   <select
                     value={editForm.status}
                     onChange={(e) =>
@@ -541,7 +541,7 @@ export const ItemsPage: React.FC = () => {
                         status: e.target.value as 'AKTIF' | 'NONAKTIF',
                       }))
                     }
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900 font-medium"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 font-black shadow-[2px_2px_0px_#18181b]"
                   >
                     <option value="AKTIF">AKTIF</option>
                     <option value="NONAKTIF">NONAKTIF</option>
@@ -549,21 +549,21 @@ export const ItemsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-2.5">
+              <div className="pt-4 border-t-2 border-stone-900 dark:border-stone-700 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   disabled={isSaving}
                   onClick={() => setEditingItem(null)}
-                  className="px-4 py-2 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50 rounded-lg font-medium transition-colors"
+                  className="px-4 py-2 border-2 border-stone-900 dark:border-stone-500 text-stone-950 dark:text-stone-200 hover:bg-stone-100 rounded-lg font-black transition-all shadow-[2px_2px_0px_#18181b]"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving || !editForm.namaItem.trim()}
-                  className="px-5 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg font-semibold transition-all inline-flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+                  className="px-5 py-2 bg-emerald-300 hover:bg-emerald-400 text-stone-950 border-2 border-stone-900 rounded-lg font-black transition-all inline-flex items-center gap-1.5 disabled:opacity-50 shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
-                  {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  {isSaving ? <div className="w-3.5 h-3.5 neo-spinner-multicolor shrink-0" /> : <Check className="w-3.5 h-3.5 stroke-[3]" />}
                   <span>{isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
                 </button>
               </div>

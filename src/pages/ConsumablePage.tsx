@@ -350,25 +350,25 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
       {/* Form Permintaan & Panduan Singkat Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT / MAIN COLUMN: FORM CARD */}
-        <div className="lg:col-span-2 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-700 overflow-hidden shadow-xs">
-          {/* Header Gradient */}
-          <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-stone-950 text-white p-5 sm:p-6 border-b border-stone-800">
+        <div className="lg:col-span-2 bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 overflow-hidden shadow-[5px_5px_0px_#18181b]">
+          {/* Header Neo Brutalism */}
+          <div className="bg-emerald-300 dark:bg-stone-800 text-stone-950 dark:text-stone-100 p-5 sm:p-6 border-b-2 border-stone-900 dark:border-stone-700">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 flex items-center justify-center shrink-0 shadow-xs">
-                  <ShoppingCart className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-lg bg-stone-950 text-emerald-300 border-2 border-stone-950 flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#fff]">
+                  <ShoppingCart className="w-5 h-5 stroke-[2.5]" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold truncate">
+                  <h3 className="text-sm sm:text-base font-black truncate">
                     Form Permintaan Consumable (Tisu &amp; Plastik)
                   </h3>
-                  <p className="text-xs text-stone-300 truncate">
+                  <p className="text-xs text-stone-800 dark:text-stone-300 font-semibold truncate">
                     Pesan multi-item tisu &amp; plastik sampah dalam satu pengajuan keranjang
                   </p>
                 </div>
               </div>
-              <div className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/30 text-emerald-300 text-xs font-semibold">
-                <Boxes className="w-3.5 h-3.5" />
+              <div className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white dark:bg-stone-900 border-2 border-stone-900 text-stone-950 dark:text-stone-100 text-xs font-black shadow-[2px_2px_0px_#18181b]">
+                <Boxes className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Multi-Item Keranjang</span>
               </div>
             </div>
@@ -379,34 +379,34 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* Success / Partial Banner */}
             {submissionResult && (
               <div
-                className={`p-4 rounded-xl border animate-fadeIn ${
+                className={`p-4 rounded-xl border-2 border-stone-900 animate-fadeIn shadow-[4px_4px_0px_#18181b] ${
                   submissionResult.success
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-950 dark:text-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800'
-                    : 'bg-amber-50 border-amber-200 text-amber-950 dark:text-amber-100 dark:bg-amber-950/40 dark:border-amber-800'
+                    ? 'bg-emerald-100 text-stone-950'
+                    : 'bg-amber-100 text-stone-950'
                 }`}
               >
                 <div className="flex items-start gap-3">
                   {submissionResult.success ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-800 shrink-0 mt-0.5 stroke-[2.5]" />
                   ) : (
-                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <AlertTriangle className="w-5 h-5 text-amber-800 shrink-0 mt-0.5 stroke-[2.5]" />
                   )}
                   <div className="space-y-1.5 flex-1">
-                    <h4 className="font-bold text-sm">
+                    <h4 className="font-black text-sm">
                       {submissionResult.success
                         ? 'Pengajuan Consumable Berhasil Dikirimkan!'
                         : 'Hasil Pengiriman Pesanan Consumable'}
                     </h4>
                     {submissionResult.createdIds.length > 0 && (
-                      <div className="text-xs">
-                        <span className="font-medium">
+                      <div className="text-xs font-bold">
+                        <span>
                           {submissionResult.createdIds.length} Pengajuan Berhasil Terbentuk:
                         </span>
-                        <div className="flex flex-wrap gap-1.5 mt-1 font-mono font-bold text-[11px]">
+                        <div className="flex flex-wrap gap-1.5 mt-1 font-mono font-black text-[11px]">
                           {submissionResult.createdIds.map((id, idx) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 rounded bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-800 shadow-2xs dark:text-emerald-200 dark:border-emerald-700"
+                              className="px-2 py-0.5 rounded bg-white border-2 border-stone-900 text-stone-950 shadow-[1.5px_1.5px_0px_#18181b]"
                             >
                               {id}
                             </span>
@@ -415,8 +415,8 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                       </div>
                     )}
                     {submissionResult.failedItems.length > 0 && (
-                      <div className="text-xs text-rose-800 mt-2 space-y-1 dark:text-rose-200">
-                        <span className="font-semibold text-rose-900 dark:text-rose-100">
+                      <div className="text-xs text-rose-900 mt-2 space-y-1 font-bold">
+                        <span>
                           {submissionResult.failedItems.length} Item Gagal Terkirim (Tersimpan di Keranjang):
                         </span>
                         <ul className="list-disc list-inside space-y-0.5">
@@ -434,20 +434,20 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* =============================================================== */}
             {/* STEP 1: PILIH NAMA */}
             {/* =============================================================== */}
-            <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
+            <div className="p-4 rounded-xl border-2 border-stone-900 dark:border-stone-500 bg-stone-50 dark:bg-stone-800/80 space-y-3 shadow-[3px_3px_0px_#18181b]">
               <div className="flex items-center gap-2.5">
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
-                    selectedMemberId ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
+                  className={`w-7 h-7 rounded border-2 border-stone-900 flex items-center justify-center font-black text-xs shrink-0 transition-colors shadow-[1.5px_1.5px_0px_#000] ${
+                    selectedMemberId ? 'bg-amber-400 text-stone-950' : 'bg-white text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                   }`}
                 >
-                  {selectedMemberId ? <Check className="w-4 h-4 text-white" /> : '1'}
+                  {selectedMemberId ? <Check className="w-4 h-4 stroke-[3]" /> : '1'}
                 </div>
                 <div>
-                  <h4 className="font-semibold text-stone-900 dark:text-stone-100">
-                    Pilih Nama Anda <span className="text-rose-500">*</span>
+                  <h4 className="font-black text-stone-950 dark:text-stone-100">
+                    Pilih Nama Anda <span className="text-rose-600">*</span>
                   </h4>
-                  <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  <p className="text-[11px] text-stone-600 dark:text-stone-400 font-medium">
                     Cari nama pemohon sesuai penempatan lantai tugas
                   </p>
                 </div>
@@ -465,23 +465,23 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
               {/* Kartu Identitas Ringkas Member */}
               {selectedMemberObj && (
-                <div className="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs animate-fadeIn dark:bg-emerald-950/40 dark:border-emerald-800">
+                <div className="p-3 rounded-xl bg-emerald-100 border-2 border-stone-900 flex items-center justify-between text-xs animate-fadeIn shadow-[2px_2px_0px_#18181b]">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                    <div className="w-8 h-8 rounded-lg bg-stone-950 text-emerald-300 border border-stone-900 flex items-center justify-center font-black text-xs shrink-0">
                       {selectedMemberObj.NAMA_MEMBER.charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-semibold text-stone-900 dark:text-stone-100 truncate">
+                      <div className="font-black text-stone-950 truncate">
                         {selectedMemberObj.NAMA_MEMBER}
                       </div>
-                      <div className="text-[11px] text-stone-600 dark:text-stone-400 truncate">
+                      <div className="text-[11px] text-stone-700 truncate font-semibold">
                         {selectedMemberObj.JABATAN || 'Personil Lapangan'}
                       </div>
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 font-bold text-[11px] shadow-2xs dark:text-emerald-100 dark:border-emerald-700">
-                      <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white border-2 border-stone-900 text-stone-950 font-black text-[11px] shadow-[1.5px_1.5px_0px_#18181b]">
+                      <Building2 className="w-3.5 h-3.5 text-emerald-800 stroke-[2.5]" />
                       <span>{selectedMemberObj.LANTAI ? `Lantai ${selectedMemberObj.LANTAI}` : 'Lantai -'}</span>
                     </span>
                   </div>
@@ -492,35 +492,35 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* =============================================================== */}
             {/* STEP 2: KERANJANG TISU & PLASTIK */}
             {/* =============================================================== */}
-            <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-4">
+            <div className="p-4 rounded-xl border-2 border-stone-900 dark:border-stone-500 bg-stone-50 dark:bg-stone-800/80 space-y-4 shadow-[3px_3px_0px_#18181b]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
-                      cart.length > 0 ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
+                    className={`w-7 h-7 rounded border-2 border-stone-900 flex items-center justify-center font-black text-xs shrink-0 transition-colors shadow-[1.5px_1.5px_0px_#000] ${
+                      cart.length > 0 ? 'bg-amber-400 text-stone-950' : 'bg-white text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                     }`}
                   >
-                    {cart.length > 0 ? <Check className="w-4 h-4 text-white" /> : '2'}
+                    {cart.length > 0 ? <Check className="w-4 h-4 stroke-[3]" /> : '2'}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-stone-900 dark:text-stone-100">
-                      Keranjang Tisu &amp; Plastik <span className="text-rose-500">*</span>
+                    <h4 className="font-black text-stone-950 dark:text-stone-100">
+                      Keranjang Tisu &amp; Plastik <span className="text-rose-600">*</span>
                     </h4>
-                    <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                    <p className="text-[11px] text-stone-600 dark:text-stone-400 font-medium">
                       Pilih barang, tentukan satuan dan jumlah, lalu tambahkan ke daftar pesanan
                     </p>
                   </div>
                 </div>
 
-                <span className="px-2.5 py-0.5 rounded-full bg-stone-200 font-bold text-stone-700 dark:text-stone-200 text-[11px] dark:bg-stone-700">
+                <span className="px-2.5 py-0.5 rounded bg-yellow-300 border-2 border-stone-900 font-black text-stone-950 text-[11px] shadow-[1.5px_1.5px_0px_#18181b]">
                   {cart.length} item di keranjang
                 </span>
               </div>
 
               {/* Sub-form: Tambah Item */}
-              <div className="p-3.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 space-y-3.5 shadow-2xs">
+              <div className="p-3.5 rounded-xl bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-500 space-y-3.5 shadow-[2.5px_2.5px_0px_#18181b]">
                 <div className="space-y-1">
-                  <label className="block text-[11px] font-semibold text-stone-700 dark:text-stone-200">
+                  <label className="block text-[11px] font-bold text-stone-900 dark:text-stone-100">
                     Pilih Item Consumable (14 Item Khusus):
                   </label>
                   <SearchableSelect
@@ -535,13 +535,13 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
                 {/* Info Card when item selected */}
                 {selectedItemId && currentConfig && (
-                  <div className="space-y-3 pt-1 border-t border-stone-100 animate-fadeIn">
-                    <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700">
+                  <div className="space-y-3 pt-1 border-t-2 border-stone-900 dark:border-stone-700 animate-fadeIn">
+                    <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-stone-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-600 shadow-[2px_2px_0px_#18181b]">
                       <div className="min-w-0">
-                        <div className="font-semibold text-stone-900 dark:text-stone-100 truncate">
+                        <div className="font-black text-stone-950 dark:text-stone-100 truncate">
                           {currentItemObj?.NAMA_ITEM || currentConfig.name}
                         </div>
-                        <div className="text-[11px] text-stone-500 dark:text-stone-400">
+                        <div className="text-[11px] text-stone-600 dark:text-stone-400 font-semibold">
                           {currentConfig.category === 'TISU'
                             ? `Kategori Tisu (${currentConfig.subCategory}) • 1 box = ${currentConfig.unitsPerBox} ${currentConfig.masterUnit}`
                             : `Plastik Sampah ${currentConfig.subCategory} • 1 pack = ${currentConfig.unitsPerPack} lembar`}
@@ -549,11 +549,11 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                       </div>
                       <div className="shrink-0">
                         {currentItemReady ? (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-200 dark:border-emerald-800">
+                          <span className="px-2.5 py-0.5 rounded bg-emerald-300 border-2 border-stone-900 text-stone-950 font-black text-[10px] shadow-[1px_1px_0px_#000]">
                             READY
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px] border border-rose-200 dark:bg-rose-900/40 dark:text-rose-200 dark:border-rose-800">
+                          <span className="px-2.5 py-0.5 rounded bg-rose-300 border-2 border-stone-900 text-stone-950 font-black text-[10px] shadow-[1px_1px_0px_#000]">
                             KOSONG
                           </span>
                         )}
@@ -564,16 +564,16 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                       {/* Unit Choice */}
                       <div className="space-y-1">
-                        <label className="block text-[11px] font-medium text-stone-700 dark:text-stone-200">Satuan Pesan:</label>
+                        <label className="block text-[11px] font-bold text-stone-900 dark:text-stone-100">Satuan Pesan:</label>
                         {currentConfig.category === 'PLASTIK' ? (
-                          <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700">
+                          <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-800 rounded-lg border-2 border-stone-900 dark:border-stone-600 shadow-[1.5px_1.5px_0px_#18181b]">
                             <button
                               type="button"
                               onClick={() => setSelectedUnit('lembar')}
-                              className={`flex-1 py-1 rounded text-center font-semibold text-xs transition-colors ${
+                              className={`flex-1 py-1 rounded text-center font-black text-xs transition-colors ${
                                 selectedUnit === 'lembar'
-                                  ? 'bg-white dark:bg-stone-900 text-emerald-800 shadow-2xs dark:text-emerald-200'
-                                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                                  ? 'bg-amber-300 text-stone-950 border border-stone-900 shadow-[1px_1px_0px_#000]'
+                                  : 'text-stone-700 dark:text-stone-300 hover:text-stone-950'
                               }`}
                             >
                               Lembar
@@ -581,17 +581,17 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                             <button
                               type="button"
                               onClick={() => setSelectedUnit('pack')}
-                              className={`flex-1 py-1 rounded text-center font-semibold text-xs transition-colors ${
+                              className={`flex-1 py-1 rounded text-center font-black text-xs transition-colors ${
                                 selectedUnit === 'pack'
-                                  ? 'bg-white dark:bg-stone-900 text-emerald-800 shadow-2xs dark:text-emerald-200'
-                                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                                  ? 'bg-amber-300 text-stone-950 border border-stone-900 shadow-[1px_1px_0px_#000]'
+                                  : 'text-stone-700 dark:text-stone-300 hover:text-stone-950'
                               }`}
                             >
                               Pack
                             </button>
                           </div>
                         ) : (
-                          <div className="px-3 py-2 bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 rounded-lg text-stone-700 dark:text-stone-200 font-semibold uppercase text-xs">
+                          <div className="px-3 py-2 bg-stone-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-600 rounded-lg text-stone-950 dark:text-stone-100 font-black uppercase text-xs shadow-[1.5px_1.5px_0px_#18181b]">
                             {currentConfig.masterUnit}
                           </div>
                         )}
@@ -599,13 +599,13 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
                       {/* Quantity Input */}
                       <div className="space-y-1">
-                        <label className="block text-[11px] font-medium text-stone-700 dark:text-stone-200">Jumlah:</label>
+                        <label className="block text-[11px] font-bold text-stone-900 dark:text-stone-100">Jumlah:</label>
                         <input
                           type="number"
                           min={1}
                           value={inputQty}
                           onChange={(e) => setInputQty(Math.max(1, Number(e.target.value)))}
-                          className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 font-mono text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-900"
+                          className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg font-mono font-bold text-stone-950 dark:text-stone-100 bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                         />
                       </div>
 
@@ -615,9 +615,9 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                           type="button"
                           onClick={handleAddToCart}
                           disabled={!currentItemReady || inputQty <= 0}
-                          className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                          className="w-full py-2 px-3 bg-emerald-300 hover:bg-emerald-400 text-stone-950 border-2 border-stone-900 rounded-lg font-black transition-all inline-flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#18181b]"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-4 h-4 stroke-[3]" />
                           <span>Tambah ke Daftar</span>
                         </button>
                       </div>
@@ -625,15 +625,15 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
                     {/* Live Conversion Banner */}
                     {liveConversion && (
-                      <div className="p-2.5 rounded-lg bg-teal-50/70 border border-teal-200 text-teal-950 dark:text-teal-100 flex items-center justify-between text-xs dark:bg-teal-950/40 dark:border-teal-800">
-                        <div className="flex items-center gap-1.5">
-                          <Info className="w-4 h-4 text-teal-700 shrink-0 dark:text-teal-300" />
+                      <div className="p-2.5 rounded-lg bg-cyan-100 border-2 border-stone-900 text-stone-950 flex items-center justify-between text-xs shadow-[2px_2px_0px_#18181b]">
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <Info className="w-4 h-4 text-stone-950 shrink-0 stroke-[2.5]" />
                           <span>
                             <strong>Perhitungan Konversi:</strong> {liveConversion.conversionText}
                           </span>
                         </div>
                         {currentConfig.category === 'PLASTIK' && selectedUnit === 'lembar' && (
-                          <span className="text-[10px] text-teal-800 font-medium shrink-0 dark:text-teal-200">
+                          <span className="text-[10px] text-stone-800 font-black shrink-0">
                             (Pembulatan ke atas: {liveConversion.sendQty} pack)
                           </span>
                         )}
@@ -645,15 +645,15 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
               {/* Cart Items List */}
               <div className="space-y-2 pt-1">
-                <div className="text-[11px] font-bold text-stone-700 dark:text-stone-200">
+                <div className="text-xs font-black text-stone-950 dark:text-stone-100">
                   Daftar Pesanan Siap Dikirim ({cart.length} item):
                 </div>
 
                 {cart.length === 0 ? (
-                  <div className="p-4 rounded-xl border border-dashed border-stone-300 dark:border-stone-600 text-center text-stone-400 dark:text-stone-500 space-y-1 bg-white dark:bg-stone-900">
-                    <ShoppingCart className="w-6 h-6 mx-auto text-stone-300" />
-                    <p className="font-medium text-xs text-stone-600 dark:text-stone-400">Keranjang masih kosong</p>
-                    <p className="text-[11px] text-stone-400 dark:text-stone-500">
+                  <div className="p-4 rounded-xl border-2 border-dashed border-stone-400 dark:border-stone-600 text-center text-stone-500 space-y-1 bg-white dark:bg-stone-900">
+                    <ShoppingCart className="w-6 h-6 mx-auto text-stone-400" />
+                    <p className="font-bold text-xs text-stone-800 dark:text-stone-300">Keranjang masih kosong</p>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">
                       Pilih tisu atau plastik di atas lalu klik &ldquo;Tambah ke Daftar&rdquo;
                     </p>
                   </div>
@@ -662,23 +662,23 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                     {cart.map((item, idx) => (
                       <div
                         key={idx}
-                        className="p-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 flex items-center justify-between gap-3 shadow-2xs hover:border-stone-300 transition-colors animate-fadeIn"
+                        className="p-3 rounded-lg bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-400 flex items-center justify-between gap-3 shadow-[2.5px_2.5px_0px_#18181b] animate-fadeIn"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-6 h-6 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                          <div className="w-6 h-6 rounded bg-amber-400 text-stone-950 border-2 border-stone-900 flex items-center justify-center font-black text-[10px] shrink-0 shadow-[1px_1px_0px_#000]">
                             {idx + 1}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-semibold text-stone-900 dark:text-stone-100 truncate">{item.name}</div>
-                            <div className="text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-stone-800 dark:text-stone-200">
+                            <div className="font-black text-stone-950 dark:text-stone-100 truncate">{item.name}</div>
+                            <div className="text-[11px] text-stone-600 dark:text-stone-400 flex items-center gap-2 flex-wrap font-semibold">
+                              <span className="font-bold text-stone-950 dark:text-stone-100">
                                 Pesan: {item.orderQty} {item.orderUnit}
                               </span>
-                              <span className="text-stone-300">•</span>
-                              <span className="text-teal-700 font-medium bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800">
+                              <span>•</span>
+                              <span className="text-stone-950 font-bold bg-cyan-200 px-1.5 py-0.5 rounded border border-stone-900">
                                 {item.conversionText}
                               </span>
-                              <span className="text-stone-400 dark:text-stone-500 text-[10px] font-mono">
+                              <span className="text-stone-600 dark:text-stone-400 text-[10px] font-mono">
                                 (Backend: {item.sendQty} {item.config.masterUnit})
                               </span>
                             </div>
@@ -688,10 +688,10 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                         <button
                           type="button"
                           onClick={() => handleRemoveFromCart(idx)}
-                          className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 dark:bg-rose-950/40 dark:hover:bg-rose-950/40"
+                          className="p-1.5 text-stone-700 dark:text-stone-300 hover:text-rose-600 hover:bg-rose-100 rounded border border-transparent hover:border-stone-900 transition-colors shrink-0"
                           title="Hapus item dari keranjang"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 stroke-[2.5]" />
                         </button>
                       </div>
                     ))}
@@ -704,23 +704,23 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
             {/* STEP 3: ALASAN & KIRIM SEMUA */}
             {/* =============================================================== */}
             <form onSubmit={handleSubmitAll} className="space-y-4">
-              <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
+              <div className="p-4 rounded-xl border-2 border-stone-900 dark:border-stone-500 bg-stone-50 dark:bg-stone-800/80 space-y-3 shadow-[3px_3px_0px_#18181b]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
+                      className={`w-7 h-7 rounded border-2 border-stone-900 flex items-center justify-center font-black text-xs shrink-0 transition-colors shadow-[1.5px_1.5px_0px_#000] ${
                         formAlasan.trim().length > 0
-                          ? 'bg-emerald-600 text-white shadow-2xs'
-                          : 'bg-stone-200 text-stone-700 dark:text-stone-200 dark:bg-stone-700'
+                          ? 'bg-amber-400 text-stone-950'
+                          : 'bg-white text-stone-700 dark:text-stone-200 dark:bg-stone-700'
                       }`}
                     >
-                      {formAlasan.trim().length > 0 ? <Check className="w-4 h-4 text-white" /> : '3'}
+                      {formAlasan.trim().length > 0 ? <Check className="w-4 h-4 stroke-[3]" /> : '3'}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-stone-900 dark:text-stone-100">
-                        Alasan Permintaan Consumable <span className="text-rose-500">*</span>
+                      <h4 className="font-black text-stone-950 dark:text-stone-100">
+                        Alasan Permintaan Consumable <span className="text-rose-600">*</span>
                       </h4>
-                      <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                      <p className="text-[11px] text-stone-600 dark:text-stone-400 font-medium">
                         Satu alasan berlaku untuk seluruh item di dalam keranjang
                       </p>
                     </div>
@@ -733,13 +733,13 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                   onChange={(e) => setFormAlasan(e.target.value)}
                   placeholder="Contoh: Kebutuhan operasional tisu toilet dan plastik sampah pembersihan area lantai 2..."
                   required
-                  className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-amber-700 text-stone-900 dark:text-stone-100 text-xs bg-white dark:bg-stone-900"
+                  className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 text-xs font-medium bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                 />
               </div>
 
               {/* Submit Action Bar */}
-              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-stone-100">
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">
+              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t-2 border-stone-900 dark:border-stone-700">
+                <div className="text-[11px] text-stone-600 dark:text-stone-400 font-bold">
                   {cart.length > 0 ? (
                     <span>
                       Total <strong>{cart.length} jenis item</strong> akan dikirimkan berurutan ke backend GAS.
@@ -752,16 +752,16 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting || cart.length === 0 || !selectedMemberId || !formAlasan.trim()}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-amber-700 hover:bg-amber-800 text-white rounded-xl font-semibold transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs hover:shadow"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-stone-950 border-2 border-stone-900 rounded-xl font-black transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#18181b]"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                      <div className="w-4 h-4 neo-spinner-multicolor shrink-0" />
                       <span>{submitProgress || 'Mengirim Pesanan...'}</span>
                     </>
                   ) : (
                     <>
-                      <Send className="w-4 h-4" />
+                      <Send className="w-4 h-4 stroke-[2.5]" />
                       <span>Kirim Semua Pesanan ({cart.length} Item)</span>
                     </>
                   )}
@@ -773,72 +773,72 @@ export const ConsumableForm: React.FC<ConsumableFormProps> = ({
 
         {/* RIGHT COLUMN: PANDUAN KONVERSI PANEL */}
         <div className="lg:col-span-1 space-y-4">
-          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-700 p-5 shadow-xs space-y-4 text-xs">
-            <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
-              <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 dark:bg-teal-950/40 dark:text-teal-300">
-                <HelpCircle className="w-4 h-4" />
+          <div className="bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 p-5 shadow-[4.5px_4.5px_0px_#18181b] space-y-4 text-xs">
+            <div className="flex items-center gap-2 border-b-2 border-stone-900 dark:border-stone-700 pb-3">
+              <div className="w-7 h-7 rounded-lg bg-amber-300 border-2 border-stone-900 text-stone-950 flex items-center justify-center shrink-0 shadow-[1.5px_1.5px_0px_#000]">
+                <HelpCircle className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <h3 className="font-bold text-stone-900 dark:text-stone-100 text-xs">Panduan Satuan &amp; Konversi</h3>
-                <p className="text-[10px] text-stone-500 dark:text-stone-400">Standar isi box tisu &amp; pack plastik</p>
+                <h3 className="font-black text-stone-950 dark:text-stone-100 text-xs">Panduan Satuan &amp; Konversi</h3>
+                <p className="text-[10px] text-stone-600 dark:text-stone-400 font-semibold">Standar isi box tisu &amp; pack plastik</p>
               </div>
             </div>
 
             {/* Konversi Tisu */}
             <div className="space-y-2">
-              <div className="text-[11px] font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-teal-600" />
+              <div className="text-[11px] font-black text-stone-950 dark:text-stone-100 flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-stone-950 dark:text-stone-200 stroke-[2.5]" />
                 <span>Standar Konversi Tisu:</span>
               </div>
-              <ul className="space-y-1.5 text-[11px] text-stone-600 dark:text-stone-400">
-                <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
-                  <span className="font-semibold text-stone-900 dark:text-stone-100">Tissue Roll</span>
-                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 box = 100 roll</span>
+              <ul className="space-y-1.5 text-[11px] text-stone-700 dark:text-stone-300">
+                <li className="p-2 rounded bg-stone-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-600 flex justify-between items-center shadow-[1.5px_1.5px_0px_#18181b]">
+                  <span className="font-bold text-stone-950 dark:text-stone-100">Tissue Roll</span>
+                  <span className="font-mono text-stone-950 dark:text-amber-300 font-black">1 box = 100 roll</span>
                 </li>
-                <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
-                  <span className="font-semibold text-stone-900 dark:text-stone-100">Tissue Roll Jumbo</span>
-                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 box = 16 roll</span>
+                <li className="p-2 rounded bg-stone-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-600 flex justify-between items-center shadow-[1.5px_1.5px_0px_#18181b]">
+                  <span className="font-bold text-stone-950 dark:text-stone-100">Tissue Roll Jumbo</span>
+                  <span className="font-mono text-stone-950 dark:text-amber-300 font-black">1 box = 16 roll</span>
                 </li>
-                <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
-                  <span className="font-semibold text-stone-900 dark:text-stone-100">Tissue Hand Towel</span>
-                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 box = 24 pack</span>
+                <li className="p-2 rounded bg-stone-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-600 flex justify-between items-center shadow-[1.5px_1.5px_0px_#18181b]">
+                  <span className="font-bold text-stone-950 dark:text-stone-100">Tissue Hand Towel</span>
+                  <span className="font-mono text-stone-950 dark:text-amber-300 font-black">1 box = 24 pack</span>
                 </li>
-                <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
-                  <span className="font-semibold text-stone-900 dark:text-stone-100">Tissue Kotak</span>
-                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 box = 40 pack</span>
+                <li className="p-2 rounded bg-stone-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-600 flex justify-between items-center shadow-[1.5px_1.5px_0px_#18181b]">
+                  <span className="font-bold text-stone-950 dark:text-stone-100">Tissue Kotak</span>
+                  <span className="font-mono text-stone-950 dark:text-amber-300 font-black">1 box = 40 pack</span>
                 </li>
               </ul>
             </div>
 
             {/* Konversi Plastik Sampah */}
-            <div className="space-y-2 pt-2 border-t border-stone-100">
-              <div className="text-[11px] font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
-                <Package className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="space-y-2 pt-2 border-t-2 border-stone-900 dark:border-stone-700">
+              <div className="text-[11px] font-black text-stone-950 dark:text-stone-100 flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5 text-stone-950 dark:text-stone-200 stroke-[2.5]" />
                 <span>Standar Plastik Sampah:</span>
               </div>
-              <ul className="space-y-1.5 text-[11px] text-stone-600 dark:text-stone-400">
-                <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
-                  <span className="font-semibold text-stone-900 dark:text-stone-100">Ukuran 50x75</span>
-                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 pack = 24 lembar</span>
+              <ul className="space-y-1.5 text-[11px] text-stone-700 dark:text-stone-300">
+                <li className="p-2 rounded bg-stone-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-600 flex justify-between items-center shadow-[1.5px_1.5px_0px_#18181b]">
+                  <span className="font-bold text-stone-950 dark:text-stone-100">Ukuran 50x75</span>
+                  <span className="font-mono text-stone-950 dark:text-emerald-400 font-black">1 pack = 24 lembar</span>
                 </li>
-                <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
-                  <span className="font-semibold text-stone-900 dark:text-stone-100">Ukuran 60x100</span>
-                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 pack = 12 lembar</span>
+                <li className="p-2 rounded bg-stone-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-600 flex justify-between items-center shadow-[1.5px_1.5px_0px_#18181b]">
+                  <span className="font-bold text-stone-950 dark:text-stone-100">Ukuran 60x100</span>
+                  <span className="font-mono text-stone-950 dark:text-emerald-400 font-black">1 pack = 12 lembar</span>
                 </li>
-                <li className="p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex justify-between items-center">
-                  <span className="font-semibold text-stone-900 dark:text-stone-100">Ukuran 90x120</span>
-                  <span className="font-mono text-emerald-700 font-bold dark:text-emerald-300">1 pack = 6 lembar</span>
+                <li className="p-2 rounded bg-stone-50 dark:bg-stone-800/80 border-2 border-stone-900 dark:border-stone-600 flex justify-between items-center shadow-[1.5px_1.5px_0px_#18181b]">
+                  <span className="font-bold text-stone-950 dark:text-stone-100">Ukuran 90x120</span>
+                  <span className="font-mono text-stone-950 dark:text-emerald-400 font-black">1 pack = 6 lembar</span>
                 </li>
               </ul>
             </div>
 
             {/* Aturan Kirim Plastik Note */}
-            <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/90 text-amber-950 dark:text-amber-100 text-[11px] space-y-1 dark:bg-amber-950/40 dark:border-amber-800">
-              <div className="font-bold flex items-center gap-1 text-amber-900 dark:text-amber-100">
-                <Info className="w-3.5 h-3.5 text-amber-700 dark:text-amber-300" />
+            <div className="p-3.5 rounded-xl bg-yellow-100 border-2 border-stone-900 text-stone-950 text-[11px] space-y-1 shadow-[2.5px_2.5px_0px_#18181b]">
+              <div className="font-black flex items-center gap-1 text-stone-950">
+                <Info className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
                 <span>Aturan Kirim Plastik:</span>
               </div>
-              <p className="leading-relaxed">
+              <p className="leading-relaxed font-semibold">
                 Stok master gudang tercatat dalam satuan <strong>pack</strong>. Jika Anda memesan dalam satuan <strong>lembar</strong>, sistem otomatis membulatkan ke atas ke pack terdekat agar fisik gudang dapat disiapkan secara utuh.
               </p>
             </div>

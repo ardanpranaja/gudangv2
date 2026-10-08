@@ -41,39 +41,39 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       {/* Toast notifications container */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
         {toasts.map((toast) => {
-          let border = 'border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100';
+          let border = 'border-2 border-stone-900 shadow-[4px_4px_0px_#18181b] bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-100';
           let Icon = Info;
-          let iconColor = 'text-blue-500 dark:text-blue-400';
+          let iconColor = 'text-sky-600';
 
           if (toast.type === 'success') {
-            border = 'border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/90 dark:bg-emerald-950/90 text-emerald-900 dark:text-emerald-100';
+            border = 'border-2 border-stone-900 shadow-[4px_4px_0px_#18181b] bg-emerald-200 dark:bg-emerald-300 text-stone-950';
             Icon = CheckCircle2;
-            iconColor = 'text-emerald-600 dark:text-emerald-400';
+            iconColor = 'text-emerald-950';
           } else if (toast.type === 'error') {
-            border = 'border-rose-200 dark:border-rose-800/80 bg-rose-50/90 dark:bg-rose-950/90 text-rose-900 dark:text-rose-100';
+            border = 'border-2 border-stone-900 shadow-[4px_4px_0px_#18181b] bg-rose-200 dark:bg-rose-300 text-stone-950';
             Icon = AlertCircle;
-            iconColor = 'text-rose-600 dark:text-rose-400';
+            iconColor = 'text-rose-950';
           } else if (toast.type === 'warning') {
-            border = 'border-amber-200 dark:border-amber-800/80 bg-amber-50/90 dark:bg-amber-950/90 text-amber-900 dark:text-amber-100';
+            border = 'border-2 border-stone-900 shadow-[4px_4px_0px_#18181b] bg-amber-200 dark:bg-amber-300 text-stone-950';
             Icon = AlertTriangle;
-            iconColor = 'text-amber-600 dark:text-amber-400';
+            iconColor = 'text-amber-950';
           }
 
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto p-3.5 rounded-lg border shadow-lg flex items-start gap-3 text-xs transition-all ${border}`}
+              className={`pointer-events-auto p-3.5 rounded-lg border-2 shadow-md flex items-start gap-3 text-xs transition-all ${border}`}
             >
-              <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${iconColor}`} />
+              <Icon className={`w-4 h-4 mt-0.5 shrink-0 stroke-[2.5] ${iconColor}`} />
               <div className="flex-1">
-                <div className="font-semibold">{toast.title}</div>
-                {toast.message && <div className="mt-0.5 opacity-90">{toast.message}</div>}
+                <div className="font-black text-xs">{toast.title}</div>
+                {toast.message && <div className="mt-0.5 font-medium opacity-95">{toast.message}</div>}
               </div>
               <button
                 onClick={() => removeToast(toast.id)}
-                className="p-1 rounded opacity-60 hover:opacity-100"
+                className="p-1 rounded hover:bg-black/10 transition-colors"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             </div>
           );

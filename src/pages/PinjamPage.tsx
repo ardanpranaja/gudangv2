@@ -256,27 +256,27 @@ export const PinjamPage: React.FC = () => {
 
       {submissionResult && (
         <div
-          className={`p-4 border rounded-lg flex items-start gap-3 text-xs animate-fadeIn ${
+          className={`p-4 border-2 border-stone-900 rounded-xl flex items-start gap-3 text-xs animate-fadeIn shadow-[4px_4px_0px_#18181b] ${
             submissionResult.success
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100'
-              : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100'
+              ? 'bg-emerald-100 text-stone-950'
+              : 'bg-amber-100 text-stone-950'
           }`}
         >
           {submissionResult.success ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-800 shrink-0 mt-0.5 stroke-[2.5]" />
           ) : (
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-amber-800 shrink-0 mt-0.5 stroke-[2.5]" />
           )}
           <div className="flex-1 space-y-1.5">
-            <div className="font-semibold text-sm">
+            <div className="font-black text-sm">
               {submissionResult.success ? 'Semua Peminjaman Tercatat!' : 'Hasil Pencatatan Peminjaman'}
             </div>
             {submissionResult.createdDocs.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-1 font-mono font-bold text-[11px]">
+              <div className="flex flex-wrap gap-1.5 mt-1 font-mono font-black text-[11px]">
                 {submissionResult.createdDocs.map((doc, idx) => (
                   <span
                     key={idx}
-                    className="px-2 py-0.5 rounded bg-white dark:bg-stone-900 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200"
+                    className="px-2 py-0.5 rounded bg-white border-2 border-stone-900 text-stone-950 shadow-[1.5px_1.5px_0px_#18181b]"
                   >
                     {doc}
                   </span>
@@ -284,7 +284,7 @@ export const PinjamPage: React.FC = () => {
               </div>
             )}
             {submissionResult.failedItems.length > 0 && (
-              <ul className="list-disc list-inside space-y-0.5 text-rose-800 dark:text-rose-200">
+              <ul className="list-disc list-inside space-y-0.5 text-rose-900 font-bold">
                 {submissionResult.failedItems.map((msg, idx) => (
                   <li key={idx}>{msg}</li>
                 ))}
@@ -293,7 +293,7 @@ export const PinjamPage: React.FC = () => {
           </div>
           <button
             onClick={() => setSubmissionResult(null)}
-            className="text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 px-2 py-1 shrink-0"
+            className="px-2.5 py-1 text-xs font-black bg-stone-100 hover:bg-stone-200 border-2 border-stone-900 rounded shadow-[1.5px_1.5px_0px_#18181b] text-stone-950 shrink-0"
           >
             Tutup
           </button>
@@ -302,11 +302,11 @@ export const PinjamPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Form Container */}
-        <div className="md:col-span-2 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6">
+        <div className="md:col-span-2 bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 p-6 shadow-[5px_5px_0px_#18181b]">
           <form onSubmit={handleSubmitAll} className="space-y-5 text-xs">
             <div>
-              <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                Pilih Member Peminjam <span className="text-rose-500">*</span>
+              <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
+                Pilih Member Peminjam <span className="text-rose-600">*</span>
               </label>
               <SearchableSelect
                 disabled={isLoading || isSubmitting}
@@ -320,14 +320,14 @@ export const PinjamPage: React.FC = () => {
             </div>
 
             {/* Item picker + Add to cart */}
-            <div className="p-4 rounded-lg border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 space-y-3">
-              <div className="font-semibold text-stone-800 dark:text-stone-100 flex items-center gap-1.5">
-                <ShoppingCart className="w-4 h-4" />
+            <div className="p-4 rounded-xl border-2 border-stone-900 dark:border-stone-600 bg-sky-50 dark:bg-stone-800/80 space-y-3 shadow-[3px_3px_0px_#18181b]">
+              <div className="font-black text-stone-950 dark:text-stone-100 flex items-center gap-1.5 text-sm">
+                <ShoppingCart className="w-4 h-4 stroke-[2.5]" />
                 <span>Tambah Barang ke Keranjang</span>
               </div>
               <div>
-                <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                  Pilih Barang / Alat <span className="text-rose-500">*</span>
+                <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
+                  Pilih Barang / Alat <span className="text-rose-600">*</span>
                 </label>
                 <SearchableSelect
                   disabled={isLoading || isSubmitting}
@@ -340,8 +340,8 @@ export const PinjamPage: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                    Jumlah <span className="text-rose-500">*</span>
+                  <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
+                    Jumlah <span className="text-rose-600">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -350,9 +350,9 @@ export const PinjamPage: React.FC = () => {
                       disabled={isSubmitting}
                       value={jumlah}
                       onChange={(e) => setJumlah(Number(e.target.value))}
-                      className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 font-mono text-xs pr-16 bg-white dark:bg-stone-900"
+                      className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 font-mono font-bold text-xs pr-16 bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 font-mono text-xs">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-300 font-mono font-bold text-xs">
                       {selectedItem?.SATUAN || 'UNIT'}
                     </span>
                   </div>
@@ -362,16 +362,17 @@ export const PinjamPage: React.FC = () => {
                     type="button"
                     onClick={handleAddToCart}
                     disabled={!canAddToCart}
-                    className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-emerald-700 rounded hover:bg-emerald-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-black text-stone-950 bg-emerald-300 hover:bg-emerald-400 border-2 border-stone-900 rounded-lg shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#18181b] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <Plus className="w-4 h-4 stroke-[3]" />
                     <span>Tambah</span>
                   </button>
                 </div>
               </div>
               {selectedItem && (
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">
-                  Stok tersedia: <span className={`font-mono font-semibold ${isOutOfStock ? 'text-rose-600' : 'text-stone-700 dark:text-stone-200'}`}>
+                <div className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
+                  Stok tersedia:{' '}
+                  <span className={`font-mono font-black ${isOutOfStock ? 'text-rose-600 dark:text-rose-400' : 'text-stone-950 dark:text-stone-100'}`}>
                     {currentStock} {selectedItem.SATUAN}
                   </span>
                 </div>
@@ -380,14 +381,14 @@ export const PinjamPage: React.FC = () => {
 
             {/* Cart list */}
             <div className="space-y-2">
-              <div className="text-[11px] font-bold text-stone-700 dark:text-stone-200">
+              <div className="text-xs font-black text-stone-950 dark:text-stone-100">
                 Keranjang Peminjaman ({cart.length} item):
               </div>
               {cart.length === 0 ? (
-                <div className="p-4 rounded-lg border border-dashed border-stone-300 dark:border-stone-600 text-center bg-white dark:bg-stone-900">
-                  <ShoppingCart className="w-6 h-6 mx-auto text-stone-300 dark:text-stone-600" />
-                  <p className="font-medium text-xs text-stone-600 dark:text-stone-400 mt-1">Keranjang masih kosong</p>
-                  <p className="text-[11px] text-stone-400 dark:text-stone-500">
+                <div className="p-4 rounded-xl border-2 border-dashed border-stone-400 dark:border-stone-600 text-center bg-white dark:bg-stone-900">
+                  <ShoppingCart className="w-6 h-6 mx-auto text-stone-400 dark:text-stone-500" />
+                  <p className="font-bold text-xs text-stone-800 dark:text-stone-300 mt-1">Keranjang masih kosong</p>
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">
                     Pilih barang di atas lalu klik &ldquo;Tambah&rdquo;
                   </p>
                 </div>
@@ -396,16 +397,16 @@ export const PinjamPage: React.FC = () => {
                   {cart.map((item, idx) => (
                     <div
                       key={idx}
-                      className="p-3 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 flex items-center justify-between gap-3 animate-fadeIn"
+                      className="p-3 rounded-lg bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-400 shadow-[2.5px_2.5px_0px_#18181b] flex items-center justify-between gap-3 animate-fadeIn"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-6 h-6 rounded-full bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center font-bold text-[10px] shrink-0">
+                        <div className="w-6 h-6 rounded bg-amber-400 text-stone-950 border-2 border-stone-900 flex items-center justify-center font-black text-xs shrink-0 shadow-[1px_1px_0px_#000]">
                           {idx + 1}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-semibold text-stone-900 dark:text-stone-100 truncate">{item.nama}</div>
-                          <div className="text-[11px] text-stone-500 dark:text-stone-400">
-                            <span className="font-bold text-stone-800 dark:text-stone-200">
+                          <div className="font-black text-stone-950 dark:text-stone-100 truncate">{item.nama}</div>
+                          <div className="text-[11px] text-stone-600 dark:text-stone-400 font-semibold">
+                            <span className="font-mono font-black text-stone-950 dark:text-stone-100">
                               {item.jumlah} {item.satuan}
                             </span>
                           </div>
@@ -415,10 +416,10 @@ export const PinjamPage: React.FC = () => {
                         type="button"
                         onClick={() => handleRemoveFromCart(idx)}
                         disabled={isSubmitting}
-                        className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors shrink-0"
+                        className="p-1.5 text-stone-700 dark:text-stone-300 hover:text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/40 rounded border border-transparent hover:border-stone-900 transition-colors shrink-0"
                         title="Hapus dari keranjang"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4 stroke-[2.5]" />
                       </button>
                     </div>
                   ))}
@@ -428,8 +429,8 @@ export const PinjamPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                  Tanggal Pinjam <span className="text-rose-500">*</span>
+                <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
+                  Tanggal Pinjam <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="date"
@@ -437,12 +438,12 @@ export const PinjamPage: React.FC = () => {
                   disabled={isSubmitting}
                   value={tanggal}
                   onChange={(e) => setTanggal(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 text-xs"
+                  className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 text-xs font-bold bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                 />
               </div>
               <div className="col-span-2">
-                <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                  Tujuan Peminjaman & Lokasi Kerja <span className="text-rose-500">*</span>
+                <label className="block font-bold text-stone-900 dark:text-stone-100 mb-1">
+                  Tujuan Peminjaman & Lokasi Kerja <span className="text-rose-600">*</span>
                 </label>
                 <textarea
                   rows={2}
@@ -451,20 +452,20 @@ export const PinjamPage: React.FC = () => {
                   value={keterangan}
                   onChange={(e) => setKeterangan(e.target.value)}
                   placeholder="Contoh: Peminjaman untuk pembersihan karpet ruang serbaguna lantai 2."
-                  className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 text-xs"
+                  className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-400 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 text-xs font-medium bg-white dark:bg-stone-900 shadow-[2px_2px_0px_#18181b]"
                 />
               </div>
             </div>
 
             {isSubmitting && submitProgress && (
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded text-amber-800 dark:text-amber-100 text-xs flex items-center gap-2 animate-pulse">
-                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+              <div className="p-3 bg-amber-200 border-2 border-stone-900 rounded-lg text-stone-950 text-xs font-bold flex items-center gap-2 shadow-[2.5px_2.5px_0px_#18181b]">
+                <div className="w-4 h-4 neo-spinner-multicolor shrink-0" />
                 <span>{submitProgress}</span>
               </div>
             )}
 
-            <div className="pt-4 border-t border-stone-200 dark:border-stone-700 flex items-center justify-between">
-              <span className="text-[11px] text-stone-400 dark:text-stone-500">
+            <div className="pt-4 border-t-2 border-stone-900 dark:border-stone-700 flex items-center justify-between">
+              <span className="text-[11px] text-stone-600 dark:text-stone-400 font-bold">
                 {cart.length > 0
                   ? `${cart.length} item akan dicatat berurutan via POST action=transaction.`
                   : 'Tambahkan barang ke keranjang terlebih dahulu.'}
@@ -472,16 +473,16 @@ export const PinjamPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || isLoading || cart.length === 0 || !selectedMemberId || !tanggal || !keterangan.trim()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-stone-900 rounded hover:bg-stone-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black text-stone-950 bg-amber-400 hover:bg-amber-300 border-2 border-stone-900 rounded-lg shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#18181b] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <div className="w-3.5 h-3.5 neo-spinner-multicolor shrink-0" />
                     <span>Menyimpan ke GAS...</span>
                   </>
                 ) : (
                   <>
-                    <RotateCcw className="w-3.5 h-3.5" />
+                    <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Catat {cart.length > 0 ? `${cart.length} ` : ''}Peminjaman</span>
                   </>
                 )}
@@ -492,19 +493,19 @@ export const PinjamPage: React.FC = () => {
 
         {/* Sidebar Info */}
         <div className="space-y-4">
-          <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-4 space-y-3 text-xs">
-            <h4 className="font-semibold text-stone-900 dark:text-stone-100 border-b border-stone-100 dark:border-stone-800 pb-2 flex items-center gap-1.5">
-              <Boxes className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+          <div className="bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 p-4 space-y-3 text-xs shadow-[4px_4px_0px_#18181b]">
+            <h4 className="font-black text-stone-950 dark:text-stone-100 border-b-2 border-stone-900 dark:border-stone-700 pb-2 flex items-center gap-1.5">
+              <Boxes className="w-4 h-4 stroke-[2.5]" />
               <span>Ketersediaan Stok</span>
             </h4>
 
             {selectedItem && (
               <div className="space-y-2">
-                <div className="flex justify-between py-1 border-b border-stone-100 dark:border-stone-800">
-                  <span className="text-stone-500 dark:text-stone-400">Stok di Gudang (GAS)</span>
+                <div className="flex justify-between py-1 border-b-2 border-stone-100 dark:border-stone-800">
+                  <span className="text-stone-600 dark:text-stone-400 font-semibold">Stok di Gudang (GAS)</span>
                   <span
-                    className={`font-mono font-semibold tabular-nums ${
-                      isOutOfStock ? 'text-rose-600' : 'text-stone-900 dark:text-stone-100'
+                    className={`font-mono font-black tabular-nums ${
+                      isOutOfStock ? 'text-rose-600 dark:text-rose-400' : 'text-stone-950 dark:text-stone-100'
                     }`}
                   >
                     {currentStock} {selectedItem.SATUAN}

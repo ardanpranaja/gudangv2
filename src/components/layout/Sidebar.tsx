@@ -110,19 +110,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         }`}
       >
         {/* Brand header */}
-        <div className="h-14 px-5 border-b border-stone-800 flex items-center justify-between">
+        <div className="h-14 px-5 border-b-2 border-stone-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 font-bold text-xs rounded flex items-center justify-center font-mono">
+            <div className="w-7 h-7 bg-amber-400 text-stone-950 font-black text-xs rounded border-2 border-stone-950 shadow-[2px_2px_0px_#000] flex items-center justify-center font-mono">
               KG
             </div>
-            <span className="font-semibold text-sm tracking-tight text-white">Kegudangaja</span>
+            <span className="font-black text-sm tracking-tight text-white">Kegudangaja</span>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded text-stone-400 dark:text-stone-500 hover:text-white lg:hidden"
+            className="p-1 rounded border border-stone-700 text-stone-400 hover:text-white hover:bg-stone-800 lg:hidden"
             aria-label="Tutup navigasi"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
 
@@ -135,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             return (
               <div key={gIdx} className="space-y-1">
                 {group.groupName && (
-                  <div className="px-3 pb-1 text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+                  <div className="px-3 pb-1 text-[11px] font-black text-amber-400/90 uppercase tracking-wider">
                     {group.groupName}
                   </div>
                 )}
@@ -149,20 +149,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         navigateTo(item.id);
                         onClose();
                       }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors text-left ${
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-bold transition-all text-left ${
                         isActive
-                          ? 'bg-stone-800 text-white font-semibold shadow-xs'
-                          : 'text-stone-400 dark:text-stone-500 hover:bg-stone-800/60 hover:text-stone-200'
+                          ? 'bg-amber-400 text-stone-950 font-black border-2 border-stone-950 shadow-[3px_3px_0px_#000]'
+                          : 'text-stone-300 hover:bg-stone-800 hover:text-white'
                       }`}
                     >
                       <Icon
-                        className={`w-4 h-4 shrink-0 ${
-                          isActive ? 'text-white' : 'text-stone-400 dark:text-stone-500'
+                        className={`w-4 h-4 shrink-0 stroke-[2.5] ${
+                          isActive ? 'text-stone-950' : 'text-stone-400'
                         }`}
                       />
                       <span className="flex-1 truncate">{item.label}</span>
                       {item.badge && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-mono bg-stone-800 text-stone-300 rounded border border-stone-700">
+                        <span className={`px-1.5 py-0.5 text-[10px] font-mono font-black rounded border ${
+                          isActive
+                            ? 'bg-stone-950 text-amber-300 border-stone-950'
+                            : 'bg-pink-400 text-stone-950 border-stone-950 shadow-[1px_1px_0px_#000]'
+                        }`}>
                           {item.badge}
                         </span>
                       )}

@@ -815,15 +815,15 @@ export const PengajuanPage: React.FC = () => {
             return <span className="text-stone-400 dark:text-stone-500 text-xs italic">-</span>;
           }
           return (
-            <div className="flex flex-wrap items-center justify-center gap-1.5 min-w-[150px]">
+            <div className="flex flex-wrap items-center justify-center gap-2 min-w-[150px]">
               <button
                 type="button"
                 disabled={isBusy}
                 onClick={() => handleApproval('APPROVE', r.ID_PENGAJUAN)}
-                className="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors inline-flex items-center gap-1 shadow-2xs disabled:opacity-50"
+                className="px-3 py-1 text-xs font-black text-stone-950 bg-emerald-400 hover:bg-emerald-300 border-2 border-stone-900 rounded-lg shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all inline-flex items-center gap-1.5 disabled:opacity-50"
                 title="Setujui pengajuan & kurangi stok"
               >
-                {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                {isBusy ? <span className="neo-spinner-multicolor-sm" /> : <Check className="w-3.5 h-3.5 stroke-[3]" />}
                 <span>Setujui</span>
               </button>
               <button
@@ -835,10 +835,10 @@ export const PengajuanPage: React.FC = () => {
                     handleApproval('REJECT', r.ID_PENGAJUAN);
                   }
                 }}
-                className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-300 rounded-md transition-colors inline-flex items-center gap-1 disabled:opacity-50 dark:bg-rose-950/40 dark:border-rose-700 dark:hover:bg-rose-950/40"
+                className="px-3 py-1 text-xs font-black text-stone-950 bg-rose-300 hover:bg-rose-400 border-2 border-stone-900 rounded-lg shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all inline-flex items-center gap-1.5 disabled:opacity-50"
                 title="Tolak pengajuan permohonan"
               >
-                {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                {isBusy ? <span className="neo-spinner-multicolor-sm" /> : <X className="w-3.5 h-3.5 stroke-[3]" />}
                 <span>Tolak</span>
               </button>
             </div>
@@ -852,10 +852,10 @@ export const PengajuanPage: React.FC = () => {
                 type="button"
                 disabled={isBusy}
                 onClick={() => handleUpdateStatus(r.ID_PENGAJUAN, 'DIPROSES')}
-                className="px-2.5 py-1 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-md transition-colors inline-flex items-center gap-1 shadow-2xs disabled:opacity-50 whitespace-nowrap"
+                className="px-3 py-1.5 text-xs font-black text-stone-950 bg-amber-400 hover:bg-amber-300 border-2 border-stone-900 rounded-lg shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all inline-flex items-center gap-1.5 disabled:opacity-50 whitespace-nowrap"
                 title="Mulai proses penyiapan fisik barang"
               >
-                {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
+                {isBusy ? <span className="neo-spinner-multicolor-sm" /> : <Clock className="w-3.5 h-3.5 stroke-[2.5]" />}
                 <span>Mulai Siapkan →</span>
               </button>
             </div>
@@ -869,10 +869,10 @@ export const PengajuanPage: React.FC = () => {
                 type="button"
                 disabled={isBusy}
                 onClick={() => handleUpdateStatus(r.ID_PENGAJUAN, 'SELESAI')}
-                className="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors inline-flex items-center gap-1 shadow-2xs disabled:opacity-50 whitespace-nowrap"
+                className="px-3 py-1.5 text-xs font-black text-stone-950 bg-emerald-400 hover:bg-emerald-300 border-2 border-stone-900 rounded-lg shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all inline-flex items-center gap-1.5 disabled:opacity-50 whitespace-nowrap"
                 title="Barang telah diserahkan ke personil (Selesai)"
               >
-                {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                {isBusy ? <span className="neo-spinner-multicolor-sm" /> : <Check className="w-3.5 h-3.5 stroke-[3]" />}
                 <span>Selesai ✓</span>
               </button>
             </div>
@@ -899,10 +899,10 @@ export const PengajuanPage: React.FC = () => {
             <button
               onClick={loadRequests}
               disabled={isRequestsLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-600 rounded hover:bg-stone-50 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-black text-stone-950 bg-amber-300 hover:bg-amber-400 border-2 border-stone-900 rounded-lg shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all disabled:opacity-50"
               title="Perbarui riwayat permohonan"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRequestsLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 stroke-[2.5] ${isRequestsLoading ? 'animate-spin' : ''}`} />
               <span>Muat Ulang</span>
             </button>
           </div>
@@ -911,20 +911,20 @@ export const PengajuanPage: React.FC = () => {
 
       {/* Navigation Mode Tabs (Admin Mode Only) */}
       {role === 'ADMIN' && (
-        <div className="flex items-center gap-2 border-b border-stone-200 dark:border-stone-700 pb-2">
+        <div className="flex items-center gap-3 border-b-2 border-stone-900 dark:border-stone-700 pb-3">
           <button
             type="button"
             onClick={() => setActiveTab('admin')}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all border-2 border-stone-900 ${
               activeTab === 'admin'
-                ? 'bg-amber-700 text-white shadow-xs'
-                : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50'
+                ? 'bg-amber-400 text-stone-950 shadow-[3.5px_3.5px_0px_#18181b]'
+                : 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-200 hover:bg-yellow-100 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5'
             }`}
           >
-            <Boxes className="w-3.5 h-3.5" />
+            <Boxes className="w-4 h-4 stroke-[2.5]" />
             <span>Penyiapan &amp; Kelola</span>
             {pickingList.length > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-orange-500 text-white text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded-full bg-rose-400 text-stone-950 border border-stone-900 text-[10px] font-black shadow-[1px_1px_0px_#18181b]">
                 {pickingList.length}
               </span>
             )}
@@ -933,13 +933,13 @@ export const PengajuanPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('crew')}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all border-2 border-stone-900 ${
               activeTab === 'crew'
-                ? 'bg-amber-700 text-white shadow-xs'
-                : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50'
+                ? 'bg-amber-400 text-stone-950 shadow-[3.5px_3.5px_0px_#18181b]'
+                : 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-200 hover:bg-yellow-100 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5'
             }`}
           >
-            <User className="w-3.5 h-3.5" />
+            <User className="w-4 h-4 stroke-[2.5]" />
             <span>Form Permintaan (Crew)</span>
           </button>
         </div>
@@ -951,32 +951,32 @@ export const PengajuanPage: React.FC = () => {
       {activeTab === 'crew' && (
         <div className="space-y-6">
           {/* Sub-tab Switcher: Permintaan Barang vs Tisu & Plastik */}
-          <div className="flex items-center gap-2 border-b border-stone-200 dark:border-stone-700 pb-3">
+          <div className="flex items-center gap-3 border-b-2 border-stone-900 dark:border-stone-700 pb-3">
             <button
               type="button"
               onClick={() => setCrewFormType('general')}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all border-2 border-stone-900 ${
                 crewFormType === 'general'
-                  ? 'bg-amber-700 text-white shadow-xs'
-                  : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50'
+                  ? 'bg-yellow-300 text-stone-950 shadow-[3px_3px_0px_#18181b]'
+                  : 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-200 hover:bg-yellow-100 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5'
               }`}
             >
-              <Package className="w-3.5 h-3.5" />
+              <Package className="w-4 h-4 stroke-[2.5]" />
               <span>Permintaan Barang</span>
             </button>
 
             <button
               type="button"
               onClick={() => setCrewFormType('consumable')}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all border-2 border-stone-900 ${
                 crewFormType === 'consumable'
-                  ? 'bg-emerald-800 text-white shadow-xs'
-                  : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50'
+                  ? 'bg-emerald-300 text-stone-950 shadow-[3px_3px_0px_#18181b]'
+                  : 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-200 hover:bg-emerald-100 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5'
               }`}
             >
-              <ShoppingCart className="w-3.5 h-3.5" />
+              <ShoppingCart className="w-4 h-4 stroke-[2.5]" />
               <span>Tisu &amp; Plastik (Consumable)</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-200 text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-stone-950 border border-stone-900 text-[10px] font-black shadow-[1px_1px_0px_#18181b]">
                 Multi-Item
               </span>
             </button>
@@ -1234,12 +1234,12 @@ export const PengajuanPage: React.FC = () => {
                           type="button"
                           onClick={handleCheckEligibility}
                           disabled={isCheckingEligibility || !selectedMemberId || !selectedItemId}
-                          className="w-full py-2 px-3.5 bg-white dark:bg-stone-900 hover:bg-stone-100 border border-stone-300 dark:border-stone-600 text-stone-800 dark:text-stone-200 rounded-lg font-medium transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                          className="w-full py-2 px-3.5 bg-cyan-200 hover:bg-cyan-300 text-stone-950 font-black border-2 border-stone-900 rounded-lg shadow-[2.5px_2.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all inline-flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           {isCheckingEligibility ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span className="neo-spinner-multicolor-sm" />
                           ) : (
-                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                            <Sparkles className="w-4 h-4 text-amber-700 stroke-[2.5]" />
                           )}
                           <span>Cek Kelayakan Pengambilan</span>
                         </button>
@@ -1250,9 +1250,9 @@ export const PengajuanPage: React.FC = () => {
                       type="button"
                       onClick={handleAddToCart}
                       disabled={!selectedMemberId || !selectedItemId || !isSelectedItemReady || formJumlah === '' || Number(formJumlah) <= 0 || isSubmittingRequest}
-                      className="w-full py-2.5 px-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                      className="w-full py-2.5 px-4 bg-emerald-300 hover:bg-emerald-400 text-stone-950 rounded-lg font-black border-2 border-stone-900 shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-4 h-4 stroke-[2.5]" />
                       <span>Tambah ke Keranjang</span>
                     </button>
 
@@ -1394,12 +1394,12 @@ export const PengajuanPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isSubmittingRequest || requestCart.length === 0 || !selectedMemberId || !formAlasan.trim() || !canPerformAction('REQUEST')}
-                        className="w-full sm:w-auto px-6 py-2.5 bg-amber-700 hover:bg-amber-800 text-white rounded-xl font-semibold transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs hover:shadow"
+                        className="w-full sm:w-auto px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-stone-950 rounded-xl font-black border-2 border-stone-900 shadow-[3.5px_3.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#18181b] transition-all inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         {isSubmittingRequest ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span className="neo-spinner-multicolor-sm" />
                         ) : (
-                          <Send className="w-4 h-4" />
+                          <Send className="w-4 h-4 stroke-[2.5]" />
                         )}
                         <span>Ajukan {requestCart.length > 0 ? `${requestCart.length} ` : ''}Permintaan</span>
                       </button>

@@ -14,13 +14,13 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
   // ---------------------------------------------------------------------------
   if (role === 'MEMBER') {
     return (
-      <header className="sticky top-0 z-30 h-14 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 px-4 sm:px-6 flex items-center justify-between shadow-2xs transition-colors">
+      <header className="sticky top-0 z-30 h-14 bg-white dark:bg-stone-900 border-b-2 border-stone-900 dark:border-stone-500 px-4 sm:px-6 flex items-center justify-between shadow-[0px_2px_0px_#18181b] transition-colors">
         {/* Brand Header */}
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-stone-900 dark:bg-stone-800 text-white flex items-center justify-center shadow-xs">
-            <Boxes className="w-4 h-4 text-emerald-400" />
+          <div className="w-8 h-8 rounded-lg bg-amber-400 text-stone-950 border-2 border-stone-900 flex items-center justify-center shadow-[2px_2px_0px_#18181b]">
+            <Boxes className="w-4 h-4 stroke-[2.5]" />
           </div>
-          <span className="text-base font-bold tracking-tight text-stone-900 dark:text-stone-100">
+          <span className="text-base font-black tracking-tight text-stone-950 dark:text-stone-100">
             Kegudangaja
           </span>
         </div>
@@ -30,20 +30,20 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
           <button
             type="button"
             onClick={toggleTheme}
-            className="p-1.5 rounded-lg text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-1.5 rounded-lg border-2 border-stone-900 bg-amber-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-[2px_2px_0px_#18181b] hover:bg-amber-200 dark:hover:bg-stone-700 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
             aria-label={theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
             title={theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-stone-600" />}
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-500 stroke-[2.5]" /> : <Moon className="w-4 h-4 text-stone-900 stroke-[2.5]" />}
           </button>
 
           <button
             type="button"
             onClick={() => setIsAdminLoginOpen(true)}
-            className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium transition-colors hover:underline inline-flex items-center gap-1.5"
+            className="text-xs font-black text-stone-950 bg-amber-300 hover:bg-amber-400 border-2 border-stone-900 rounded-lg px-3 py-1.5 shadow-[2.5px_2.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all inline-flex items-center gap-1.5"
             title="Masuk ke panel administrasi penuh gudang"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
+            <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
             <span>Masuk sebagai Admin</span>
           </button>
         </div>
@@ -55,64 +55,76 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
   // ADMIN MODE TOPBAR (Full Navigation & Admin Controls)
   // ---------------------------------------------------------------------------
   return (
-    <header className="sticky top-0 z-30 h-14 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 px-4 sm:px-6 flex items-center justify-between shadow-2xs transition-colors">
+    <header className="sticky top-0 z-30 h-14 bg-white dark:bg-stone-900 border-b-2 border-stone-900 dark:border-stone-500 px-4 sm:px-6 flex items-center justify-between shadow-[0px_2px_0px_#18181b] transition-colors">
       {/* Zone 1: Mobile Hamburger & Brand Title */}
       <div className="flex items-center gap-3">
         <button
           onClick={onToggleSidebar}
-          className="p-1.5 rounded text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 lg:hidden"
+          className="p-1.5 rounded-md border-2 border-stone-900 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all lg:hidden"
           aria-label="Buka menu navigasi"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-4 h-4 stroke-[2.5]" />
         </button>
 
         <button
           onClick={() => navigateTo('dashboard')}
-          className="text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 hover:text-stone-800 dark:hover:text-stone-200 flex items-center gap-2"
+          className="text-base font-black tracking-tight text-stone-950 dark:text-stone-100 hover:text-amber-600 flex items-center gap-2"
         >
-          <Boxes className="w-5 h-5 text-emerald-600 dark:text-emerald-400 hidden sm:block" />
+          <div className="w-8 h-8 rounded-lg bg-amber-400 text-stone-950 border-2 border-stone-900 flex items-center justify-center shadow-[2px_2px_0px_#18181b] hidden sm:flex">
+            <Boxes className="w-4 h-4 stroke-[2.5]" />
+          </div>
           <span>Kegudangaja</span>
         </button>
       </div>
 
       {/* Zone 2: Navigation Links */}
-      <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-stone-600 dark:text-stone-400">
+      <nav className="hidden md:flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-stone-300">
         <button
           onClick={() => navigateTo('dashboard')}
-          className={`transition-colors hover:text-stone-900 dark:hover:text-stone-100 ${
-            currentPage === 'dashboard' ? 'text-stone-900 dark:text-stone-100 font-semibold' : ''
+          className={`px-3 py-1 rounded transition-all ${
+            currentPage === 'dashboard'
+              ? 'bg-amber-300 text-stone-950 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b] font-black'
+              : 'hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300'
           }`}
         >
           Ringkasan
         </button>
         <button
           onClick={() => navigateTo('stok')}
-          className={`transition-colors hover:text-stone-900 dark:hover:text-stone-100 ${
-            currentPage === 'stok' ? 'text-stone-900 dark:text-stone-100 font-semibold' : ''
+          className={`px-3 py-1 rounded transition-all ${
+            currentPage === 'stok'
+              ? 'bg-cyan-300 text-stone-950 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b] font-black'
+              : 'hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300'
           }`}
         >
           Stok
         </button>
         <button
           onClick={() => navigateTo('masuk')}
-          className={`transition-colors hover:text-stone-900 dark:hover:text-stone-100 ${
-            currentPage === 'masuk' ? 'text-stone-900 dark:text-stone-100 font-semibold' : ''
+          className={`px-3 py-1 rounded transition-all ${
+            currentPage === 'masuk'
+              ? 'bg-emerald-300 text-stone-950 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b] font-black'
+              : 'hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300'
           }`}
         >
           Masuk
         </button>
         <button
           onClick={() => navigateTo('keluar')}
-          className={`transition-colors hover:text-stone-900 dark:hover:text-stone-100 ${
-            currentPage === 'keluar' ? 'text-stone-900 dark:text-stone-100 font-semibold' : ''
+          className={`px-3 py-1 rounded transition-all ${
+            currentPage === 'keluar'
+              ? 'bg-rose-300 text-stone-950 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b] font-black'
+              : 'hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300'
           }`}
         >
           Keluar
         </button>
         <button
           onClick={() => navigateTo('bincard')}
-          className={`transition-colors hover:text-stone-900 dark:hover:text-stone-100 ${
-            currentPage === 'bincard' ? 'text-stone-900 dark:text-stone-100 font-semibold' : ''
+          className={`px-3 py-1 rounded transition-all ${
+            currentPage === 'bincard'
+              ? 'bg-purple-300 text-stone-950 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b] font-black'
+              : 'hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300'
           }`}
         >
           Bin Card
@@ -124,35 +136,33 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
         {/* Backend status indicator */}
         <button
           onClick={() => navigateTo('pengaturan')}
-          className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded text-[11px] text-stone-500 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+          className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded border-2 border-stone-900 shadow-[2px_2px_0px_#18181b] text-[11px] font-black text-stone-950 transition-all ${
+            health.status === 'ONLINE'
+              ? 'bg-emerald-300'
+              : health.status === 'OFFLINE'
+              ? 'bg-rose-300'
+              : 'bg-amber-300'
+          }`}
           title={`Backend GAS: ${health.status}`}
         >
-          <span
-            className={`w-2 h-2 rounded-full shrink-0 ${
-              health.status === 'ONLINE'
-                ? 'bg-emerald-500'
-                : health.status === 'OFFLINE'
-                ? 'bg-rose-500'
-                : 'bg-amber-400'
-            }`}
-          />
-          <span className="font-mono text-stone-600 dark:text-stone-300">GAS {health.status}</span>
+          <span className="w-2 h-2 rounded-full bg-stone-950 shrink-0" />
+          <span className="font-mono">GAS {health.status}</span>
         </button>
 
         {/* Theme Toggle Button */}
         <button
           type="button"
           onClick={toggleTheme}
-          className="p-1.5 sm:p-2 rounded-lg text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+          className="p-1.5 sm:p-2 rounded-lg border-2 border-stone-900 bg-amber-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-[2px_2px_0px_#18181b] hover:bg-amber-200 dark:hover:bg-stone-700 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
           aria-label={theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
           title={theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
         >
-          {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-stone-600" />}
+          {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-500 stroke-[2.5]" /> : <Moon className="w-4 h-4 text-stone-900 stroke-[2.5]" />}
         </button>
 
         {/* Admin Badge */}
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-900 dark:bg-stone-800 text-white text-[11px] font-bold tracking-wide shadow-2xs border border-transparent dark:border-stone-700">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-400 text-stone-950 text-[11px] font-black tracking-wide border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]">
+          <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>ADMIN</span>
         </span>
 
@@ -160,10 +170,10 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
         <button
           type="button"
           onClick={logoutAdmin}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-700 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900/50 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black text-stone-950 bg-rose-300 hover:bg-rose-400 border-2 border-stone-900 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
           title="Keluar dari mode Admin dan kembali ke mode Member"
         >
-          <LogOut className="w-3.5 h-3.5" />
+          <LogOut className="w-3.5 h-3.5 stroke-[2.5]" />
           <span className="hidden sm:inline">Keluar</span>
         </button>
       </div>

@@ -187,55 +187,55 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`w-full text-left bg-white dark:bg-stone-900 dark:bg-stone-800 border rounded transition-colors flex items-center justify-between gap-2 ${sizeClasses} ${
+        className={`w-full text-left bg-white dark:bg-stone-900 border-2 rounded-lg transition-all flex items-center justify-between gap-2 shadow-[2.5px_2.5px_0px_#18181b] ${sizeClasses} ${
           disabled
-            ? 'bg-stone-50 dark:bg-stone-800/60 dark:bg-stone-900/50 text-stone-400 dark:text-stone-500 border-stone-200 dark:border-stone-700 dark:border-stone-800 cursor-not-allowed'
+            ? 'bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500 border-stone-400 cursor-not-allowed shadow-none'
             : isOpen
-            ? 'border-stone-900 dark:border-stone-400 ring-1 ring-amber-700 dark:ring-stone-400 shadow-xs text-stone-900 dark:text-stone-100'
-            : 'border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 text-stone-800 dark:text-stone-200 dark:text-stone-100'
+            ? 'border-stone-900 dark:border-stone-300 ring-2 ring-amber-400 text-stone-950 dark:text-stone-100'
+            : 'border-stone-900 dark:border-stone-500 hover:border-stone-950 text-stone-950 dark:text-stone-100'
         }`}
       >
         <div className="flex-1 truncate">
           {selectedOption && !minimalTrigger ? (
             <div className="flex items-center gap-2 truncate">
               {showId && (
-                <span className="font-mono text-[11px] font-semibold text-stone-700 dark:text-stone-200 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 dark:bg-stone-700 px-1.5 py-0.5 rounded border border-stone-200 dark:border-stone-700 dark:border-stone-600 shrink-0">
+                <span className="font-mono text-[11px] font-black text-stone-950 bg-amber-200 px-1.5 py-0.5 rounded border border-stone-900 shrink-0 shadow-[1px_1px_0px_#18181b]">
                   {selectedOption.value}
                 </span>
               )}
-              <span className="font-medium text-stone-900 dark:text-stone-100 truncate">
+              <span className="font-bold text-stone-950 dark:text-stone-100 truncate">
                 {selectedOption.label}
               </span>
               {selectedOption.badge && (
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 border ${
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 border border-stone-900 shadow-[1px_1px_0px_#18181b] ${
                     selectedOption.badgeColor === 'green' || selectedOption.badgeColor === 'emerald'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 font-semibold'
+                      ? 'bg-emerald-300 text-stone-950'
                       : selectedOption.badgeColor === 'red' || selectedOption.badgeColor === 'rose'
-                      ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800 font-semibold'
+                      ? 'bg-rose-300 text-stone-950'
                       : selectedOption.badgeColor === 'blue'
-                      ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 font-semibold'
-                      : 'text-stone-600 dark:text-stone-400 dark:text-stone-300 bg-stone-50 dark:bg-stone-800/60 dark:bg-stone-700 border-stone-200 dark:border-stone-700 dark:border-stone-600'
+                      ? 'bg-sky-300 text-stone-950'
+                      : 'text-stone-950 bg-yellow-200'
                   }`}
                 >
                   {selectedOption.badge}
                 </span>
               )}
               {selectedOption.sublabel && (
-                <span className="text-[11px] text-stone-400 dark:text-stone-500 dark:text-stone-400 truncate">
+                <span className="text-[11px] text-stone-500 dark:text-stone-400 truncate font-medium">
                   ({selectedOption.sublabel})
                 </span>
               )}
             </div>
           ) : (
-            <span className="text-stone-400 dark:text-stone-500">{placeholder}</span>
+            <span className="text-stone-500 dark:text-stone-400 font-medium">{placeholder}</span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-stone-400 dark:text-stone-500 dark:text-stone-400 shrink-0">
+        <div className="flex items-center gap-1 text-stone-700 dark:text-stone-300 shrink-0">
           <ChevronDown
-            className={`w-4 h-4 transition-transform duration-200 ${
-              isOpen ? 'rotate-180 text-stone-700 dark:text-stone-200 dark:text-stone-300' : ''
+            className={`w-4 h-4 stroke-[2.5] transition-transform duration-200 ${
+              isOpen ? 'rotate-180 text-stone-950 dark:text-stone-100' : ''
             }`}
           />
         </div>
@@ -243,11 +243,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg shadow-xl overflow-hidden animate-fadeIn min-w-[280px]">
+        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-400 rounded-xl shadow-[4.5px_4.5px_0px_#18181b] overflow-hidden animate-fadeIn min-w-[280px]">
           {/* Search Box */}
-          <div className="p-2 border-b border-stone-100 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60">
+          <div className="p-2.5 border-b-2 border-stone-900 dark:border-stone-700 bg-amber-50/70 dark:bg-stone-800/80">
             <div className="relative flex items-center">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 text-stone-400 dark:text-stone-500 pointer-events-none" />
+              <Search className="w-4 h-4 absolute left-2.5 text-stone-700 dark:text-stone-300 pointer-events-none stroke-[2.5]" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -257,7 +257,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   setFocusedIndex(0);
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-stone-900 dark:bg-stone-700/80 border border-stone-200 dark:border-stone-700 dark:border-stone-600 rounded focus:outline-hidden focus:ring-1 focus:ring-amber-700 dark:focus:ring-stone-400 text-stone-800 dark:text-stone-200 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors"
+                className="w-full pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-600 rounded-lg text-stone-950 dark:text-stone-100 font-bold placeholder:text-stone-400 shadow-[1.5px_1.5px_0px_#18181b] focus:outline-hidden focus:ring-2 focus:ring-amber-400"
               />
               {searchQuery && (
                 <button
@@ -266,16 +266,16 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     setSearchQuery('');
                     searchInputRef.current?.focus();
                   }}
-                  className="absolute right-2 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
+                  className="absolute right-2 text-stone-700 dark:text-stone-300 hover:text-stone-950 p-0.5"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3.5 h-3.5 stroke-[2.5]" />
                 </button>
               )}
             </div>
             {filteredOptions.length > 0 && (
-              <div className="px-1 pt-1 text-[10px] text-stone-400 dark:text-stone-500 dark:text-stone-400 flex items-center justify-between">
+              <div className="px-1 pt-1.5 text-[10px] text-stone-600 dark:text-stone-400 font-medium flex items-center justify-between">
                 <span>Ditemukan {filteredOptions.length} data</span>
-                <span className="italic">Gunakan ↑ ↓ dan Enter</span>
+                <span className="italic font-bold">Gunakan ↑ ↓ dan Enter</span>
               </div>
             )}
           </div>
@@ -284,13 +284,13 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           <ul
             ref={listRef}
             role="listbox"
-            className="max-h-60 overflow-y-auto py-1 divide-y divide-stone-50 dark:divide-stone-700/50 text-xs"
+            className="max-h-60 overflow-y-auto py-1 divide-y divide-stone-200 dark:divide-stone-700/80 text-xs"
           >
             {filteredOptions.length === 0 ? (
-              <li className="px-4 py-6 text-center text-stone-400 dark:text-stone-500 dark:text-stone-400">
-                <Search className="w-6 h-6 mx-auto mb-1.5 text-stone-300 dark:text-stone-600 stroke-1" />
-                <p className="font-medium text-stone-600 dark:text-stone-400 dark:text-stone-300">{emptyMessage}</p>
-                <p className="text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">
+              <li className="px-4 py-6 text-center text-stone-500 dark:text-stone-400">
+                <Search className="w-6 h-6 mx-auto mb-1.5 text-stone-400 stroke-2" />
+                <p className="font-bold text-stone-800 dark:text-stone-200">{emptyMessage}</p>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5 font-medium">
                   Coba gunakan kata kunci pencarian lain
                 </p>
               </li>
@@ -308,34 +308,34 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     onMouseEnter={() => setFocusedIndex(idx)}
                     className={`px-3 py-2 cursor-pointer transition-colors flex items-center justify-between gap-2 ${
                       opt.disabled
-                        ? 'opacity-40 cursor-not-allowed bg-stone-50 dark:bg-stone-800/60 dark:bg-stone-800'
+                        ? 'opacity-40 cursor-not-allowed bg-stone-100 dark:bg-stone-800'
                         : isSelected
-                        ? 'bg-stone-100 dark:bg-stone-800/80 dark:bg-stone-700 font-medium text-stone-950 dark:text-stone-50'
+                        ? 'bg-amber-100 dark:bg-amber-950/60 font-bold text-stone-950 dark:text-stone-50'
                         : isFocused
-                        ? 'bg-stone-50 dark:bg-stone-800/60 dark:bg-stone-700/60 text-stone-900 dark:text-stone-100'
-                        : 'text-stone-700 dark:text-stone-200 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-700/40'
+                        ? 'bg-stone-100 dark:bg-stone-800 text-stone-950 dark:text-stone-100 font-medium'
+                        : 'text-stone-800 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800/50'
                     }`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         {showId && (
-                          <span className="font-mono text-[11px] font-semibold text-stone-800 dark:text-stone-200 bg-stone-100 dark:bg-stone-800 dark:bg-stone-700 px-1.5 py-0.2 rounded border border-stone-200 dark:border-stone-700 dark:border-stone-600 shrink-0">
+                          <span className="font-mono text-[11px] font-black text-stone-950 bg-stone-200 dark:bg-stone-700 px-1.5 py-0.2 rounded border border-stone-900 shrink-0 shadow-[1px_1px_0px_#18181b]">
                             {opt.value}
                           </span>
                         )}
-                        <span className="font-medium text-stone-900 dark:text-stone-100 truncate">
+                        <span className="font-bold text-stone-950 dark:text-stone-100 truncate">
                           {opt.label}
                         </span>
                         {opt.badge && (
                           <span
-                            className={`text-[10px] px-1.5 py-0.2 rounded shrink-0 border ${
+                            className={`text-[10px] font-bold px-1.5 py-0.2 rounded shrink-0 border border-stone-900 shadow-[1px_1px_0px_#18181b] ${
                               opt.badgeColor === 'green' || opt.badgeColor === 'emerald'
-                                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 font-semibold'
+                                ? 'bg-emerald-300 text-stone-950'
                                 : opt.badgeColor === 'red' || opt.badgeColor === 'rose'
-                                ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800 font-semibold'
+                                ? 'bg-rose-300 text-stone-950'
                                 : opt.badgeColor === 'blue'
-                                ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 font-semibold'
-                                : 'text-stone-600 dark:text-stone-400 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 dark:bg-stone-700 border-stone-200 dark:border-stone-700 dark:border-stone-600'
+                                ? 'bg-sky-300 text-stone-950'
+                                : 'text-stone-950 bg-yellow-200'
                             }`}
                           >
                             {opt.badge}
@@ -343,16 +343,16 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         )}
                       </div>
                       {(opt.sublabel || opt.extra) && (
-                        <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5 flex items-center gap-2 truncate">
+                        <div className="text-[11px] text-stone-600 dark:text-stone-400 mt-0.5 flex items-center gap-2 truncate font-medium">
                           {opt.sublabel && <span>{opt.sublabel}</span>}
                           {opt.sublabel && opt.extra && <span>·</span>}
-                          {opt.extra && <span className="text-stone-400 dark:text-stone-500">{opt.extra}</span>}
+                          {opt.extra && <span className="text-stone-500 dark:text-stone-400">{opt.extra}</span>}
                         </div>
                       )}
                     </div>
 
                     {isSelected && (
-                      <Check className="w-4 h-4 text-stone-900 dark:text-stone-100 shrink-0" />
+                      <Check className="w-4 h-4 text-stone-950 dark:text-stone-100 shrink-0 stroke-[3]" />
                     )}
                   </li>
                 );

@@ -55,25 +55,30 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center space-y-5 max-w-sm px-6">
-        {/* Splash Illustration */}
-        <SplashIllustration className="w-56 h-auto" />
+        {/* Splash Illustration Card */}
+        <div className="p-4 bg-stone-900 border-2 border-stone-100 rounded-2xl shadow-[6px_6px_0px_#facc15]">
+          <SplashIllustration className="w-56 h-auto" />
+        </div>
 
-        {/* Brand Title with subtle shimmer */}
+        {/* Brand Title */}
         <div className="space-y-1.5">
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
-            <span>Kegudangaja</span>
+          <div className="inline-block px-3 py-1 bg-amber-400 text-stone-950 font-black text-xs uppercase tracking-wider rounded border-2 border-stone-900 shadow-[2px_2px_0px_#18181b]">
+            Kegudangaja
+          </div>
+          <h1 className="text-xl font-black tracking-tight text-white flex items-center justify-center gap-2 pt-1">
+            <span>Sistem Gudang &amp; Logistik</span>
           </h1>
-          <p className="text-xs text-stone-400 dark:text-stone-500 font-medium tracking-wide uppercase">
-            Sistem Inventaris &amp; Logistik Terintegrasi
+          <p className="text-xs text-stone-400 font-bold tracking-wide">
+            Spreadsheet Driven · Fast · High Contrast
           </p>
         </div>
 
         {/* Animated Progress Bar */}
-        <div className="w-48 space-y-2 pt-2">
-          <div className="h-1.5 w-full bg-stone-800 rounded-full overflow-hidden relative">
-            <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full animate-[progress_1.6s_ease-in-out_infinite] w-full" />
+        <div className="w-56 space-y-2.5 pt-1">
+          <div className="h-3 w-full bg-stone-800 rounded-lg overflow-hidden relative border-2 border-stone-100 shadow-[2px_2px_0px_#facc15]">
+            <div className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-sky-400 animate-[progress_1.6s_ease-in-out_infinite] w-full" />
           </div>
-          <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium font-mono">
+          <div className="text-[11px] text-amber-300 font-mono font-bold">
             {statusText}
           </div>
         </div>

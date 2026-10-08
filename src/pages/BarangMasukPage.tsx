@@ -120,15 +120,15 @@ export const BarangMasukPage: React.FC = () => {
       />
 
       {lastSubmittedTx && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start justify-between text-xs text-emerald-900 animate-fadeIn dark:bg-emerald-950/40 dark:text-emerald-100 dark:border-emerald-800">
+        <div className="p-4 bg-emerald-100 border-2 border-stone-900 rounded-xl flex items-start justify-between text-xs text-stone-950 animate-fadeIn shadow-[4px_4px_0px_#18181b]">
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-800 shrink-0 mt-0.5 stroke-[2.5]" />
             <div>
-              <div className="font-semibold text-sm text-emerald-950 dark:text-emerald-100">
+              <div className="font-black text-sm text-stone-950">
                 Penerimaan Berhasil Disimpan di GAS
               </div>
-              <p className="mt-1 text-emerald-800 dark:text-emerald-200">
-                Dokumen <span className="font-mono font-bold">{lastSubmittedTx.NO_DOKUMEN}</span> telah
+              <p className="mt-1 text-stone-800 font-medium">
+                Dokumen <span className="font-mono font-black bg-white px-1.5 py-0.5 rounded border border-stone-900">{lastSubmittedTx.NO_DOKUMEN}</span> telah
                 tercatat ke Google Spreadsheet.
               </p>
             </div>
@@ -136,14 +136,14 @@ export const BarangMasukPage: React.FC = () => {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => navigateTo('bincard', { itemId: lastSubmittedTx.ID_ITEM })}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-stone-900 border border-emerald-300 text-emerald-900 rounded font-medium hover:bg-emerald-100 transition-colors dark:bg-emerald-900/40 dark:text-emerald-100 dark:border-emerald-700 dark:hover:bg-emerald-900/40"
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-300 border-2 border-stone-900 text-stone-950 rounded-lg font-black hover:bg-emerald-200 transition-all shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
-              <ScrollText className="w-3.5 h-3.5" />
+              <ScrollText className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Lihat Bin Card</span>
             </button>
             <button
               onClick={() => setLastSubmittedTx(null)}
-              className="text-emerald-700 hover:text-emerald-900 px-2 py-1 dark:text-emerald-300"
+              className="text-stone-700 hover:text-stone-950 px-2 py-1 font-bold underline"
             >
               Tutup
             </button>
@@ -153,11 +153,11 @@ export const BarangMasukPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Main Form */}
-        <div className="md:col-span-2 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6">
+        <div className="md:col-span-2 bg-white dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-400 p-6 shadow-[5px_5px_0px_#18181b]">
           <form onSubmit={handleSubmit} className="space-y-5 text-xs">
             <div>
-              <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                Pilih Barang Masuk <span className="text-rose-500">*</span>
+              <label className="block font-black text-stone-950 dark:text-stone-200 mb-1">
+                Pilih Barang Masuk <span className="text-rose-600">*</span>
               </label>
               <SearchableSelect
                 disabled={isLoading || isSubmitting}
@@ -172,8 +172,8 @@ export const BarangMasukPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                  Jumlah Masuk <span className="text-rose-500">*</span>
+                <label className="block font-black text-stone-950 dark:text-stone-200 mb-1">
+                  Jumlah Masuk <span className="text-rose-600">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -183,17 +183,17 @@ export const BarangMasukPage: React.FC = () => {
                     disabled={isSubmitting}
                     value={jumlah}
                     onChange={(e) => setJumlah(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 font-mono text-xs pr-16"
+                    className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-500 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 font-mono font-bold text-xs pr-16 shadow-[1.5px_1.5px_0px_#18181b]"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 font-mono text-xs">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-300 font-mono font-bold text-xs">
                     {selectedItem?.SATUAN || 'UNIT'}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
-                  Tanggal Masuk <span className="text-rose-500">*</span>
+                <label className="block font-black text-stone-950 dark:text-stone-200 mb-1">
+                  Tanggal Masuk <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="date"
@@ -201,13 +201,13 @@ export const BarangMasukPage: React.FC = () => {
                   disabled={isSubmitting}
                   value={tanggal}
                   onChange={(e) => setTanggal(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 text-xs"
+                  className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-500 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 text-xs font-bold shadow-[1.5px_1.5px_0px_#18181b]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
+              <label className="block font-black text-stone-950 dark:text-stone-200 mb-1">
                 No. Surat Jalan / No. Referensi Pengiriman
               </label>
               <input
@@ -216,12 +216,12 @@ export const BarangMasukPage: React.FC = () => {
                 value={noDokumen}
                 onChange={(e) => setNoDokumen(e.target.value)}
                 placeholder="Kosongkan jika ingin dibuat otomatis oleh backend GAS"
-                className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 font-mono text-xs"
+                className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-500 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 font-mono font-bold text-xs shadow-[1.5px_1.5px_0px_#18181b]"
               />
             </div>
 
             <div>
-              <label className="block font-medium text-stone-700 dark:text-stone-200 mb-1">
+              <label className="block font-black text-stone-950 dark:text-stone-200 mb-1">
                 Keterangan / Nama Supplier / Catatan Pengiriman
               </label>
               <textarea
@@ -230,27 +230,27 @@ export const BarangMasukPage: React.FC = () => {
                 value={keterangan}
                 onChange={(e) => setKeterangan(e.target.value)}
                 placeholder="Contoh: Pengiriman PO-8812 dari PT Chemika Jaya, kondisi kemasan segel aman."
-                className="w-full px-3 py-2 border border-stone-200 dark:border-stone-700 rounded focus:ring-1 focus:ring-amber-700 text-stone-800 dark:text-stone-200 text-xs"
+                className="w-full px-3 py-2 border-2 border-stone-900 dark:border-stone-500 rounded-lg focus:ring-2 focus:ring-amber-400 text-stone-950 dark:text-stone-100 text-xs font-bold shadow-[1.5px_1.5px_0px_#18181b]"
               />
             </div>
 
-            <div className="pt-4 border-t border-stone-200 dark:border-stone-700 flex items-center justify-between">
-              <span className="text-[11px] text-stone-400 dark:text-stone-500">
+            <div className="pt-4 border-t-2 border-stone-900 dark:border-stone-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="text-[11px] text-stone-600 dark:text-stone-400 font-medium">
                 Pencatatan dikirim langsung via POST action=transaction ke GAS.
               </span>
               <button
                 type="submit"
                 disabled={isSubmitting || isLoading}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-stone-900 rounded hover:bg-stone-800 transition-colors disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-black text-stone-950 bg-emerald-400 hover:bg-emerald-300 border-2 border-stone-900 rounded-lg shadow-[3px_3px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span className="neo-spinner-multicolor-sm" />
                     <span>Menyimpan ke GAS...</span>
                   </>
                 ) : (
                   <>
-                    <ArrowDownLeft className="w-3.5 h-3.5" />
+                    <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
                     <span>Catat Barang Masuk</span>
                   </>
                 )}
@@ -261,37 +261,37 @@ export const BarangMasukPage: React.FC = () => {
 
         {/* Sidebar Info Card */}
         <div className="space-y-4">
-          <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-4 space-y-3 text-xs">
-            <h4 className="font-semibold text-stone-900 dark:text-stone-100 border-b border-stone-100 pb-2 flex items-center gap-1.5">
-              <Boxes className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+          <div className="bg-amber-50 dark:bg-stone-900 rounded-xl border-2 border-stone-900 dark:border-stone-500 p-4 space-y-3 text-xs shadow-[4px_4px_0px_#18181b]">
+            <h4 className="font-black text-stone-950 dark:text-stone-100 border-b-2 border-stone-900 dark:border-stone-700 pb-2 flex items-center gap-1.5">
+              <Boxes className="w-4 h-4 text-stone-900 dark:text-stone-300 stroke-[2.5]" />
               <span>Info Stok Barang Ini</span>
             </h4>
 
             {selectedItem ? (
-              <div className="space-y-2.5">
+              <div className="space-y-2.5 font-bold">
                 <div>
-                  <div className="text-stone-400 dark:text-stone-500 text-[11px]">Nama Barang</div>
-                  <div className="font-semibold text-stone-900 dark:text-stone-100">{selectedItem.NAMA_ITEM}</div>
+                  <div className="text-stone-600 dark:text-stone-400 text-[11px] font-semibold">Nama Barang</div>
+                  <div className="font-black text-stone-950 dark:text-stone-100 text-sm">{selectedItem.NAMA_ITEM}</div>
                 </div>
-                <div className="flex justify-between py-1 border-b border-stone-100">
-                  <span className="text-stone-500 dark:text-stone-400">Stok Saat Ini (Backend)</span>
-                  <span className="font-mono font-semibold text-stone-900 dark:text-stone-100 tabular-nums">
+                <div className="flex justify-between py-1.5 border-b border-stone-300 dark:border-stone-800">
+                  <span className="text-stone-700 dark:text-stone-300">Stok Saat Ini (Backend)</span>
+                  <span className="font-mono font-black text-stone-950 dark:text-stone-100 tabular-nums bg-white dark:bg-stone-800 px-1.5 py-0.5 rounded border border-stone-900">
                     {currentItemStock} {selectedItem.SATUAN}
                   </span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-stone-100">
-                  <span className="text-stone-500 dark:text-stone-400">Batas Min. Stok</span>
-                  <span className="font-mono text-stone-700 dark:text-stone-200 tabular-nums">
+                <div className="flex justify-between py-1.5 border-b border-stone-300 dark:border-stone-800">
+                  <span className="text-stone-700 dark:text-stone-300">Batas Min. Stok</span>
+                  <span className="font-mono text-stone-900 dark:text-stone-200 tabular-nums">
                     {selectedItem.MIN_STOK} {selectedItem.SATUAN}
                   </span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-stone-100">
-                  <span className="text-stone-500 dark:text-stone-400">Lokasi Rak</span>
-                  <span className="text-stone-700 dark:text-stone-200">{selectedItem.LOKASI || '-'}</span>
+                <div className="flex justify-between py-1.5 border-b border-stone-300 dark:border-stone-800">
+                  <span className="text-stone-700 dark:text-stone-300">Lokasi Rak</span>
+                  <span className="text-stone-950 dark:text-stone-200 font-black">{selectedItem.LOKASI || '-'}</span>
                 </div>
               </div>
             ) : (
-              <div className="text-stone-400 dark:text-stone-500 text-[11px] italic">Pilih barang untuk melihat info stok.</div>
+              <div className="text-stone-500 dark:text-stone-400 text-[11px] italic font-medium">Pilih barang untuk melihat info stok.</div>
             )}
           </div>
         </div>
