@@ -5,6 +5,7 @@ import {
   StructuredToolResult,
   AIConversationContext,
 } from '../types/ai';
+import { MasterItem, MasterMember, ItemStock } from '../types';
 
 // ============ FUZZY MATCHING (toleransi typo) ============
 /** Normalisasi nama: lowercase, hapus karakter khusus. */
@@ -45,7 +46,7 @@ function fuzzyScore(query: string, target: string): number {
   const tTokens = t.split(' ').filter(Boolean);
   if (qTokens.length > 0) {
     const matched = qTokens.filter((qt) =>
-      tTokens.some((tt) => tt.includes(qt) || qt.includes(tt) || levenshtein(qt, tt) <= Math.max(1, Math.floor(qt.length / 4)))
+      tTokens.some((tt) => tt.includes(qt) || qt.includes(tt) || levenshtein(qt, tt) <= (qt.length <= 4 ? 2 : Math.max(2, Math.floor(qt.length / 4))))
     );
     if (matched.length === qTokens.length) return 0.9;
     if (matched.length > 0) return 0.6 + (0.3 * matched.length) / qTokens.length;
@@ -64,6 +65,80 @@ function fuzzyMatchItems<T>(query: string, items: T[], getName: (item: T) => str
     .filter((x) => x.score >= threshold)
     .sort((a, b) => b.score - a.score)
     .map((x) => x.item);
+}
+
+/**
+ * Resolusi itemId dari query pencarian teks dengan deteksi kandidat ganda (anti-halusinasi).
+ * - status: 'found'     -> 1 kandidat jelas (skor >= 0.7 dan selisih skor terhadap runner-up >= 0.15).
+ * - status: 'ambiguous' -> >1 kandidat dengan selisih skor < 0.15 di antara 2 teratas (perlu klarifikasi pengguna).
+ * - status: 'not_found' -> 0 kandidat yang cocok atau skor di bawah ambang batas minimum.
+ *
+ * Catatan: Fungsi ini diekspor sebagai utilitas anti-halusinasi yang dapat dirujuk
+ * oleh prompt/instruksi sistem sebelum memanggil propose_transaction.
+ */
+export async function resolveItemId(query: string): Promise<{
+  status: 'found' | 'ambiguous' | 'not_found';
+  item?: MasterItem;
+  candidates?: MasterItem[];
+}> {
+  const trimmed = query.trim();
+  if (!trimmed) {
+    return { status: 'not_found' };
+  }
+
+  const items = await api.getItems();
+
+  // 1. Prioritas exact match ID_ITEM
+  const exactById = items.find((i) => i.ID_ITEM.toUpperCase() === trimmed.toUpperCase());
+  if (exactById) {
+    return { status: 'found', item: exactById };
+  }
+
+  // 2. Hitung skor kemiripan fuzzy untuk semua item
+  const scored = items
+    .map((item) => ({
+      item,
+      score: fuzzyScore(trimmed, `${item.NAMA_ITEM} ${item.KATEGORI || ''}`),
+    }))
+    .filter((x) => x.score >= 0.45)
+    .sort((a, b) => b.score - a.score);
+
+  if (scored.length === 0) {
+    return { status: 'not_found' };
+  }
+
+  const top1 = scored[0];
+  const top2 = scored[1];
+
+  // Ambang batas dasar kecocokan kuat adalah 0.7
+  if (top1.score < 0.7) {
+    // Jika tidak ada yang mencapai 0.7, tapi ada kandidat yang mirip dekat
+    if (scored.length > 1 && top1.score - top2.score < 0.15) {
+      return {
+        status: 'ambiguous',
+        candidates: scored.slice(0, 5).map((x) => x.item),
+      };
+    }
+    return { status: 'not_found' };
+  }
+
+  // Jika skor teratas >= 0.7, periksa apakah ada runner-up dengan selisih skor < 0.15
+  if (top2 && top1.score - top2.score < 0.15) {
+    const candidates = scored
+      .filter((x) => top1.score - x.score < 0.15)
+      .slice(0, 5)
+      .map((x) => x.item);
+
+    return {
+      status: 'ambiguous',
+      candidates,
+    };
+  }
+
+  return {
+    status: 'found',
+    item: top1.item,
+  };
 }
 
 // Gemini Function Declarations Schema for @google/genai
@@ -804,15 +879,17 @@ export async function executeAITool(
 
       case 'get_members': {
         const members = await api.getMembers();
-        const query = typeof args.query === 'string' ? args.query.toLowerCase().trim() : '';
+        const query = typeof args.query === 'string' ? args.query.trim() : '';
         let filtered = members;
         if (query) {
-          filtered = filtered.filter(
-            (m) =>
-              m.NAMA_MEMBER.toLowerCase().includes(query) ||
-              m.ID_MEMBER.toLowerCase().includes(query) ||
-              (m.JABATAN && m.JABATAN.toLowerCase().includes(query))
-          );
+          // Prioritas 1: exact ID match dulu (seperti pola di get_items)
+          const byId = members.filter((m) => m.ID_MEMBER.toLowerCase() === query.toLowerCase());
+          if (byId.length > 0) {
+            filtered = byId;
+          } else {
+            // Prioritas 2: fuzzy matching pada NAMA_MEMBER dengan threshold 0.6 (toleransi typo)
+            filtered = fuzzyMatchItems(query, members, (m) => m.NAMA_MEMBER, 0.6);
+          }
         }
 
         const mapped = filtered.slice(0, 15).map((m) => ({
@@ -1307,34 +1384,100 @@ export async function executeAITool(
           };
         }
 
-        let memberName = memberId;
-        const itemCatalog = new Map<string, { name: string; satuan: string }>();
+        let items: MasterItem[] = [];
+        let members: MasterMember[] = [];
+        let stocks: ItemStock[] = [];
 
         try {
-          const [items, members] = await Promise.all([api.getItems(), api.getMembers()]);
-          for (const it of items) {
-            itemCatalog.set(it.ID_ITEM.toUpperCase(), {
-              name: it.NAMA_ITEM,
-              satuan: it.SATUAN || 'item',
-            });
-          }
-          if (memberId) {
-            const matchedMember = members.find((m) => m.ID_MEMBER.toUpperCase() === memberId.toUpperCase());
-            if (matchedMember) {
-              memberName = `${matchedMember.NAMA_MEMBER} (${matchedMember.JABATAN || 'Member'})`;
-            }
-          }
+          // Task D: Ambil master barang fresh (forceRefresh = true) & stok fisik langsung dari backend
+          [items, members, stocks] = await Promise.all([
+            api.getItems(true),
+            api.getMembers(),
+            api.getStock(),
+          ]);
         } catch {
-          // Safe fallback
+          return {
+            success: false,
+            errorCode: 'FETCH_FAILED',
+            message: 'Gagal memuat data master dari backend GAS untuk memvalidasi transaksi.',
+          };
         }
 
-        // Resolve nama/satuan tiap item + cek kelayakan per item untuk transaksi keluar.
+        // Bangun katalog master barang
+        const itemCatalog = new Map<string, MasterItem>();
+        for (const it of items) {
+          itemCatalog.set(it.ID_ITEM.toUpperCase(), it);
+        }
+
+        // Bangun peta stok fisik
+        const stockMap = new Map<string, ItemStock>();
+        for (const s of stocks) {
+          stockMap.set(s.idItem.toUpperCase(), s);
+        }
+
+        // Task B.1: Verifikasi setiap itemId ada di katalog master (case-insensitive)
+        for (const d of draftItems) {
+          const it = itemCatalog.get(d.itemId.toUpperCase());
+          if (!it) {
+            return {
+              success: false,
+              errorCode: 'ITEM_NOT_FOUND',
+              message: `Barang dengan ID "${d.itemId}" tidak ditemukan di master. Minta AI mencari ulang via get_items.`,
+            };
+          }
+        }
+
+        // Task B.2: Verifikasi memberId ada dan status AKTIF jika diisi
+        let memberName = memberId;
+        if (memberId) {
+          const matchedMember = members.find(
+            (m) => m.ID_MEMBER.toUpperCase() === memberId.toUpperCase()
+          );
+          if (!matchedMember) {
+            return {
+              success: false,
+              errorCode: 'MEMBER_NOT_FOUND',
+              message: `Member dengan ID "${memberId}" tidak ditemukan di master member.`,
+            };
+          }
+          if (String(matchedMember.STATUS || '').toUpperCase() !== 'AKTIF') {
+            return {
+              success: false,
+              errorCode: 'MEMBER_INACTIVE',
+              message: `Member "${matchedMember.NAMA_MEMBER}" (${memberId}) berstatus NONAKTIF dan tidak dapat melakukan transaksi.`,
+            };
+          }
+          memberName = `${matchedMember.NAMA_MEMBER} (${matchedMember.JABATAN || 'Member'})`;
+        }
+
+        // Task A.1 & A.2: Validasi stok fisik untuk transaksi BARANG_KELUAR dan PINJAM
+        if (type === 'BARANG_KELUAR' || type === 'PINJAM') {
+          for (const d of draftItems) {
+            const it = itemCatalog.get(d.itemId.toUpperCase())!;
+            const stockEntry = stockMap.get(d.itemId.toUpperCase());
+            const availableStock = stockEntry ? stockEntry.stok : 0;
+            const satuan = it.SATUAN || 'item';
+
+            if (d.jumlah > availableStock) {
+              return {
+                success: false,
+                errorCode: 'INSUFFICIENT_STOCK',
+                message: `Stok ${it.NAMA_ITEM} hanya ${availableStock} ${satuan}, diminta ${d.jumlah}.`,
+              };
+            }
+          }
+        }
+
+        // Resolve nama/satuan/stok tiap item + cek kelayakan per item untuk transaksi keluar
         const eligibilityNotes: string[] = [];
         const resolvedItems = await Promise.all(
           draftItems.map(async (d) => {
-            const cat = itemCatalog.get(d.itemId.toUpperCase());
-            const itemName = cat?.name || d.itemId;
-            const satuan = cat?.satuan || 'item';
+            const it = itemCatalog.get(d.itemId.toUpperCase())!;
+            const itemName = it.NAMA_ITEM;
+            const satuan = it.SATUAN || 'item';
+            const stockEntry = stockMap.get(d.itemId.toUpperCase());
+            const availableStock = stockEntry ? stockEntry.stok : 0;
+
             if ((type === 'BARANG_KELUAR' || type === 'PINJAM') && memberId) {
               try {
                 const el = await api.getPickupEligibility(memberId, d.itemId, d.jumlah);
@@ -1345,12 +1488,24 @@ export async function executeAITool(
                 // ignore
               }
             }
-            return { itemId: d.itemId, itemName, jumlah: d.jumlah, satuan };
+            return {
+              itemId: it.ID_ITEM,
+              itemName,
+              jumlah: d.jumlah,
+              satuan,
+              availableStock,
+            };
           })
         );
 
         const eligibilityNote = eligibilityNotes.length > 0 ? `Perhatian: ${eligibilityNotes.join(' ')}` : '';
         const isMulti = resolvedItems.length > 1;
+
+        // Task A.3: Tambahkan baris detail "Stok Saat Ini" pada kartu konfirmasi untuk tiap barang
+        const stockDetails = resolvedItems.map((ri) => ({
+          label: 'Stok Saat Ini',
+          value: `${ri.itemName} — stok tersedia: ${ri.availableStock} ${ri.satuan}`,
+        }));
 
         const confirmation: AIConfirmationData = {
           id: `conf-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -1369,6 +1524,7 @@ export async function executeAITool(
                   { label: 'Barang', value: `${resolvedItems[0].itemName} [${resolvedItems[0].itemId}]` },
                   { label: 'Jumlah', value: `${resolvedItems[0].jumlah} ${resolvedItems[0].satuan}`, highlight: true },
                 ]),
+            ...stockDetails,
             ...(memberId ? [{ label: 'Member', value: `${memberName} [${memberId}]` }] : []),
             ...(keterangan ? [{ label: 'Keterangan', value: keterangan }] : []),
             ...(noDokumen ? [{ label: 'No. Dokumen', value: noDokumen }] : []),
@@ -1415,31 +1571,59 @@ export async function executeAITool(
           };
         }
 
-        let itemName = itemId;
-        let memberName = memberId;
+        let items: MasterItem[] = [];
+        let members: MasterMember[] = [];
         try {
-          const [items, members] = await Promise.all([api.getItems(), api.getMembers()]);
-          const matchedItem = items.find((i) => i.ID_ITEM.toUpperCase() === itemId.toUpperCase());
-          if (matchedItem) itemName = matchedItem.NAMA_ITEM;
-          const matchedMember = members.find((m) => m.ID_MEMBER.toUpperCase() === memberId.toUpperCase());
-          if (matchedMember) memberName = `${matchedMember.NAMA_MEMBER} (${matchedMember.JABATAN || 'Member'})`;
+          [items, members] = await Promise.all([api.getItems(true), api.getMembers()]);
         } catch {
-          // fallback
+          return {
+            success: false,
+            errorCode: 'FETCH_FAILED',
+            message: 'Gagal memuat data master dari backend GAS untuk memvalidasi pengajuan.',
+          };
         }
+
+        const matchedItem = items.find((i) => i.ID_ITEM.toUpperCase() === itemId.toUpperCase());
+        if (!matchedItem) {
+          return {
+            success: false,
+            errorCode: 'ITEM_NOT_FOUND',
+            message: `Barang dengan ID "${itemId}" tidak ditemukan di master. Minta AI mencari ulang via get_items.`,
+          };
+        }
+
+        const matchedMember = members.find((m) => m.ID_MEMBER.toUpperCase() === memberId.toUpperCase());
+        if (!matchedMember) {
+          return {
+            success: false,
+            errorCode: 'MEMBER_NOT_FOUND',
+            message: `Member dengan ID "${memberId}" tidak ditemukan di master member.`,
+          };
+        }
+        if (String(matchedMember.STATUS || '').toUpperCase() !== 'AKTIF') {
+          return {
+            success: false,
+            errorCode: 'MEMBER_INACTIVE',
+            message: `Member "${matchedMember.NAMA_MEMBER}" (${memberId}) berstatus NONAKTIF dan tidak dapat melakukan pengajuan.`,
+          };
+        }
+
+        const itemName = matchedItem.NAMA_ITEM;
+        const memberName = `${matchedMember.NAMA_MEMBER} (${matchedMember.JABATAN || 'Member'})`;
 
         const confirmation: AIConfirmationData = {
           id: `req-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
           type: 'REQUEST',
           title: 'Konfirmasi Pengajuan Early Pickup',
           details: [
-            { label: 'Member', value: `${memberName} [${memberId}]` },
-            { label: 'Barang', value: `${itemName} [${itemId}]` },
-            { label: 'Jumlah', value: jumlah, highlight: true },
+            { label: 'Member', value: `${memberName} [${matchedMember.ID_MEMBER}]` },
+            { label: 'Barang', value: `${itemName} [${matchedItem.ID_ITEM}]` },
+            { label: 'Jumlah', value: `${jumlah} ${matchedItem.SATUAN || 'UNIT'}`, highlight: true },
             { label: 'Alasan', value: alasan, highlight: true },
           ],
           rawInput: {
-            memberId,
-            itemId,
+            memberId: matchedMember.ID_MEMBER,
+            itemId: matchedItem.ID_ITEM,
             jumlah,
             alasan,
           },

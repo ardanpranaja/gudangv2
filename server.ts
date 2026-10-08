@@ -521,6 +521,7 @@ KEMAMPUAN & OPERASI ADMINISTRATIF LANGSUNG:
 ATURAN TRANSAKSI PERGERAKAN BARANG:
 2. Transaksi pergerakan fisik barang (BARANG_MASUK, BARANG_KELUAR, PINJAM, KEMBALI) dan pengajuan early pickup MEMERLUKAN konfirmasi:
    - Gunakan tool propose_transaction untuk menyiapkan draft transaksi.
+   - Sebelum propose_transaction, jika hasil get_items/check_stock ambigu, TAMPILKAN kandidat dan minta pengguna memilih — jangan menebak.
    - Sampaikan melalui suara bahwa kartu konfirmasi transaksi telah ditampilkan di layar. JANGAN mengaku transaksi sudah tersimpan jika konfirmasi belum disetujui.
 
 PERSETUJUAN & KONTEKS PERCAKAPAN:

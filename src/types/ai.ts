@@ -27,6 +27,7 @@ export interface AIConfirmationItem {
   itemName: string;
   jumlah: number;
   satuan: string;
+  availableStock?: number;
 }
 
 export interface AIConfirmationData {
@@ -161,7 +162,19 @@ export interface AIConversation {
 
 export interface StructuredToolResult<T = unknown> {
   success: boolean;
-  errorCode?: 'MISSING_PARAMETER' | 'LIMIT_ALREADY_EXISTS' | 'NOT_FOUND' | 'INVALID_INPUT' | 'API_ERROR' | 'UNAUTHORIZED';
+  errorCode?:
+    | 'MISSING_PARAMETER'
+    | 'LIMIT_ALREADY_EXISTS'
+    | 'NOT_FOUND'
+    | 'INVALID_INPUT'
+    | 'API_ERROR'
+    | 'UNAUTHORIZED'
+    | 'INSUFFICIENT_STOCK'
+    | 'ITEM_NOT_FOUND'
+    | 'MEMBER_NOT_FOUND'
+    | 'MEMBER_INACTIVE'
+    | 'FETCH_FAILED'
+    | string;
   message?: string;
   missing?: string[];
   data?: T;
