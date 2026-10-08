@@ -93,6 +93,12 @@ export const LaporanPage: React.FC = () => {
         description="Analisis periodik mutasi stok dan intensitas transaksi barang yang bersumber dari database Google Spreadsheet."
         actions={
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigateTo('dashboard', { tab: 'analitik' })}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black text-stone-950 bg-sky-300 hover:bg-sky-400 border-2 border-stone-900 rounded-lg shadow-[2.5px_2.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+            >
+              <span>Dashboard Analitik</span>
+            </button>
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-400 rounded-lg shadow-[2px_2px_0px_#18181b] text-xs">
               <Calendar className="w-3.5 h-3.5 text-stone-900 dark:text-stone-100 stroke-[2.5]" />
               <input
