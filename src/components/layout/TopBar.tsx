@@ -26,10 +26,8 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
           </span>
         </div>
 
-        {/* Right Actions: Notification Bell + Theme Toggle + Admin Login Link */}
+        {/* Right Actions: Theme Toggle + Admin Login Link (notifikasi hanya untuk admin) */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <NotificationBell />
-
           <button
             type="button"
             onClick={toggleTheme}
