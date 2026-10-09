@@ -136,6 +136,27 @@ TRANSAKSI MULTI-ITEM (SATU MEMBER, BANYAK BARANG):
    - Sampaikan ringkasan semua barang dalam draf konfirmasi kepada pengguna sebelum mereka menyetujui.
    - Batas wajar: maksimal 10 barang per draf multi-item. Jika lebih, bagi menjadi beberapa draf dan sampaikan alasannya.
 
+ATURAN BAHASA DRAF (JANGAN MEMBINGUNGKAN):
+- Jika propose_transaction dipanggil dengan daftar item BARU (bukan edit), gunakan kata
+  "membuat draf" — JANGAN gunakan "memperbarui", "menggantikan", atau "mengubah"
+  kecuali pengguna secara eksplisit meminta perubahan pada draf yang sudah ada.
+- Jika memang mengedit draf, sebutkan JELAS item mana yang diubah/dihapus/ditambah.
+
+PEMISAHAN TEGAS: DRAF TRANSAKSI vs PERSETUJUAN PENGAJUAN (ANTI-HALUSINASI):
+A. DRAF TRANSAKSI (propose_transaction):
+   - Saat pengguna menyetujui draf transaksi ("Eksekusi", "Setuju", "Ya", "Lanjutkan"),
+     JANGAN memanggil tool APAPUN. Sistem frontend otomatis mengeksekusi konfirmasi
+     pending ke backend. Tugas Anda hanya konfirmasi singkat atau diam.
+   - DILARANG KERAS memanggil approve_requests / reject_requests sebagai respons
+     terhadap persetujuan draf transaksi. Itu tool yang SALAH — approve_requests
+     hanya untuk pengajuan (REQ...), bukan untuk draf transaksi.
+B. PERSETUJUAN PENGAJUAN (approve_requests / reject_requests):
+   - HANYA untuk pengajuan pengambilan barang (ID berformat REQ...).
+   - HANYA setelah alur wajib: get_pending_requests → tampilkan daftar →
+     konfirmasi eksplisit → eksekusi.
+   - Jika pengguna TIDAK menyebut ID pengajuan atau kata "pengajuan"/"request",
+     JANGAN memanggil tool ini.
+
 PERSETUJUAN PENGAJUAN (APPROVAL & REJECTION):
 11. Kemampuan & Akses Operasional:
     - Anda BISA melihat pengajuan yang menunggu (get_pending_requests) serta menyetujui (approve_requests) atau menolaknya (reject_requests).
@@ -1622,6 +1643,37 @@ export class AIService {
         };
 
         if (callbacks?.onToolStatus) callbacks.onToolStatus(toolInfo);
+
+        // GUARD ANTI-HALUSINASI (insiden 2026-10-09): cegah AI memanggil
+        // approve_requests/reject_requests saat ada draf TRANSAKSI pending.
+        // approve_requests hanya untuk pengajuan (REQ...), bukan eksekusi draf transaksi.
+        if (call.name === 'approve_requests' || call.name === 'reject_requests') {
+          const TX_TYPES = ['BARANG_MASUK', 'BARANG_KELUAR', 'PINJAM', 'KEMBALI'];
+          const hasPendingTx = history.some(
+            (m) => m.confirmation && m.confirmation.status === 'pending' && TX_TYPES.includes(m.confirmation.type)
+          );
+          const rawIds = (call.args as any)?.requestIds;
+          const ids: string[] = Array.isArray(rawIds) ? rawIds.map((x) => String(x)) : [];
+          const looksLikeReqIds = ids.length > 0 && ids.every((id) => /^REQ/i.test(id.trim()));
+          if (hasPendingTx && !looksLikeReqIds) {
+            const warnMsg =
+              'DIBATALKAN oleh guard anti-halusinasi: terdeteksi draf transaksi yang masih ' +
+              'menunggu konfirmasi, tetapi tool persetujuan pengajuan dipanggil tanpa ID ' +
+              'pengajuan (REQ...) yang valid. Draf transaksi TIDAK dieksekusi via ' +
+              'approve_requests. Minta pengguna mengonfirmasi via kartu konfirmasi.';
+            console.warn('[AI Guard]', warnMsg, { tool: call.name, args: call.args });
+            toolInfo.status = 'error';
+            toolInfo.errorMessage = warnMsg;
+            executedTools.push(toolInfo);
+            functionResponseParts.push({
+              functionResponse: {
+                name: call.name,
+                response: { success: false, errorCode: 'GUARD_BLOCKED', message: warnMsg },
+              },
+            });
+            continue;
+          }
+        }
 
         try {
           const toolExec: StructuredToolResult = await executeAITool(call.name, call.args || {});
