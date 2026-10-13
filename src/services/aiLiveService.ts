@@ -1,10 +1,5 @@
 import { LiveAssistantStatus, AIConfirmationData } from '../types/ai';
 import { aiService } from './aiService';
-import {
-  resampleAndConvertToPCM16,
-  arrayBufferToBase64,
-  decodePCM24kToAudioBuffer,
-} from './aiAudioUtils';
 
 export interface LiveServiceCallbacks {
   onStatusChange?: (status: LiveAssistantStatus, statusText: string) => void;
@@ -17,26 +12,60 @@ export interface LiveServiceCallbacks {
   onError?: (errorMessage: string) => void;
 }
 
+// Web Speech API types (not all in default TS DOM lib)
+interface SpeechRecognitionResultItem {
+  transcript: string;
+}
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  length: number;
+  [index: number]: SpeechRecognitionResultItem;
+}
+interface SpeechRecognitionResultList {
+  length: number;
+  [index: number]: SpeechRecognitionResult;
+}
+interface SpeechRecognitionEvent extends Event {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+}
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
+interface SpeechRecognitionInstance extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+}
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
+/**
+ * Voice session service using the browser's native Web Speech API.
+ *
+ * Replaces the previous Gemini Live WebSocket bridge (/api/ai/live) which was
+ * never implemented on the backend. Flow per turn:
+ *   dengar (SpeechRecognition id-ID) -> kirim teks ke aiService ->
+ *   bacakan jawaban (speechSynthesis) -> dengar lagi.
+ *
+ * The callback interface is unchanged so AIChat.tsx needs no modification.
+ */
 export class AILiveService {
-  private ws: WebSocket | null = null;
   private status: LiveAssistantStatus = 'DISCONNECTED';
   private statusText: string = 'Tidak aktif';
   private callbacks: LiveServiceCallbacks = {};
 
-  // Audio capture
-  private mediaStream: MediaStream | null = null;
-  private inputAudioContext: AudioContext | null = null;
-  private processorNode: ScriptProcessorNode | null = null;
-  private sourceNode: MediaStreamAudioSourceNode | null = null;
-
-  // Audio playback
-  private outputAudioContext: AudioContext | null = null;
-  private nextPlayTime: number = 0;
-  private activeSources: AudioBufferSourceNode[] = [];
-
-  // Transcript accumulator
-  private currentInputTranscript: string = '';
-  private currentOutputTranscript: string = '';
+  private recognition: SpeechRecognitionInstance | null = null;
+  private listening = false;
+  private processing = false;
+  private currentInputTranscript = '';
+  private sessionActive = false;
 
   public getStatus(): LiveAssistantStatus {
     return this.status;
@@ -54,16 +83,16 @@ export class AILiveService {
     this.status = status;
     switch (status) {
       case 'CONNECTING':
-        this.statusText = text || 'Menghubungkan ke Gemini Live...';
+        this.statusText = text || 'Menyiapkan suara...';
         break;
       case 'LISTENING':
         this.statusText = text || 'Mendengarkan suara Anda...';
         break;
       case 'THINKING':
-        this.statusText = text || 'Gemini sedang memproses...';
+        this.statusText = text || 'Uti sedang memproses...';
         break;
       case 'SPEAKING':
-        this.statusText = text || 'Gemini sedang berbicara...';
+        this.statusText = text || 'Uti sedang berbicara...';
         break;
       case 'ERROR':
         this.statusText = text || 'Terjadi kesalahan pada sesi suara.';
@@ -73,6 +102,15 @@ export class AILiveService {
         break;
     }
     this.callbacks.onStatusChange?.(this.status, this.statusText);
+  }
+
+  private getSpeechRecognitionCtor(): SpeechRecognitionConstructor | null {
+    if (typeof window === 'undefined') return null;
+    const w = window as unknown as {
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    };
+    return w.SpeechRecognition || w.webkitSpeechRecognition || null;
   }
 
   /**
@@ -90,11 +128,18 @@ export class AILiveService {
       };
     }
 
-    const hasAudioContext = !!(window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
-    if (!hasAudioContext) {
+    if (!this.getSpeechRecognitionCtor()) {
       return {
         supported: false,
-        reason: 'Browser Anda tidak mendukung Web Audio API.',
+        reason:
+          'Browser Anda tidak mendukung pengenalan suara (Web Speech API). Gunakan Chrome atau Edge versi terbaru.',
+      };
+    }
+
+    if (!('speechSynthesis' in window)) {
+      return {
+        supported: false,
+        reason: 'Browser Anda tidak mendukung suara balasan (speech synthesis).',
       };
     }
 
@@ -109,20 +154,18 @@ export class AILiveService {
   }
 
   /**
-   * Connect to Gemini Live API session
+   * Start a voice session: listen -> AI -> speak -> listen...
    */
   public async startSession(callbacks: LiveServiceCallbacks): Promise<void> {
     this.callbacks = callbacks;
 
-    // Disconnect any existing session first
     if (this.isConnected()) {
       this.disconnect();
     }
 
-    // 1. Check feature support
     const check = await this.checkMicrophoneSupport();
     if (!check.supported) {
-      const err = check.reason || 'Mikrofon tidak didukung.';
+      const err = check.reason || 'Suara tidak didukung.';
       this.setStatus('ERROR', err);
       this.callbacks.onError?.(err);
       return;
@@ -130,17 +173,10 @@ export class AILiveService {
 
     this.setStatus('CONNECTING');
 
-    // 2. Request microphone permission explicitly
+    // Request microphone permission explicitly so the user gets a clear prompt
     try {
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          sampleRate: 16000,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((t) => t.stop());
     } catch (micErr: unknown) {
       let friendlyMsg = 'Gagal mengakses mikrofon.';
       if (micErr instanceof DOMException) {
@@ -157,324 +193,227 @@ export class AILiveService {
       }
       this.setStatus('ERROR', friendlyMsg);
       this.callbacks.onError?.(friendlyMsg);
-      this.cleanupAudio();
       return;
     }
 
-    // 3. Connect to Backend WebSocket Live bridge
-    try {
-      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${location.host}/api/ai/live`;
-      this.ws = new WebSocket(wsUrl);
-
-      this.ws.onopen = () => {
-        // Send init configuration including custom API key if present
-        const apiKey = aiService.getApiKey();
-        this.ws?.send(
-          JSON.stringify({
-            type: 'init',
-            apiKey: apiKey || undefined,
-            model: 'gemini-3.8-live',
-          })
-        );
-      };
-
-      this.ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          this.handleServerMessage(msg);
-        } catch (parseErr) {
-          console.error('[Live WS] Failed to parse message:', parseErr);
-        }
-      };
-
-      this.ws.onerror = (e) => {
-        console.error('[Live WS] Error:', e);
-        const errMsg = 'Gagal terhubung ke WebSocket Live Assistant.';
-        this.setStatus('ERROR', errMsg);
-        this.callbacks.onError?.(errMsg);
-      };
-
-      this.ws.onclose = () => {
-        if (this.status !== 'ERROR') {
-          this.setStatus('DISCONNECTED');
-        }
-        this.cleanupAudio();
-      };
-    } catch (wsErr: unknown) {
-      const errMsg = wsErr instanceof Error ? wsErr.message : 'Koneksi ke Live server gagal.';
-      this.setStatus('ERROR', errMsg);
-      this.callbacks.onError?.(errMsg);
-      this.cleanupAudio();
+    if (!aiService.hasKey()) {
+      const err = 'API key Gemini belum diatur. Atur dulu di panel Pengaturan AI sebelum memakai suara.';
+      this.setStatus('ERROR', err);
+      this.callbacks.onError?.(err);
+      return;
     }
+
+    this.sessionActive = true;
+    this.currentInputTranscript = '';
+    this.startListening();
   }
 
-  /**
-   * Handle incoming messages from backend Live WebSocket bridge
-   */
-  private handleServerMessage(msg: Record<string, unknown>) {
-    switch (msg.type) {
-      case 'ready': {
-        // Live session ready, start capturing and streaming microphone
-        this.startMicrophoneCapture();
-        this.initPlaybackAudioContext();
-        this.setStatus('LISTENING');
-        break;
-      }
+  private startListening() {
+    if (!this.sessionActive || this.processing) return;
 
-      case 'audio': {
-        // Gemini model returned audio chunk
-        if (typeof msg.audio === 'string') {
-          this.setStatus('SPEAKING');
-          this.playAudioChunk(msg.audio);
+    const Ctor = this.getSpeechRecognitionCtor();
+    if (!Ctor) return;
+
+    this.stopRecognition();
+
+    const rec = new Ctor();
+    rec.lang = 'id-ID';
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+    this.recognition = rec;
+    this.listening = true;
+    this.currentInputTranscript = '';
+    this.setStatus('LISTENING');
+
+    rec.onresult = (event: SpeechRecognitionEvent) => {
+      let interim = '';
+      let finalText = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const res = event.results[i];
+        const transcript = res[0]?.transcript || '';
+        if (res.isFinal) {
+          finalText += transcript;
+        } else {
+          interim += transcript;
         }
-        break;
       }
-
-      case 'interrupted': {
-        // User interrupted the model
-        this.stopAllAudioPlayback();
-        this.setStatus('LISTENING');
-        break;
+      const shown = (finalText + interim).trim();
+      if (shown) {
+        this.currentInputTranscript = shown;
+        this.callbacks.onInputTranscript?.(shown, !!finalText);
       }
-
-      case 'input_transcript': {
-        // User speech transcript
-        if (typeof msg.text === 'string') {
-          this.currentInputTranscript += msg.text;
-          this.callbacks.onInputTranscript?.(this.currentInputTranscript, false);
-        }
-        break;
+      if (finalText.trim()) {
+        // Final utterance captured; process it
+        this.stopRecognition();
+        void this.processUtterance(finalText.trim());
       }
+    };
 
-      case 'output_transcript': {
-        // Model speech transcript
-        if (typeof msg.text === 'string') {
-          this.currentOutputTranscript += msg.text;
-          this.callbacks.onOutputTranscript?.(this.currentOutputTranscript, false);
-        }
-        break;
+    rec.onerror = (event: SpeechRecognitionErrorEvent) => {
+      // 'no-speech' / 'aborted' are normal; just restart listening
+      if (event.error === 'no-speech' || event.error === 'aborted') {
+        return;
       }
-
-      case 'tool_call_start': {
-        this.setStatus('THINKING');
-        const calls = (msg.calls as Array<{ name: string; args: Record<string, unknown> }>) || [];
-        for (const call of calls) {
-          this.callbacks.onToolCallStart?.(call.name, call.args || {});
-        }
-        break;
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        const err = 'Izin mikrofon ditolak. Berikan izin mikrofon lalu coba lagi.';
+        this.setStatus('ERROR', err);
+        this.callbacks.onError?.(err);
+        this.sessionActive = false;
+        return;
       }
+      console.warn('[Voice] recognition error:', event.error);
+    };
 
-      case 'tool_call_result': {
-        const toolName = (msg.name as string) || '';
-        this.callbacks.onToolCallDone?.(toolName, msg.data);
-        if (msg.confirmation) {
-          this.callbacks.onConfirmationDraft?.(msg.confirmation as AIConfirmationData);
-        }
-        break;
+    rec.onend = () => {
+      this.listening = false;
+      // Auto-restart while session is active and not busy processing/speaking
+      if (this.sessionActive && !this.processing) {
+        // small delay to avoid tight restart loops on persistent errors
+        window.setTimeout(() => {
+          if (this.sessionActive && !this.processing && !this.listening) {
+            this.startListening();
+          }
+        }, 300);
       }
-
-      case 'turn_complete': {
-        // Finalize transcript turns
-        if (this.currentInputTranscript) {
-          this.callbacks.onInputTranscript?.(this.currentInputTranscript, true);
-          this.currentInputTranscript = '';
-        }
-        if (this.currentOutputTranscript) {
-          this.callbacks.onOutputTranscript?.(this.currentOutputTranscript, true);
-          this.currentOutputTranscript = '';
-        }
-        this.callbacks.onTurnComplete?.();
-        if (this.activeSources.length === 0) {
-          this.setStatus('LISTENING');
-        }
-        break;
-      }
-
-      case 'error': {
-        const errorText = (msg.error as string) || 'Terjadi kesalahan pada sesi Gemini Live.';
-        this.setStatus('ERROR', errorText);
-        this.callbacks.onError?.(errorText);
-        break;
-      }
-
-      case 'closed': {
-        this.disconnect();
-        break;
-      }
-    }
-  }
-
-  /**
-   * Initializes microphone capture & streaming 16kHz PCM
-   */
-  private startMicrophoneCapture() {
-    if (!this.mediaStream) return;
+    };
 
     try {
-      const AudioCtxClass =
-        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      this.inputAudioContext = new AudioCtxClass();
-
-      this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
-      // bufferSize: 2048 gives low latency (~128ms)
-      this.processorNode = this.inputAudioContext.createScriptProcessor(2048, 1, 1);
-
-      this.processorNode.onaudioprocess = (e) => {
-        if (this.status === 'ERROR' || this.status === 'DISCONNECTED') return;
-
-        const inputChannelData = e.inputBuffer.getChannelData(0);
-        const sampleRate = this.inputAudioContext?.sampleRate || 44100;
-
-        // Convert and resample to 16kHz PCM 16-bit
-        const pcmBuffer = resampleAndConvertToPCM16(inputChannelData, sampleRate, 16000);
-        const base64Audio = arrayBufferToBase64(pcmBuffer);
-
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-          this.ws.send(
-            JSON.stringify({
-              type: 'audio',
-              audio: base64Audio,
-            })
-          );
-        }
-      };
-
-      this.sourceNode.connect(this.processorNode);
-      this.processorNode.connect(this.inputAudioContext.destination);
+      rec.start();
     } catch (err) {
-      console.error('[Live Capture] Failed to initialize audio processing:', err);
+      console.error('[Voice] failed to start recognition:', err);
+      this.listening = false;
     }
   }
 
-  /**
-   * Initializes 24kHz Web Audio playback context
-   */
-  private initPlaybackAudioContext() {
-    if (!this.outputAudioContext || this.outputAudioContext.state === 'closed') {
-      const AudioCtxClass =
-        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      // 24kHz matches model output
+  private stopRecognition() {
+    if (this.recognition) {
       try {
-        this.outputAudioContext = new AudioCtxClass({ sampleRate: 24000 });
+        this.recognition.onresult = null;
+        this.recognition.onerror = null;
+        this.recognition.onend = null;
+        this.recognition.abort();
       } catch {
-        this.outputAudioContext = new AudioCtxClass();
+        // ignore
       }
+      this.recognition = null;
     }
-    if (this.outputAudioContext.state === 'suspended') {
-      this.outputAudioContext.resume().catch(() => {});
-    }
-    this.nextPlayTime = 0;
+    this.listening = false;
   }
 
-  /**
-   * Plays a 24kHz PCM chunk with gapless Web Audio scheduling
-   */
-  private playAudioChunk(base64Audio: string) {
-    if (!this.outputAudioContext) {
-      this.initPlaybackAudioContext();
-    }
-    if (!this.outputAudioContext) return;
+  private async processUtterance(text: string) {
+    if (!this.sessionActive) return;
+    this.processing = true;
+    this.setStatus('THINKING');
+
+    // Finalize input transcript
+    this.callbacks.onInputTranscript?.(text, true);
 
     try {
-      const audioBuffer = decodePCM24kToAudioBuffer(base64Audio, this.outputAudioContext);
-      const currentTime = this.outputAudioContext.currentTime;
+      const response = await aiService.sendMessage(text, [], undefined, {
+        onToolStatus: (toolInfo) => {
+          this.callbacks.onToolCallStart?.(toolInfo.name, {});
+        },
+      });
 
-      if (this.nextPlayTime < currentTime) {
-        this.nextPlayTime = currentTime + 0.03; // tiny buffer (30ms) to prevent audio underrun click
+      for (const tc of response.toolCalls || []) {
+        this.callbacks.onToolCallDone?.(tc.name, tc.result);
       }
 
-      const source = this.outputAudioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(this.outputAudioContext.destination);
-
-      source.start(this.nextPlayTime);
-      this.nextPlayTime += audioBuffer.duration;
-      this.activeSources.push(source);
-
-      source.onended = () => {
-        const index = this.activeSources.indexOf(source);
-        if (index > -1) {
-          this.activeSources.splice(index, 1);
-        }
-        if (this.activeSources.length === 0 && this.status === 'SPEAKING') {
-          this.setStatus('LISTENING');
-        }
-      };
-    } catch (decodeErr) {
-      console.error('[Live Playback] Error decoding audio chunk:', decodeErr);
-    }
-  }
-
-  /**
-   * Stop active audio playback immediately upon interruption
-   */
-  private stopAllAudioPlayback() {
-    for (const src of this.activeSources) {
-      try {
-        src.stop();
-        src.disconnect();
-      } catch {
-        // ignore already stopped sources
+      if (response.confirmation) {
+        this.callbacks.onConfirmationDraft?.(response.confirmation);
       }
-    }
-    this.activeSources = [];
-    this.nextPlayTime = 0;
-  }
 
-  /**
-   * Cleanup audio devices and context
-   */
-  private cleanupAudio() {
-    this.stopAllAudioPlayback();
-
-    if (this.processorNode) {
-      try {
-        this.processorNode.disconnect();
-      } catch {}
-      this.processorNode = null;
-    }
-
-    if (this.sourceNode) {
-      try {
-        this.sourceNode.disconnect();
-      } catch {}
-      this.sourceNode = null;
-    }
-
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach((track) => track.stop());
-      this.mediaStream = null;
-    }
-
-    if (this.inputAudioContext && this.inputAudioContext.state !== 'closed') {
-      this.inputAudioContext.close().catch(() => {});
-      this.inputAudioContext = null;
-    }
-
-    if (this.outputAudioContext && this.outputAudioContext.state !== 'closed') {
-      this.outputAudioContext.close().catch(() => {});
-      this.outputAudioContext = null;
+      const reply = (response.text || '').trim();
+      if (reply) {
+        this.callbacks.onOutputTranscript?.(reply, true);
+        this.speak(reply);
+      } else {
+        this.finishTurn();
+      }
+    } catch (err) {
+      console.error('[Voice] AI processing error:', err);
+      const errMsg = err instanceof Error ? err.message : 'Gagal memproses suara.';
+      this.callbacks.onError?.(errMsg);
+      this.finishTurn();
     }
   }
 
+  private pickIndonesianVoice(): SpeechSynthesisVoice | null {
+    try {
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return null;
+      return (
+        voices.find((v) => v.lang.toLowerCase().startsWith('id')) ||
+        voices.find((v) => v.lang.toLowerCase().startsWith('ms')) ||
+        null
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  private speak(text: string) {
+    if (!this.sessionActive) {
+      this.finishTurn();
+      return;
+    }
+    this.setStatus('SPEAKING');
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'id-ID';
+      utter.rate = 1;
+      const voice = this.pickIndonesianVoice();
+      if (voice) utter.voice = voice;
+      utter.onend = () => this.finishTurn();
+      utter.onerror = () => this.finishTurn();
+      // Ensure voices are loaded on some browsers before speaking
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          const v = this.pickIndonesianVoice();
+          if (v) utter.voice = v;
+          window.speechSynthesis.speak(utter);
+        };
+        // fallback: speak anyway after short delay
+        window.setTimeout(() => {
+          if (this.status === 'SPEAKING') window.speechSynthesis.speak(utter);
+        }, 400);
+      } else {
+        window.speechSynthesis.speak(utter);
+      }
+    } catch (err) {
+      console.error('[Voice] speech synthesis error:', err);
+      this.finishTurn();
+    }
+  }
+
+  private finishTurn() {
+    this.processing = false;
+    this.currentInputTranscript = '';
+    this.callbacks.onTurnComplete?.();
+    if (this.sessionActive) {
+      this.startListening();
+    } else {
+      this.setStatus('DISCONNECTED');
+    }
+  }
+
   /**
-   * Disconnect the Live session
+   * Disconnect the voice session
    */
   public disconnect() {
-    if (this.ws) {
-      try {
-        if (this.ws.readyState === WebSocket.OPEN) {
-          this.ws.send(JSON.stringify({ type: 'close' }));
-        }
-        this.ws.close();
-      } catch {}
-      this.ws = null;
+    this.sessionActive = false;
+    this.processing = false;
+    this.stopRecognition();
+    try {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    } catch {
+      // ignore
     }
-
-    this.cleanupAudio();
     this.currentInputTranscript = '';
-    this.currentOutputTranscript = '';
     this.setStatus('DISCONNECTED');
   }
 }
